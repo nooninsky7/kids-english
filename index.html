@@ -881,9 +881,69 @@
     }
 
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+    /* 음성 녹음 인식 (STT) 버튼 및 애니메이션 */
+    .voice-input-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      background: #EEF2FF;
+      border: 1.5px solid #C7D2FE;
+      border-radius: 12px;
+      color: #4338CA;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(99, 102, 241, 0.12);
+      user-select: none;
+    }
+    .voice-input-btn:hover {
+      background: #E0E7FF;
+      border-color: #818CF8;
+      transform: translateY(-1px);
+    }
+    .voice-input-btn.recording {
+      background: #FEE2E2 !important;
+      border-color: #F87171 !important;
+      color: #DC2626 !important;
+      animation: pulseMic 1.1s infinite ease-in-out !important;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25) !important;
+    }
+    @keyframes pulseMic {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+    @keyframes slideDownToast {
+      from { transform: translate(-50%, -20px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- ================= 글로벌 음성 녹음 인식 플로팅 배너 ================= -->
+  <div id="voiceListeningOverlay" style="display: none; position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 10005; background: #1E1B4B; color: white; padding: 10px 20px; border-radius: 9999px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); align-items: center; gap: 14px; border: 2px solid #818CF8; animation: slideDownToast 0.25s ease-out;">
+    <div style="width: 32px; height: 32px; border-radius: 50%; background: #EF4444; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; animation: pulseMic 1s infinite;">
+      🎙️
+    </div>
+    <div style="display: flex; flex-direction: column;">
+      <span style="font-size: 0.88rem; font-weight: 800; color: #E0E7FF;" id="voiceListeningStatusText">듣고 있어요... 영어로 편하게 말씀하세요!</span>
+      <span style="font-size: 0.75rem; color: #C7D2FE;" id="voiceInterimText">음성을 인식하는 중...</span>
+    </div>
+    <div style="display: flex; gap: 6px; align-items: center; margin-left: 6px;">
+      <button onclick="stopCurrentVoiceInput(true)" style="background: #10B981; color: white; border: none; border-radius: 9999px; padding: 5px 12px; font-size: 0.8rem; font-weight: 800; cursor: pointer;">
+        ✓ 완료
+      </button>
+      <button onclick="stopCurrentVoiceInput(false)" style="background: #475569; color: #E2E8F0; border: none; border-radius: 9999px; padding: 5px 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+        ✕ 취소
+      </button>
+    </div>
+  </div>
 
   <!-- ================= 비밀번호 잠금 화면 ================= -->
   <div class="pin-lock-overlay" id="pinLockOverlay" style="display: none;">
@@ -974,7 +1034,8 @@
       <div class="nav-bar">
         <div class="nav-title"><span>🧩 문장퍼즐</span></div>
         <div style="display: flex; gap: 8px;">
-          <button class="nav-btn" style="background: #ECFDF5; border-color: #A7F3D0; color: #065F46; font-weight: 700;" onclick="openAddGrammarModal()">+ 새 퍼즐 문장 추가</button>
+          <button class="voice-input-btn" onclick="quickAddGrammarByVoice()" title="음성으로 퍼즐 문장 등록">🎙️ 음성 문장 등록</button>
+          <button class="nav-btn" style="background: #ECFDF5; border-color: #A7F3D0; color: #065F46; font-weight: 700;" onclick="openAddGrammarModal()">+ 문장 직접 등록</button>
           <button class="nav-btn" onclick="resetCurrentGrammarBlocks()">다시 놓기 ↺</button>
           <button class="nav-btn primary" id="grammarNextBtn" onclick="nextGrammarQuestion()" disabled>다음 문장 ➔</button>
         </div>
@@ -1018,6 +1079,7 @@
       <div class="nav-bar">
         <div class="nav-title"><span>🗣️ 하루 5문장 회화패턴</span></div>
         <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="voice-input-btn" onclick="quickAddPatternByVoice()" title="음성으로 회화 패턴 말하기">🎙️ 음성 패턴 등록</button>
           <button class="nav-btn primary" onclick="openAddPatternModal()">+ 새 패턴/문장 추가</button>
           <span id="currentPatternBadge" style="font-weight: 800; color: var(--primary);">I want ~</span>
         </div>
@@ -1076,7 +1138,10 @@
     <div id="vocaSection" style="display: none; flex-direction: column; flex: 1; overflow: hidden;">
       <div class="nav-bar">
         <div class="nav-title"><span>📖 스마트단어장</span></div>
-        <button class="nav-btn primary" onclick="openAddVocaModal()">+ 단어 등록</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="voice-input-btn" onclick="quickAddVocaByVoice()" title="음성으로 단어 말하기">🎙️ 음성 단어 등록</button>
+          <button class="nav-btn primary" onclick="openAddVocaModal()">+ 단어 등록</button>
+        </div>
       </div>
 
       <div class="smart-review-banner" id="smartReviewBanner">
@@ -1231,6 +1296,9 @@
           </div>
           <div style="display: flex; gap: 8px; margin-bottom: 8px;">
             <input type="text" id="onestopSentenceInput" class="input-text" style="flex: 1; background: white;" placeholder="예: The monkey loves sweet bananas." value="The monkey loves sweet bananas.">
+            <button class="voice-input-btn" id="voiceMicBtn_onestop" onclick="startVoiceInputForTarget('onestopSentenceInput')" title="음성으로 책 문장 말하기">
+              🎙️ 말하기
+            </button>
             <button class="btn btn-primary" style="flex: none; padding: 10px 14px; background: #4F46E5;" onclick="applyOneStopSync()">✨ 3개 탭 연동</button>
           </div>
           <div id="onestopSyncStatus" style="font-size: 0.78rem; color: #4F46E5; font-weight: 700;">
@@ -1295,6 +1363,9 @@
             <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 6px;">문장 또는 패턴 입력</label>
             <div style="display: flex; gap: 8px;">
               <input type="text" id="patternSentenceInput" class="input-text" style="flex: 1;" placeholder="예: I want to eat pizza. 또는 Can I watch TV?" onkeydown="if(event.key==='Enter') autoGeneratePatternSentences()">
+              <button class="voice-input-btn" id="voiceMicBtn_pattern" onclick="startVoiceInputForTarget('patternSentenceInput', () => autoGeneratePatternSentences())" title="음성으로 문장 말하기">
+                🎙️ 말하기
+              </button>
               <button class="btn btn-primary" style="flex: none; padding: 10px 16px;" onclick="autoGeneratePatternSentences()">✨ 5문장 생성</button>
             </div>
           </div>
@@ -1377,6 +1448,9 @@
             <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">영어 문장</label>
             <div style="display: flex; gap: 8px;">
               <input type="text" id="newGrammarEnInput" class="input-text" style="flex: 1;" placeholder="예: The cute puppy runs in the park." oninput="autoParseGrammarBlocks()">
+              <button class="voice-input-btn" id="voiceMicBtn_grammar" onclick="startVoiceInputForTarget('newGrammarEnInput', () => autoParseGrammarBlocks())" title="음성으로 문장 말하기">
+                🎙️ 말하기
+              </button>
               <button class="small-btn" onclick="autoParseGrammarBlocks()">✨ 분리</button>
             </div>
           </div>
@@ -1399,6 +1473,46 @@
           <button class="btn btn-secondary" style="flex: 1;" onclick="closeAddGrammarModal()">취소</button>
           <button class="btn btn-primary" style="flex: 2;" onclick="saveCustomGrammarSentence()">
             🚀 문장퍼즐에 등록하고 바로 풀기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: 새 단어 등록 (음성 인식 지원) ================= -->
+    <div class="modal-overlay" id="addVocaModal">
+      <div class="modal-card" style="max-width: 480px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span>📖 스마트단어장에 새 단어 등록</span>
+          </div>
+          <button class="modal-close-btn" onclick="closeAddVocaModal()">✕</button>
+        </div>
+
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px;">
+          마이크 <strong>[🎙️ 말하기]</strong> 버튼을 누르고 단어를 말씀해 보세요! 한국어 뜻이 자동으로 채워집니다.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
+          <div>
+            <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">영어 단어</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="newVocaEnInput" class="input-text" style="flex: 1;" placeholder="예: butterfly" oninput="autoLookupVocaKo()" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
+              <button class="voice-input-btn" id="voiceMicBtn_voca" onclick="startVoiceInputForTarget('newVocaEnInput', () => autoLookupVocaKo())" title="음성으로 단어 말하기">
+                🎙️ 말하기
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">한국어 뜻</label>
+            <input type="text" id="newVocaKoInput" class="input-text" placeholder="예: 나비" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" style="flex: 1;" onclick="closeAddVocaModal()">취소</button>
+          <button class="btn btn-primary" style="flex: 2;" onclick="saveCustomVocaWord()">
+            ✨ 단어장에 추가하기
           </button>
         </div>
       </div>
@@ -1713,17 +1827,23 @@
       puppy: "강아지", dog: "개", dogs: "개", cat: "고양이", cats: "고양이",
       rabbit: "토끼", bear: "곰", frog: "개구리", bird: "새", birds: "새",
       tiger: "호랑이", lion: "사자", elephant: "코끼리", fish: "물고기",
+      butterfly: "나비", dinosaur: "공룡", duck: "오리", pig: "돼지",
       book: "책", books: "책", story: "이야기", stories: "이야기", toy: "장난감", toys: "장난감",
       car: "자동차", ball: "공", pizza: "피자", milk: "우유", water: "물",
       cookie: "쿠키", cookies: "쿠키", cake: "케이크", park: "공원", school: "학교",
       home: "집", room: "방", friend: "친구", friends: "친구", tree: "나무", trees: "나무",
-      sweet: "달콤한", cute: "귀여운", funny: "재미있는", happy: "행복한",
+      sun: "태양", moon: "달", star: "별", stars: "별", rainbow: "무지개", flower: "꽃", flowers: "꽃",
+      sky: "하늘", rain: "비", snow: "눈", sea: "바다", river: "강",
+      mom: "엄마", dad: "아빠", baby: "아기", sister: "자매/언니", brother: "형제/오빠", family: "가족",
+      pencil: "연필", bag: "가방", shoes: "신발", hat: "모자", desk: "책상", chair: "의자",
+      sweet: "달콤한", cute: "귀여운", funny: "재미있는", happy: "행복한", pretty: "예쁜",
       fast: "빠른", big: "큰", small: "작은", sunny: "맑은", yellow: "노란색", red: "빨간색",
-      blue: "파란색", green: "초록색", warm: "따뜻한", cold: "차가운",
+      blue: "파란색", green: "초록색", warm: "따뜻한", cold: "차가운", clean: "깨끗한",
       love: "좋아하다", loves: "좋아하다", like: "좋아하다", likes: "좋아하다",
       want: "원하다", wants: "원하다", eat: "먹다", eats: "먹다", drink: "마시다", drinks: "마시다",
       run: "달리다", runs: "달리다", jump: "점프하다", jumps: "점프하다", play: "놀다", plays: "놀다",
-      read: "읽다", reads: "읽다", see: "보다", sees: "보다", swim: "수영하다", fly: "날다"
+      read: "읽다", reads: "읽다", see: "보다", sees: "보다", swim: "수영하다", fly: "날다",
+      walk: "걷다", sleep: "잠자다", sing: "노래하다", dance: "춤추다", help: "돕다", make: "만들다"
     };
 
     // [유기적 연결 핵심 함수] 입력한 문장 하나로 회화 5문장 + 단어장 + 문장퍼즐을 일괄 생성
@@ -2621,21 +2741,59 @@
       document.getElementById('tabletNextBtn').disabled = true;
     }
 
+    let tabletSpeechRecognizer = null;
+
     function togglePatternRecordingTablet() {
       playClickSound();
       const micBtn = document.getElementById('tabletMicBtn');
       micBtn.classList.add('recording');
       document.getElementById('finishSpeechBtnTablet').style.display = 'inline-flex';
       document.getElementById('tabletMicStatus').textContent = "듣고 있어요... 천천히 말씀하세요 🎙️";
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        try {
+          if (tabletSpeechRecognizer) {
+            try { tabletSpeechRecognizer.stop(); } catch(e){}
+          }
+          const rec = new SpeechRecognition();
+          rec.lang = 'en-US';
+          rec.interimResults = true;
+          rec.continuous = false;
+          tabletSpeechRecognizer = rec;
+
+          rec.onresult = function(e) {
+            let tr = '';
+            for (let i = e.resultIndex; i < e.results.length; ++i) {
+              tr += e.results[i][0].transcript;
+            }
+            if (tr) {
+              document.getElementById('tabletMicStatus').textContent = `🗣️ 인식 중: "${tr}"`;
+            }
+          };
+
+          rec.onend = function() {
+            finishSpeechManualTablet();
+          };
+
+          rec.onerror = function() {};
+          rec.start();
+        } catch(e) {}
+      }
     }
 
     function finishSpeechManualTablet() {
+      if (tabletSpeechRecognizer) {
+        try { tabletSpeechRecognizer.stop(); } catch(e){}
+        tabletSpeechRecognizer = null;
+      }
       const micBtn = document.getElementById('tabletMicBtn');
       micBtn.classList.remove('recording');
       document.getElementById('finishSpeechBtnTablet').style.display = 'none';
       const q = getCurrentPatternQuestion();
       document.getElementById('tabletTargetEnglish').textContent = q.en;
       document.getElementById('tabletFeedbackBox').style.display = 'block';
+      document.getElementById('tabletMicStatus').textContent = "마이크를 누르고 편안하게 말해보세요";
       playSuccessSound(); // 딩동댕 소리!
       speakEnglish(q.en, 0.9);
       document.getElementById('tabletNextBtn').disabled = false;
@@ -3368,14 +3526,194 @@
       `).join('');
     }
 
-    function openAddVocaModal() {
-      const en = prompt("추가할 영어 단어를 입력하세요 (예: butterfly)");
-      const ko = en ? prompt("한국어 뜻을 입력하세요 (예: 나비)") : null;
-      if (en && ko) {
-        vocaList.unshift({ id: "v_" + Date.now(), english: en.trim(), korean: ko.trim(), wrongCount: 0, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() + ONE_DAY });
-        saveVocaListToStorage();
-        renderVocaList();
+    // =========================================================
+    // 글로벌 음성 인식 (STT) 엔진 - Web Speech API
+    // 3개 탭 (회화패턴, 단어장, 문장퍼즐) 및 원스톱 문장 입력 지원
+    // =========================================================
+    let activeSpeechRecognizer = null;
+    let activeVoiceTargetId = null;
+    let activeVoiceCallback = null;
+
+    function startVoiceInputForTarget(targetInputId, callback) {
+      playClickSound();
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("현재 사용 중인 브라우저에서 마이크 음성 인식을 지원하지 않습니다.\n\n구글 크롬(Chrome), 마이크로소프트 엣지(Edge), 또는 아이패드 사파리(Safari) 브라우저를 이용하시면 마이크 음성 인식을 편리하게 이용하실 수 있습니다!");
+        return;
       }
+
+      // 이전 실행 중인 인식기 종료
+      if (activeSpeechRecognizer) {
+        try { activeSpeechRecognizer.stop(); } catch(e){}
+        activeSpeechRecognizer = null;
+      }
+
+      const targetEl = document.getElementById(targetInputId);
+      if (!targetEl) return;
+
+      activeVoiceTargetId = targetInputId;
+      activeVoiceCallback = callback;
+
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US'; // 영어 교재 문장/단어 입력이므로 영어가 기본
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = false; // 한 문장/단어 말하면 자동 인식 완료
+
+        activeSpeechRecognizer = recognition;
+
+        // UI 표시 업데이트
+        const overlay = document.getElementById('voiceListeningOverlay');
+        const statusText = document.getElementById('voiceListeningStatusText');
+        const interimText = document.getElementById('voiceInterimText');
+        if (overlay) {
+          overlay.style.display = 'flex';
+          statusText.textContent = "듣고 있어요... 영어로 편하게 말씀하세요 🎙️";
+          interimText.textContent = "말씀하시면 실시간으로 적힙니다...";
+        }
+
+        // 마이크 버튼 시각적 애니메이션
+        document.querySelectorAll('.voice-input-btn').forEach(b => b.classList.remove('recording'));
+        const btn = document.querySelector(`button[onclick*="'${targetInputId}'"]`);
+        if (btn) btn.classList.add('recording');
+
+        recognition.onstart = function() {};
+
+        recognition.onresult = function(event) {
+          let finalTranscript = '';
+          let interimTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
+          }
+
+          let textToShow = (finalTranscript || interimTranscript).trim();
+          if (textToShow) {
+            textToShow = textToShow.charAt(0).toUpperCase() + textToShow.slice(1);
+            targetEl.value = textToShow;
+            if (interimText) interimText.textContent = `🗣️ "${textToShow}"`;
+          }
+        };
+
+        recognition.onerror = function(event) {
+          console.warn("Speech recognition error:", event.error);
+          if (event.error === 'not-allowed') {
+            alert("마이크 사용 권한이 차단되어 있습니다.\n브라우저 주소창 왼쪽의 마이크 또는 자물쇠 아이콘을 눌러 '마이크 허용'으로 설정해 주세요!");
+          }
+          stopCurrentVoiceInput(false);
+        };
+
+        recognition.onend = function() {
+          stopCurrentVoiceInput(true);
+        };
+
+        recognition.start();
+
+      } catch(err) {
+        console.error("Speech recognition start failed:", err);
+        alert("마이크를 시작할 수 없습니다. 마이크 연결 상태 및 권한을 확인해 주세요.");
+        stopCurrentVoiceInput(false);
+      }
+    }
+
+    function stopCurrentVoiceInput(isFinished = true) {
+      if (activeSpeechRecognizer) {
+        try { activeSpeechRecognizer.stop(); } catch(e){}
+        activeSpeechRecognizer = null;
+      }
+
+      const overlay = document.getElementById('voiceListeningOverlay');
+      if (overlay) overlay.style.display = 'none';
+
+      document.querySelectorAll('.voice-input-btn').forEach(b => b.classList.remove('recording'));
+
+      if (isFinished && activeVoiceTargetId) {
+        const targetEl = document.getElementById(activeVoiceTargetId);
+        if (targetEl && targetEl.value) {
+          playSuccessSound(); // 딩동댕 소리로 입력 완료 알림!
+          if (typeof activeVoiceCallback === 'function') {
+            activeVoiceCallback(targetEl.value);
+          }
+        }
+      }
+
+      activeVoiceTargetId = null;
+      activeVoiceCallback = null;
+    }
+
+    // 3개 탭 빠른 음성 등록 버튼 헬퍼
+    function quickAddVocaByVoice() {
+      openAddVocaModal();
+      setTimeout(() => startVoiceInputForTarget('newVocaEnInput', () => autoLookupVocaKo()), 250);
+    }
+
+    function quickAddPatternByVoice() {
+      openAddPatternModal();
+      setTimeout(() => startVoiceInputForTarget('patternSentenceInput', () => autoGeneratePatternSentences()), 250);
+    }
+
+    function quickAddGrammarByVoice() {
+      openAddGrammarModal();
+      setTimeout(() => startVoiceInputForTarget('newGrammarEnInput', () => autoParseGrammarBlocks()), 250);
+    }
+
+    // =========================================================
+    // 스마트 단어장 등록 모달 및 자동 번역 연동
+    // =========================================================
+    function openAddVocaModal() {
+      document.getElementById('addVocaModal').style.display = 'flex';
+      document.getElementById('newVocaEnInput').value = "";
+      document.getElementById('newVocaKoInput').value = "";
+      setTimeout(() => document.getElementById('newVocaEnInput').focus(), 150);
+    }
+
+    function closeAddVocaModal() {
+      stopCurrentVoiceInput(false);
+      document.getElementById('addVocaModal').style.display = 'none';
+    }
+
+    function autoLookupVocaKo() {
+      const en = (document.getElementById('newVocaEnInput').value || "").trim().toLowerCase();
+      const koInput = document.getElementById('newVocaKoInput');
+      if (en) {
+        const clean = en.replace(/[^a-z]/g, '');
+        if (CHILD_DICTIONARY[clean]) {
+          koInput.value = CHILD_DICTIONARY[clean];
+        } else if (!koInput.value) {
+          koInput.value = autoTranslateKorean(en);
+        }
+      }
+    }
+
+    function saveCustomVocaWord() {
+      const en = (document.getElementById('newVocaEnInput').value || "").trim();
+      let ko = (document.getElementById('newVocaKoInput').value || "").trim();
+      if (!en) {
+        alert("영어 단어나 문장을 입력하거나 마이크로 말씀해 주세요!");
+        return;
+      }
+      if (!ko) {
+        ko = autoTranslateKorean(en);
+      }
+
+      vocaList.unshift({
+        id: "v_u_" + Date.now(),
+        english: en,
+        korean: ko,
+        wrongCount: 0,
+        consecutiveCorrect: 0,
+        isMastered: false,
+        nextReviewDate: Date.now() + ONE_DAY
+      });
+      saveVocaListToStorage();
+      renderVocaList();
+      closeAddVocaModal();
+      playSuccessSound();
     }
 
     // 태블릿 QR 모달

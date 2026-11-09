@@ -541,6 +541,58 @@
 
     .grammar-feedback-msg { font-size: 1.1rem; font-weight: 800; text-align: center; min-height: 28px; }
 
+    /* 문장 구조(형식) 자동 배지 & 퀵 필터 칩 */
+    .grammar-form-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1.5px solid #93C5FD;
+      background: #EFF6FF;
+      color: #1D4ED8;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+    .grammar-filter-bar {
+      display: flex;
+      gap: 6px;
+      padding: 9px 16px;
+      background: #FFFFFF;
+      border-bottom: 1.5px solid var(--border);
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .grammar-filter-bar::-webkit-scrollbar { height: 4px; }
+    .grammar-filter-bar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+    .grammar-filter-chip {
+      padding: 6px 13px;
+      border-radius: 9999px;
+      border: 1.5px solid var(--border);
+      background: #F8FAFC;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .grammar-filter-chip:hover {
+      background: #F1F5F9;
+      border-color: #94A3B8;
+      color: var(--text-main);
+    }
+    .grammar-filter-chip.active {
+      background: var(--primary) !important;
+      color: white !important;
+      border-color: var(--primary) !important;
+      box-shadow: 0 2px 6px rgba(59, 130, 246, 0.28);
+    }
+
     /* 모달 */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px);
@@ -1041,12 +1093,27 @@
         </div>
       </div>
 
+      <!-- 7가지 문장 형식 퀵 필터 바 -->
+      <div class="grammar-filter-bar" id="grammarFilterBar">
+        <button class="grammar-filter-chip active" id="chip_ALL" onclick="filterGrammarByForm('ALL')">✨ 전체 7가지 형식 (자동 전환)</button>
+        <button class="grammar-filter-chip" id="chip_FORM_1" onclick="filterGrammarByForm('FORM_1')">1형식 (누가·뭐해·어디서)</button>
+        <button class="grammar-filter-chip" id="chip_FORM_2" onclick="filterGrammarByForm('FORM_2')">2형식 (누가·어때·상태)</button>
+        <button class="grammar-filter-chip" id="chip_FORM_3" onclick="filterGrammarByForm('FORM_3')">3형식 (누가·뭐해·무엇을)</button>
+        <button class="grammar-filter-chip" id="chip_FORM_4" onclick="filterGrammarByForm('FORM_4')">4형식 (누가·뭐해·누구에게·무엇을)</button>
+        <button class="grammar-filter-chip" id="chip_FORM_5" onclick="filterGrammarByForm('FORM_5')">5형식 (누가·뭐해·무엇을·상태)</button>
+        <button class="grammar-filter-chip" id="chip_QUESTION_DO" onclick="filterGrammarByForm('QUESTION_DO')">Do의문문 (물어봐)</button>
+        <button class="grammar-filter-chip" id="chip_QUESTION_WH" onclick="filterGrammarByForm('QUESTION_WH')">Wh의문문 (궁금한 것)</button>
+      </div>
+
       <div class="tablet-grammar-container">
         <!-- 1. 안내 배너 -->
         <div class="tablet-guide-banner">
           <div>
-            <div class="guide-step-tag" id="grammarStepIndicator">문장 1 / 3</div>
-            <div class="guide-prompt-ko" id="grammarPromptKo">나는 사과를 원해.</div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+              <span class="guide-step-tag" id="grammarStepIndicator">문장 1 / 7</span>
+              <span class="grammar-form-badge" id="grammarFormBadge">🏷️ 1형식: 누가 + 뭐해 + 어디서</span>
+            </div>
+            <div class="guide-prompt-ko" id="grammarPromptKo">그 귀여운 강아지는 공원에서 달려.</div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">원어민 소리</span>
@@ -1879,6 +1946,10 @@
         blocks: blocks
       };
       grammarSentences.unshift(newGrammarItem);
+      currentGrammarFilter = 'ALL';
+      document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
+      const allChip = document.getElementById('chip_ALL');
+      if (allChip) allChip.classList.add('active');
       currentGrammarIdx = 0;
       saveGrammarSentencesToStorage();
 
@@ -2030,38 +2101,97 @@
       return `${icon} ${label}`;
     }
 
+    const FORM_META = {
+      FORM_1: {
+        title: "1형식",
+        pattern: "누가 + 뭐해 + 어디서",
+        slots: ["WHO", "DO", "WHERE"],
+        color: "#0284C7",
+        bg: "#E0F2FE",
+        desc: "주어 + 일반동사 + 장소/부사"
+      },
+      FORM_2: {
+        title: "2형식",
+        pattern: "누가 + 어때 + 어떤 상태로",
+        slots: ["WHO", "BE_FEEL", "STATE"],
+        color: "#0D9488",
+        bg: "#CCFBF1",
+        desc: "주어 + 감각/be동사 + 상태(보어)"
+      },
+      FORM_3: {
+        title: "3형식",
+        pattern: "누가 + 뭐해 + 무엇을",
+        slots: ["WHO", "DO", "WHAT"],
+        color: "#2563EB",
+        bg: "#DBEAFE",
+        desc: "주어 + 일반동사 + 대상(목적어)"
+      },
+      FORM_4: {
+        title: "4형식",
+        pattern: "누가 + 뭐해 + 누구에게 + 무엇을",
+        slots: ["WHO", "DO", "TO_WHOM", "WHAT"],
+        color: "#E11D48",
+        bg: "#FFE4E6",
+        desc: "주어 + 수여동사 + 받는 사람 + 선물"
+      },
+      FORM_5: {
+        title: "5형식",
+        pattern: "누가 + 뭐해 + 무엇을 + 어떤 상태로",
+        slots: ["WHO", "DO", "WHAT", "STATE"],
+        color: "#7C3AED",
+        bg: "#EDE9FE",
+        desc: "주어 + 동사 + 대상 + 대상의 상태(보어)"
+      },
+      QUESTION_DO: {
+        title: "Do 의문문",
+        pattern: "물어봐 + 누가 + 뭐해 + 무엇을",
+        slots: ["DO_HELPER", "WHO", "DO", "WHAT"],
+        color: "#EA580C",
+        bg: "#FFEDD5",
+        desc: "조동사(Do) + 주어 + 동사 + 목적어"
+      },
+      QUESTION_WH: {
+        title: "Wh 의문문",
+        pattern: "궁금한 것 + 물어봐 + 누가 + 뭐해",
+        slots: ["QUESTION_WORD", "DO_HELPER", "WHO", "DO"],
+        color: "#C026D3",
+        bg: "#FAE8FF",
+        desc: "의문사(What/Where) + 조동사 + 주어 + 동사"
+      }
+    };
+
     const defaultGrammarList = [
       {
         id: "g1",
-        form: "FORM_3",
-        korean: "나는 사과를 원해.",
-        fullEnglish: "I want an apple.",
-        blocks: [
-          { id: "b1", text: "I", role: "WHO" },
-          { id: "b2", text: "want", role: "DO" },
-          { id: "b3", text: "an apple", role: "WHAT" }
-        ]
-      },
-      {
-        id: "g2",
         form: "FORM_1",
         korean: "그 귀여운 강아지는 공원에서 달려.",
         fullEnglish: "The cute puppy runs in the park.",
         blocks: [
-          { id: "b4", text: "The cute puppy", role: "WHO" },
-          { id: "b5", text: "runs", role: "DO" },
-          { id: "b6", text: "in the park", role: "WHERE" }
+          { id: "b1", text: "The cute puppy", role: "WHO" },
+          { id: "b2", text: "runs", role: "DO" },
+          { id: "b3", text: "in the park", role: "WHERE" }
         ]
       },
       {
-        id: "g3",
+        id: "g2",
         form: "FORM_2",
         korean: "내 제일 친한 친구는 아주 행복해 보여.",
         fullEnglish: "My best friend looks very happy.",
         blocks: [
-          { id: "b7", text: "My best friend", role: "WHO" },
-          { id: "b8", text: "looks", role: "BE_FEEL" },
-          { id: "b9", text: "very happy", role: "STATE" }
+          { id: "b4", text: "My best friend", role: "WHO" },
+          { id: "b5", text: "looks", role: "BE_FEEL" },
+          { id: "b6", text: "very happy", role: "STATE" }
+        ]
+      },
+      {
+        id: "g3",
+        form: "FORM_3",
+        korean: "나는 달콤한 사과를 원해.",
+        fullEnglish: "I want a sweet apple.",
+        blocks: [
+          { id: "b7", text: "I", role: "WHO" },
+          { id: "b8", text: "want", role: "DO" },
+          { id: "b9", text: "a sweet apple", role: "WHAT" }
         ]
       },
       {
@@ -2119,6 +2249,18 @@
         const data = localStorage.getItem("kids_grammar_sentences");
         if (data) {
           const list = JSON.parse(data);
+          const formsPresent = new Set(list.map(item => item.form).filter(Boolean));
+          const allRequiredForms = ["FORM_1", "FORM_2", "FORM_3", "FORM_4", "FORM_5", "QUESTION_DO", "QUESTION_WH"];
+          const isMissingForms = allRequiredForms.some(f => !formsPresent.has(f));
+
+          // 구버전(3문장만 있거나 7형식이 부족한 경우) 자동 업그레이드
+          if (isMissingForms || list.length < 7) {
+            const userAdded = list.filter(item => item.id && (item.id.startsWith("g_user_") || item.id.startsWith("g_os_")));
+            const upgraded = [...defaultGrammarList, ...userAdded];
+            localStorage.setItem("kids_grammar_sentences", JSON.stringify(upgraded));
+            return upgraded;
+          }
+
           list.forEach(item => {
             if (item.blocks) {
               item.blocks.forEach(b => b.role = normalizeRole(b.role));
@@ -2138,6 +2280,7 @@
 
     let grammarSentences = getStoredGrammarSentences();
     let currentGrammarIdx = 0;
+    let currentGrammarFilter = 'ALL';
     let placedBlocks = {};
     let selectedGrammarBlock = null;
 
@@ -2145,13 +2288,71 @@
       loadTabletGrammarQuestion();
     }
 
+    function filterGrammarByForm(formKey) {
+      playClickSound();
+      currentGrammarFilter = formKey;
+
+      document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
+      const activeChip = document.getElementById(`chip_${formKey}`);
+      if (activeChip) activeChip.classList.add('active');
+
+      const activeList = getActiveGrammarSentences();
+      if (activeList.length === 0) {
+        alert("선택하신 형식의 문장이 아직 없습니다. [+ 문장 직접 등록]으로 추가하실 수 있습니다!");
+        return;
+      }
+      currentGrammarIdx = 0;
+      loadTabletGrammarQuestion();
+    }
+
+    function getActiveGrammarSentences() {
+      if (currentGrammarFilter === 'ALL') return grammarSentences;
+      return grammarSentences.filter(s => {
+        let f = s.form;
+        if (!f) {
+          const d = detectAndParseSentence(s.fullEnglish);
+          f = d ? d.form : "FORM_3";
+        }
+        return f === currentGrammarFilter;
+      });
+    }
+
+    // [핵심] 문제의 형식에 따라 자동으로 품사 바구니 생성 및 적용
     function renderGrammarBaskets(sentence) {
       const container = document.getElementById('grammarBasketsArea');
       if (!container) return;
       container.innerHTML = "";
 
-      sentence.blocks.forEach(block => {
-        const role = normalizeRole(block.role);
+      // 1. 문제의 형식 자동 판별
+      let formKey = sentence.form;
+      if (!formKey || !SENTENCE_TYPES[formKey]) {
+        const detected = detectAndParseSentence(sentence.fullEnglish);
+        formKey = detected ? detected.form : "FORM_3";
+        sentence.form = formKey;
+      }
+
+      // 2. 상단 형식 배지 표시 갱신 (형식별 맞춤 색상 & 한국어 구조 안내)
+      const meta = FORM_META[formKey] || { title: formKey, pattern: "문장 구조", color: "#3B82F6", bg: "#EFF6FF" };
+      const badgeEl = document.getElementById('grammarFormBadge');
+      if (badgeEl) {
+        badgeEl.textContent = `🏷️ ${meta.title}: ${meta.pattern}`;
+        badgeEl.style.color = meta.color;
+        badgeEl.style.backgroundColor = meta.bg;
+        badgeEl.style.borderColor = meta.color;
+      }
+
+      // 3. 문제 형식에 따른 슬롯 목록 결정 (SENTENCE_TYPES[formKey]가 기본)
+      const formSlots = SENTENCE_TYPES[formKey] || ["WHO", "DO", "WHAT"];
+      const finalSlots = [...formSlots];
+      if (sentence.blocks) {
+        sentence.blocks.forEach(b => {
+          const r = normalizeRole(b.role);
+          if (!finalSlots.includes(r)) finalSlots.push(r);
+        });
+      }
+
+      // 4. 슬롯별로 품사 바구니 카드 동적 생성
+      finalSlots.forEach(role => {
         const def = SLOT_META[role] || { icon: "📦", desc: "단어 바구니", color: "#3B82F6", border: "#CBD5E1", bg: "#F8FAFC" };
         const label = SLOT_LABELS_KO[role] || role;
 
@@ -2225,8 +2426,12 @@
     function loadTabletGrammarQuestion() {
       placedBlocks = {};
       clearSelectedBlock();
-      const current = grammarSentences[currentGrammarIdx];
-      const total = grammarSentences.length;
+      const activeList = getActiveGrammarSentences();
+      if (activeList.length === 0) return;
+      if (currentGrammarIdx >= activeList.length) currentGrammarIdx = 0;
+
+      const current = activeList[currentGrammarIdx];
+      const total = activeList.length;
 
       document.getElementById('grammarStepIndicator').textContent = `문장 ${currentGrammarIdx + 1} / ${total}`;
       document.getElementById('grammarPromptKo').textContent = current.korean;
@@ -2234,7 +2439,7 @@
       document.getElementById('grammarFeedbackBox').style.color = "var(--text-muted)";
       document.getElementById('grammarNextBtn').disabled = true;
 
-      // 1. 현재 문장의 형식에 맞추어 동적 바구니 생성
+      // 1. 문제의 형식에 맞추어 품사 바구니 자동 적용!
       renderGrammarBaskets(current);
 
       // 2. 단어 블록 풀 생성
@@ -2366,7 +2571,8 @@
     }
 
     function checkGrammarComplete() {
-      const current = grammarSentences[currentGrammarIdx];
+      const activeList = getActiveGrammarSentences();
+      const current = activeList[currentGrammarIdx];
       const allFilled = current.blocks.every(b => {
         const r = normalizeRole(b.role);
         return placedBlocks[r] && placedBlocks[r].id === b.id;
@@ -2384,11 +2590,21 @@
       }
     }
 
-    function playCurrentGrammarTTS() { speakEnglish(grammarSentences[currentGrammarIdx].fullEnglish, 0.9); }
-    function resetCurrentGrammarBlocks() { loadTabletGrammarQuestion(); }
+    function playCurrentGrammarTTS() {
+      const activeList = getActiveGrammarSentences();
+      const current = activeList[currentGrammarIdx];
+      if (current && current.fullEnglish) speakEnglish(current.fullEnglish, 0.9);
+    }
+
+    function resetCurrentGrammarBlocks() {
+      playClickSound();
+      loadTabletGrammarQuestion();
+    }
 
     function nextGrammarQuestion() {
-      if (currentGrammarIdx < grammarSentences.length - 1) {
+      playClickSound();
+      const activeList = getActiveGrammarSentences();
+      if (currentGrammarIdx < activeList.length - 1) {
         currentGrammarIdx++;
         loadTabletGrammarQuestion();
       } else {
@@ -2596,9 +2812,15 @@
       }
 
       const fullEn = enVal ? (enVal.endsWith('.') || enVal.endsWith('?') ? enVal : enVal + '.') : blocks.map(b => b.text).join(' ') + '.';
+      let finalForm = formKey;
+      if (!finalForm || finalForm === "AUTO") {
+        const d = detectAndParseSentence(fullEn);
+        finalForm = d ? d.form : "FORM_3";
+      }
+
       const newG = {
         id: "g_user_" + Date.now(),
-        form: formKey,
+        form: finalForm,
         korean: koVal,
         fullEnglish: fullEn,
         blocks: blocks
@@ -2607,11 +2829,15 @@
       grammarSentences.unshift(newG);
       saveGrammarSentencesToStorage();
       closeAddGrammarModal();
+      currentGrammarFilter = 'ALL';
+      document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
+      const allChip = document.getElementById('chip_ALL');
+      if (allChip) allChip.classList.add('active');
       currentGrammarIdx = 0;
       switchAppTab('grammar');
       loadTabletGrammarQuestion();
       playSuccessSound();
-      alert(`🎉 새 문장퍼즐 "${fullEn}" 이 등록되었습니다! 바로 풀어보세요!`);
+      alert(`🎉 새 문장퍼즐이 등록되었습니다! [${FORM_META[finalForm] ? FORM_META[finalForm].title : finalForm}] 형식의 맞춤 바구니로 바로 풀어보세요!`);
     }
 
 

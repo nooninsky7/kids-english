@@ -482,7 +482,7 @@
     }
 
     .tablet-baskets-row {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; width: 100%;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; width: 100%;
     }
 
     .tablet-basket-card {
@@ -1003,40 +1003,8 @@
           <div class="tablet-blocks-pool" id="wordBlocksPool"></div>
         </div>
 
-        <!-- 3. 품사 바구니 기차 -->
-        <div class="tablet-baskets-row" id="grammarBasketsArea">
-          <div class="tablet-basket-card basket-subject" data-role="subject">
-            <div class="basket-header-info">
-              <div class="basket-role-tag tag-subject">👤 누가?</div>
-              <div class="basket-role-desc">주인공 (주어)</div>
-            </div>
-            <div class="basket-drop-slot" id="slot_subject">여기에 쏙!</div>
-          </div>
-
-          <div class="tablet-basket-card basket-verb" data-role="verb">
-            <div class="basket-header-info">
-              <div class="basket-role-tag tag-verb">⚡ 한다!</div>
-              <div class="basket-role-desc">동작·행동 (동사)</div>
-            </div>
-            <div class="basket-drop-slot" id="slot_verb">여기에 쏙!</div>
-          </div>
-
-          <div class="tablet-basket-card basket-object" id="basket_object" data-role="object">
-            <div class="basket-header-info">
-              <div class="basket-role-tag tag-object">🎁 무엇을?</div>
-              <div class="basket-role-desc">대상 (목적어)</div>
-            </div>
-            <div class="basket-drop-slot" id="slot_object">여기에 쏙!</div>
-          </div>
-
-          <div class="tablet-basket-card basket-adverb" id="basket_adverb" data-role="adverb" style="display: none;">
-            <div class="basket-header-info">
-              <div class="basket-role-tag tag-adverb">⏰ 어디서/언제?</div>
-              <div class="basket-role-desc">장소·시간 (부사)</div>
-            </div>
-            <div class="basket-drop-slot" id="slot_adverb">여기에 쏙!</div>
-          </div>
-        </div>
+        <!-- 3. 품사 바구니 기차 (문장 구조에 맞춰 동적 렌더링) -->
+        <div class="tablet-baskets-row" id="grammarBasketsArea"></div>
 
         <div class="grammar-feedback-msg" id="grammarFeedbackBox">단어 블록을 끌거나 클릭해서 알맞은 바구니에 넣어보세요!</div>
       </div>
@@ -1386,47 +1354,44 @@
           <button class="modal-close-btn" onclick="closeAddGrammarModal()">✕</button>
         </div>
 
-        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px;">
-          영어 문장과 한국어 뜻을 적으시면 퍼즐 기차 바구니 [누가 / 한다 / 무엇을]로 자동 분리해 드립니다!
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
+          원하시는 문장 구조(형식)를 선택하시거나 문장을 적으시면, 알맞은 바구니 [누가 / 뭐해 / 무엇을 등]로 자동 분리해 드립니다!
         </p>
 
         <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
           <div>
+            <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">문장 구조 (형식) 선택</label>
+            <select id="grammarFormSelect" class="input-text" onchange="onGrammarFormSelectChange(this.value)" style="font-weight: 700; color: var(--primary);">
+              <option value="AUTO">✨ 문장 자동 분석 (추천)</option>
+              <option value="FORM_3">3형식: [누가] [뭐해] [무엇을] (예: I want an apple.)</option>
+              <option value="FORM_1">1형식: [누가] [뭐해] [어디서] (예: The puppy runs fast.)</option>
+              <option value="FORM_2">2형식: [누가] [어때] [어떤 상태로] (예: My friend is happy.)</option>
+              <option value="FORM_4">4형식: [누가] [뭐해] [누구에게] [무엇을] (예: Mom gave me a gift.)</option>
+              <option value="FORM_5">5형식: [누가] [뭐해] [무엇을] [어떤 상태로] (예: Music makes me smile.)</option>
+              <option value="QUESTION_DO">Do의문문: [물어봐] [누가] [뭐해] [무엇을] (예: Do you like pizza?)</option>
+              <option value="QUESTION_WH">Wh의문문: [궁금한 것] [물어봐] [누가] [뭐해] (예: What do you want?)</option>
+            </select>
+          </div>
+
+          <div>
             <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">영어 문장</label>
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="newGrammarEnInput" class="input-text" style="flex: 1;" placeholder="예: The cute cat drinks milk." oninput="autoParseGrammarBlocks()">
+              <input type="text" id="newGrammarEnInput" class="input-text" style="flex: 1;" placeholder="예: The cute puppy runs in the park." oninput="autoParseGrammarBlocks()">
               <button class="small-btn" onclick="autoParseGrammarBlocks()">✨ 분리</button>
             </div>
           </div>
 
           <div>
             <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">한국어 뜻</label>
-            <input type="text" id="newGrammarKoInput" class="input-text" placeholder="예: 그 귀여운 고양이는 우유를 마셔.">
+            <input type="text" id="newGrammarKoInput" class="input-text" placeholder="예: 그 귀여운 강아지는 공원에서 달려.">
           </div>
 
-          <!-- 품사 바구니 블록 미리보기 및 수정 -->
+          <!-- 품사 바구니 블록 동적 분리 영역 -->
           <div style="background: #F8FAFC; border: 1.5px solid var(--border); border-radius: 14px; padding: 12px;">
             <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px;">
-              🚂 바구니 블록 분리 결과 (수정 가능):
+              🚂 선택된 형식의 바구니 블록 (직접 수정 가능):
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <div>
-                <div style="font-size: 0.75rem; font-weight: 800; color: #1D4ED8; margin-bottom: 3px;">👤 누가? (주어)</div>
-                <input type="text" id="slotSubjectInput" class="input-text" style="padding: 7px 10px; font-size: 0.88rem; font-weight: 700;" placeholder="예: The cute cat">
-              </div>
-              <div>
-                <div style="font-size: 0.75rem; font-weight: 800; color: #059669; margin-bottom: 3px;">⚡ 한다! (동사)</div>
-                <input type="text" id="slotVerbInput" class="input-text" style="padding: 7px 10px; font-size: 0.88rem; font-weight: 700;" placeholder="예: drinks">
-              </div>
-              <div>
-                <div style="font-size: 0.75rem; font-weight: 800; color: #D97706; margin-bottom: 3px;">🎁 무엇을? (목적어)</div>
-                <input type="text" id="slotObjectInput" class="input-text" style="padding: 7px 10px; font-size: 0.88rem; font-weight: 700;" placeholder="예: milk (없으면 비움)">
-              </div>
-              <div>
-                <div style="font-size: 0.75rem; font-weight: 800; color: #7C3AED; margin-bottom: 3px;">⏰ 어디서/언제? (부사)</div>
-                <input type="text" id="slotAdverbInput" class="input-text" style="padding: 7px 10px; font-size: 0.88rem; font-weight: 700;" placeholder="예: fast, in the park (선택)">
-              </div>
-            </div>
+            <div id="grammarDynamicSlotsInputsArea" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
           </div>
         </div>
 
@@ -1770,18 +1735,28 @@
         return;
       }
 
-      // 1. 문장퍼즐에 자동 연동
-      const parsedG = parseEnglishToGrammarSlots(text);
+      // 1. 문장퍼즐에 자동 연동 (7가지 문장 구조 바구니)
+      const parsedG = detectAndParseSentence(text) || {
+        form: "FORM_3",
+        slots: { WHO: "I", DO: "like", WHAT: text }
+      };
+      const blocks = [];
+      const slots = SENTENCE_TYPES[parsedG.form] || ["WHO", "DO", "WHAT"];
+      slots.forEach((sKey, idx) => {
+        if (parsedG.slots && parsedG.slots[sKey]) {
+          blocks.push({
+            id: `b_os_${idx}_${Date.now()}`,
+            text: parsedG.slots[sKey],
+            role: sKey
+          });
+        }
+      });
       const newGrammarItem = {
         id: "g_os_" + Date.now(),
-        korean: parsedG.koPrompt || (text + " (교재 대표 문장)"),
-        fullEnglish: text.endsWith('.') ? text : (text + '.'),
-        blocks: [
-          { id: "b_os_s", text: parsedG.subject || "I", role: "subject" },
-          { id: "b_os_v", text: parsedG.verb || "like", role: "verb" },
-          ...(parsedG.object ? [{ id: "b_os_o", text: parsedG.object, role: "object" }] : []),
-          ...(parsedG.adverb ? [{ id: "b_os_a", text: parsedG.adverb, role: "adverb" }] : [])
-        ]
+        form: parsedG.form,
+        korean: autoTranslateKorean(text),
+        fullEnglish: text.endsWith('.') || text.endsWith('?') ? text : (text + '.'),
+        blocks: blocks
       };
       grammarSentences.unshift(newGrammarItem);
       currentGrammarIdx = 0;
@@ -1876,38 +1851,145 @@
 
 
     // =========================================================================
-    // [TAB 3] 🧩 문장퍼즐 (사운드 연동 & 터치 드래그 앤 드롭 & 영속성)
+    // [TAB 3] 🧩 문장퍼즐 바구니 구조 및 7대 문장 체계
     // =========================================================================
+    const SENTENCE_TYPES = {
+      FORM_1: ["WHO", "DO", "WHERE"],
+      FORM_2: ["WHO", "BE_FEEL", "STATE"],
+      FORM_3: ["WHO", "DO", "WHAT"],
+      FORM_4: ["WHO", "DO", "TO_WHOM", "WHAT"],
+      FORM_5: ["WHO", "DO", "WHAT", "STATE"],
+      QUESTION_DO: ["DO_HELPER", "WHO", "DO", "WHAT"],
+      QUESTION_WH: ["QUESTION_WORD", "DO_HELPER", "WHO", "DO"]
+    };
+
+    const SLOT_LABELS_KO = {
+      WHO: "누가",
+      DO: "뭐해",
+      BE_FEEL: "어때",
+      WHAT: "무엇을",
+      TO_WHOM: "누구에게",
+      STATE: "어떤 상태로",
+      WHERE: "어디서",
+      WHEN: "언제",
+      QUESTION_WORD: "궁금한 것",
+      DO_HELPER: "물어봐",
+      BE_FRONT: "그래?"
+    };
+
+    const SLOT_META = {
+      WHO: { icon: "👤", desc: "주어 (주인공)", color: "#1D4ED8", border: "#93C5FD", bg: "#EFF6FF" },
+      DO: { icon: "⚡", desc: "동작·행동 (일반동사)", color: "#15803D", border: "#86EFAC", bg: "#ECFDF5" },
+      BE_FEEL: { icon: "💫", desc: "상태·감각 (be/느낌동사)", color: "#0D9488", border: "#99F6E4", bg: "#F0FDFA" },
+      WHAT: { icon: "🎁", desc: "대상 (목적어)", color: "#B45309", border: "#FDE047", bg: "#FEFCE8" },
+      TO_WHOM: { icon: "💌", desc: "받는 대상 (간접목적어)", color: "#BE123C", border: "#FDA4AF", bg: "#FFF1F2" },
+      STATE: { icon: "🎨", desc: "보충 설명 (보어)", color: "#6D28D9", border: "#C4B5FD", bg: "#F5F3FF" },
+      WHERE: { icon: "📍", desc: "장소 (장소 부사)", color: "#0369A1", border: "#BAE6FD", bg: "#F0F9FF" },
+      WHEN: { icon: "⏰", desc: "시간 (시간 부사)", color: "#4338CA", border: "#C7D2FE", bg: "#EEF2FF" },
+      QUESTION_WORD: { icon: "❓", desc: "의문사 (What/Where/Who)", color: "#A21CAF", border: "#F0ABFC", bg: "#FDF4FF" },
+      DO_HELPER: { icon: "🙋", desc: "질문 돕기 (Do/Does/Did)", color: "#C2410C", border: "#FDBA74", bg: "#FFF7ED" },
+      BE_FRONT: { icon: "🌟", desc: "be동사 의문 (Is/Are)", color: "#7E22CE", border: "#D8B4FE", bg: "#FAF5FF" }
+    };
+
+    const LEGACY_ROLE_MAP = {
+      subject: "WHO",
+      verb: "DO",
+      object: "WHAT",
+      adverb: "WHERE"
+    };
+
+    function normalizeRole(role) {
+      if (LEGACY_ROLE_MAP[role]) return LEGACY_ROLE_MAP[role];
+      return role || "WHO";
+    }
+
+    function getRoleName(role) {
+      const norm = normalizeRole(role);
+      const icon = SLOT_META[norm] ? SLOT_META[norm].icon : "📦";
+      const label = SLOT_LABELS_KO[norm] || norm;
+      return `${icon} ${label}`;
+    }
+
     const defaultGrammarList = [
       {
         id: "g1",
+        form: "FORM_3",
         korean: "나는 사과를 원해.",
         fullEnglish: "I want an apple.",
         blocks: [
-          { id: "b1", text: "I", role: "subject" },
-          { id: "b2", text: "want", role: "verb" },
-          { id: "b3", text: "an apple", role: "object" }
+          { id: "b1", text: "I", role: "WHO" },
+          { id: "b2", text: "want", role: "DO" },
+          { id: "b3", text: "an apple", role: "WHAT" }
         ]
       },
       {
         id: "g2",
-        korean: "그 귀여운 강아지는 빠르게 달려.",
-        fullEnglish: "The cute puppy runs fast.",
+        form: "FORM_1",
+        korean: "그 귀여운 강아지는 공원에서 달려.",
+        fullEnglish: "The cute puppy runs in the park.",
         blocks: [
-          { id: "b4", text: "The cute puppy", role: "subject" },
-          { id: "b5", text: "runs", role: "verb" },
-          { id: "b6", text: "fast", role: "adverb" }
+          { id: "b4", text: "The cute puppy", role: "WHO" },
+          { id: "b5", text: "runs", role: "DO" },
+          { id: "b6", text: "in the park", role: "WHERE" }
         ]
       },
       {
         id: "g3",
-        korean: "내 친구는 공원에서 축구를 해.",
-        fullEnglish: "My friend plays soccer in the park.",
+        form: "FORM_2",
+        korean: "내 제일 친한 친구는 아주 행복해 보여.",
+        fullEnglish: "My best friend looks very happy.",
         blocks: [
-          { id: "b7", text: "My friend", role: "subject" },
-          { id: "b8", text: "plays", role: "verb" },
-          { id: "b9", text: "soccer", role: "object" },
-          { id: "b10", text: "in the park", role: "adverb" }
+          { id: "b7", text: "My best friend", role: "WHO" },
+          { id: "b8", text: "looks", role: "BE_FEEL" },
+          { id: "b9", text: "very happy", role: "STATE" }
+        ]
+      },
+      {
+        id: "g4",
+        form: "FORM_4",
+        korean: "엄마는 나에게 달콤한 사탕을 주셨어.",
+        fullEnglish: "Mom gave me sweet candies.",
+        blocks: [
+          { id: "b10", text: "Mom", role: "WHO" },
+          { id: "b11", text: "gave", role: "DO" },
+          { id: "b12", text: "me", role: "TO_WHOM" },
+          { id: "b13", text: "sweet candies", role: "WHAT" }
+        ]
+      },
+      {
+        id: "g5",
+        form: "FORM_5",
+        korean: "이 신나는 음악은 나를 미소 짓게 만들어.",
+        fullEnglish: "This music makes me smile.",
+        blocks: [
+          { id: "b14", text: "This music", role: "WHO" },
+          { id: "b15", text: "makes", role: "DO" },
+          { id: "b16", text: "me", role: "WHAT" },
+          { id: "b17", text: "smile", role: "STATE" }
+        ]
+      },
+      {
+        id: "g6",
+        form: "QUESTION_DO",
+        korean: "너는 맛있는 피자를 좋아하니?",
+        fullEnglish: "Do you like delicious pizza?",
+        blocks: [
+          { id: "b18", text: "Do", role: "DO_HELPER" },
+          { id: "b19", text: "you", role: "WHO" },
+          { id: "b20", text: "like", role: "DO" },
+          { id: "b21", text: "delicious pizza?", role: "WHAT" }
+        ]
+      },
+      {
+        id: "g7",
+        form: "QUESTION_WH",
+        korean: "너는 무엇을 먹고 싶니?",
+        fullEnglish: "What do you want to eat?",
+        blocks: [
+          { id: "b22", text: "What", role: "QUESTION_WORD" },
+          { id: "b23", text: "do", role: "DO_HELPER" },
+          { id: "b24", text: "you", role: "WHO" },
+          { id: "b25", text: "want to eat?", role: "DO" }
         ]
       }
     ];
@@ -1915,7 +1997,16 @@
     function getStoredGrammarSentences() {
       try {
         const data = localStorage.getItem("kids_grammar_sentences");
-        return data ? JSON.parse(data) : defaultGrammarList;
+        if (data) {
+          const list = JSON.parse(data);
+          list.forEach(item => {
+            if (item.blocks) {
+              item.blocks.forEach(b => b.role = normalizeRole(b.role));
+            }
+          });
+          return list;
+        }
+        return defaultGrammarList;
       } catch(e) { return defaultGrammarList; }
     }
 
@@ -1926,50 +2017,72 @@
     }
 
     let grammarSentences = getStoredGrammarSentences();
-
     let currentGrammarIdx = 0;
     let placedBlocks = {};
     let selectedGrammarBlock = null;
-    let basketDropZonesInitialized = false;
 
     function initTabletGrammar() {
-      if (!basketDropZonesInitialized) {
-        setupBasketDropZones();
-        basketDropZonesInitialized = true;
-      }
       loadTabletGrammarQuestion();
     }
 
-    function setupBasketDropZones() {
-      document.querySelectorAll('.tablet-basket-card').forEach(basket => {
-        // [PC 마우스 드래그 & 드롭]
-        basket.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-        });
-        basket.addEventListener('dragenter', (e) => {
-          e.preventDefault();
-          basket.classList.add('drag-over');
-        });
-        basket.addEventListener('dragleave', (e) => {
-          basket.classList.remove('drag-over');
-        });
-        basket.addEventListener('drop', (e) => {
-          e.preventDefault();
-          basket.classList.remove('drag-over');
-          if (selectedGrammarBlock) {
-            attemptPlaceGrammarBlock(selectedGrammarBlock, basket.getAttribute('data-role'));
-            clearSelectedBlock();
-          }
-        });
+    function renderGrammarBaskets(sentence) {
+      const container = document.getElementById('grammarBasketsArea');
+      if (!container) return;
+      container.innerHTML = "";
 
-        // [PC 마우스 클릭으로 쏙 넣기]
-        basket.addEventListener('click', () => {
-          if (selectedGrammarBlock) {
-            attemptPlaceGrammarBlock(selectedGrammarBlock, basket.getAttribute('data-role'));
-            clearSelectedBlock();
-          }
-        });
+      sentence.blocks.forEach(block => {
+        const role = normalizeRole(block.role);
+        const def = SLOT_META[role] || { icon: "📦", desc: "단어 바구니", color: "#3B82F6", border: "#CBD5E1", bg: "#F8FAFC" };
+        const label = SLOT_LABELS_KO[role] || role;
+
+        const basket = document.createElement('div');
+        basket.className = `tablet-basket-card basket-${role.toLowerCase()}`;
+        basket.setAttribute('data-role', role);
+        basket.style.borderColor = def.border;
+        basket.style.backgroundColor = def.bg;
+
+        basket.innerHTML = `
+          <div class="basket-header-info">
+            <div class="basket-role-tag" style="color: ${def.color};">
+              <span>${def.icon}</span>
+              <span>${label}</span>
+            </div>
+            <div class="basket-role-desc">${def.desc}</div>
+          </div>
+          <div class="basket-drop-slot" id="slot_${role}">여기에 쏙!</div>
+        `;
+
+        attachBasketEvents(basket);
+        container.appendChild(basket);
+      });
+    }
+
+    function attachBasketEvents(basket) {
+      basket.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+      basket.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        basket.classList.add('drag-over');
+      });
+      basket.addEventListener('dragleave', (e) => {
+        basket.classList.remove('drag-over');
+      });
+      basket.addEventListener('drop', (e) => {
+        e.preventDefault();
+        basket.classList.remove('drag-over');
+        if (selectedGrammarBlock) {
+          attemptPlaceGrammarBlock(selectedGrammarBlock, basket.getAttribute('data-role'));
+          clearSelectedBlock();
+        }
+      });
+
+      basket.addEventListener('click', () => {
+        if (selectedGrammarBlock) {
+          attemptPlaceGrammarBlock(selectedGrammarBlock, basket.getAttribute('data-role'));
+          clearSelectedBlock();
+        }
       });
     }
 
@@ -2001,19 +2114,10 @@
       document.getElementById('grammarFeedbackBox').style.color = "var(--text-muted)";
       document.getElementById('grammarNextBtn').disabled = true;
 
-      const hasObject = current.blocks.some(b => b.role === 'object');
-      const hasAdverb = current.blocks.some(b => b.role === 'adverb');
-      document.getElementById('basket_object').style.display = hasObject ? 'flex' : 'none';
-      document.getElementById('basket_adverb').style.display = hasAdverb ? 'flex' : 'none';
+      // 1. 현재 문장의 형식에 맞추어 동적 바구니 생성
+      renderGrammarBaskets(current);
 
-      ['subject', 'verb', 'object', 'adverb'].forEach(role => {
-        const slot = document.getElementById(`slot_${role}`);
-        if (slot) {
-          slot.textContent = "여기에 쏙!";
-          slot.className = "basket-drop-slot";
-        }
-      });
-
+      // 2. 단어 블록 풀 생성
       const pool = document.getElementById('wordBlocksPool');
       pool.innerHTML = "";
       const shuffled = [...current.blocks].sort(() => Math.random() - 0.5);
@@ -2109,22 +2213,26 @@
     function attemptPlaceGrammarBlock(block, targetRole) {
       if (!block) return;
       const feedback = document.getElementById('grammarFeedbackBox');
-      const slot = document.getElementById(`slot_${targetRole}`);
+      const normBlockRole = normalizeRole(block.role);
+      const normTargetRole = normalizeRole(targetRole);
+      const slot = document.getElementById(`slot_${normTargetRole}`);
       const blockEl = document.getElementById(`block_${block.id}`);
 
       speakEnglish(block.text);
 
-      if (block.role === targetRole) {
-        if (placedBlocks[targetRole]) return; // 이미 채워진 자리
+      if (normBlockRole === normTargetRole) {
+        if (placedBlocks[normTargetRole]) return; // 이미 채워진 자리
 
         // 정답! 딩동댕 소리
         playSuccessSound();
-        placedBlocks[targetRole] = block;
+        placedBlocks[normTargetRole] = block;
         if (blockEl) blockEl.remove();
 
-        slot.textContent = block.text;
-        slot.className = "basket-drop-slot filled";
-        feedback.innerHTML = `👏 정답! <strong>"${block.text}"</strong>은(는) <strong>${getRoleName(targetRole)}</strong> 자리가 맞아요!`;
+        if (slot) {
+          slot.textContent = block.text;
+          slot.className = "basket-drop-slot filled";
+        }
+        feedback.innerHTML = `👏 정답! <strong>"${block.text}"</strong>은(는) <strong>${getRoleName(normTargetRole)}</strong> 바구니가 맞아요!`;
         feedback.style.color = "var(--success)";
 
         clearSelectedBlock();
@@ -2132,28 +2240,23 @@
       } else {
         // 오답 통~ 소리
         playWrongSound();
-        feedback.innerHTML = `💡 아쉬워요! <strong>"${block.text}"</strong>은(는) 그 자리가 아니에요. 다시 놓아보세요!`;
+        feedback.innerHTML = `💡 아쉬워요! <strong>"${block.text}"</strong>은(는) <strong>${getRoleName(normTargetRole)}</strong> 자리가 아니에요. 다시 놓아보세요!`;
         feedback.style.color = "var(--danger)";
       }
     }
 
-    function getRoleName(role) {
-      if (role === 'subject') return '주인공(누가)';
-      if (role === 'verb') return '동작(한다)';
-      if (role === 'object') return '대상(무엇을)';
-      if (role === 'adverb') return '장소/시간';
-      return role;
-    }
-
     function checkGrammarComplete() {
       const current = grammarSentences[currentGrammarIdx];
-      const allFilled = current.blocks.every(b => placedBlocks[b.role] && placedBlocks[b.role].id === b.id);
+      const allFilled = current.blocks.every(b => {
+        const r = normalizeRole(b.role);
+        return placedBlocks[r] && placedBlocks[r].id === b.id;
+      });
 
       if (allFilled) {
         playFanfareSound(); // 문장 완성 팡파레 & 폭죽!
         markOneStopStepDone(3); // 원스톱 3단계 완료 처리!
         const feedback = document.getElementById('grammarFeedbackBox');
-        feedback.innerHTML = `🎉 <strong>완벽해요! 문장퍼즐이 멋지게 완성되었습니다!</strong>`;
+        feedback.innerHTML = `🎉 <strong>완벽해요! 문장 구조가 멋지게 완성되었습니다!</strong>`;
         feedback.style.color = "#059669";
 
         setTimeout(() => { speakEnglish(current.fullEnglish, 0.9); }, 400);
@@ -2176,15 +2279,43 @@
       }
     }
 
-    // ================= 새 문장퍼즐 추가 모달 제어 =================
+    // ================= 새 문장퍼즐 동적 모달 제어 =================
+    function onGrammarFormSelectChange(formKey) {
+      if (formKey === "AUTO") {
+        autoParseGrammarBlocks();
+      } else {
+        renderDynamicGrammarSlotInputs(formKey);
+      }
+    }
+
+    function renderDynamicGrammarSlotInputs(formKey, prefilled = {}) {
+      const container = document.getElementById('grammarDynamicSlotsInputsArea');
+      if (!container) return;
+      container.innerHTML = "";
+
+      const slots = SENTENCE_TYPES[formKey] || SENTENCE_TYPES.FORM_3;
+      slots.forEach(slotKey => {
+        const def = SLOT_META[slotKey] || { icon: "📦", desc: "단어", color: "#3B82F6" };
+        const label = SLOT_LABELS_KO[slotKey] || slotKey;
+        const val = prefilled[slotKey] || "";
+
+        const box = document.createElement('div');
+        box.innerHTML = `
+          <div style="font-size: 0.75rem; font-weight: 800; color: ${def.color}; margin-bottom: 3px;">
+            ${def.icon} ${label} (${def.desc})
+          </div>
+          <input type="text" class="input-text custom-grammar-slot-input" data-role="${slotKey}" value="${val}" style="padding: 7px 10px; font-size: 0.88rem; font-weight: 700;" placeholder="${label} 입력">
+        `;
+        container.appendChild(box);
+      });
+    }
+
     function openAddGrammarModal() {
       document.getElementById('addGrammarModal').style.display = 'flex';
       document.getElementById('newGrammarEnInput').value = "";
       document.getElementById('newGrammarKoInput').value = "";
-      document.getElementById('slotSubjectInput').value = "";
-      document.getElementById('slotVerbInput').value = "";
-      document.getElementById('slotObjectInput').value = "";
-      document.getElementById('slotAdverbInput').value = "";
+      document.getElementById('grammarFormSelect').value = "FORM_3";
+      renderDynamicGrammarSlotInputs("FORM_3");
       setTimeout(() => document.getElementById('newGrammarEnInput').focus(), 200);
     }
 
@@ -2192,43 +2323,165 @@
       document.getElementById('addGrammarModal').style.display = 'none';
     }
 
+    // 7가지 문장 구조 자동 분석기
+    function detectAndParseSentence(sentence) {
+      const clean = (sentence || "").trim().replace(/[.?!]+$/, '');
+      const words = clean.split(/\s+/);
+      if (words.length === 0) return null;
+
+      const firstLower = words[0].toLowerCase();
+      const secondLower = words.length > 1 ? words[1].toLowerCase() : "";
+
+      // 1. QUESTION_WH (Wh의문문): [QUESTION_WORD, DO_HELPER, WHO, DO]
+      const whWords = ['what', 'where', 'who', 'how', 'when', 'why'];
+      if (whWords.includes(firstLower) && ['do', 'does', 'did', 'can', 'will'].includes(secondLower) && words.length >= 3) {
+        return {
+          form: "QUESTION_WH",
+          slots: {
+            QUESTION_WORD: words[0],
+            DO_HELPER: words[1],
+            WHO: words[2] || "you",
+            DO: words.slice(3).join(' ') || "do?"
+          }
+        };
+      }
+
+      // 2. QUESTION_DO (Do/Does의문문): [DO_HELPER, WHO, DO, WHAT]
+      if (['do', 'does', 'did', 'can', 'will'].includes(firstLower) && words.length >= 3) {
+        return {
+          form: "QUESTION_DO",
+          slots: {
+            DO_HELPER: words[0],
+            WHO: words[1],
+            DO: words[2],
+            WHAT: words.slice(3).join(' ') || ""
+          }
+        };
+      }
+
+      // 3. 서술문 분석
+      const beFeelVerbs = ['is', 'are', 'am', 'was', 'were', 'look', 'looks', 'looked', 'feel', 'feels', 'felt', 'sound', 'sounds', 'seem', 'seems'];
+      const giveVerbs = ['give', 'gives', 'gave', 'send', 'sends', 'sent', 'show', 'shows', 'showed', 'tell', 'tells', 'told', 'buy', 'buys', 'bought'];
+      const makeVerbs = ['make', 'makes', 'made', 'keep', 'keeps', 'kept', 'find', 'finds', 'found'];
+      const prepositions = ['in', 'at', 'on', 'under', 'by', 'to', 'from', 'with'];
+      const placeTimeAdverbs = ['fast', 'high', 'slowly', 'well', 'now', 'today', 'there', 'here', 'outside'];
+
+      let vIdx = -1;
+      let isBeFeel = false;
+      let isGive = false;
+      let isMake = false;
+
+      for (let i = 0; i < words.length; i++) {
+        const w = words[i].toLowerCase();
+        if (beFeelVerbs.includes(w)) { vIdx = i; isBeFeel = true; break; }
+        if (giveVerbs.includes(w)) { vIdx = i; isGive = true; break; }
+        if (makeVerbs.includes(w)) { vIdx = i; isMake = true; break; }
+      }
+
+      if (vIdx === -1) {
+        const commonDoVerbs = ['want', 'wants', 'wanted', 'like', 'likes', 'liked', 'love', 'loves', 'loved', 'have', 'has', 'had', 'eat', 'eats', 'ate', 'drink', 'drinks', 'drank', 'see', 'sees', 'saw', 'run', 'runs', 'ran', 'play', 'plays', 'read', 'reads', 'sleep', 'sleeps', 'jump', 'jumps', 'swim', 'swims', 'fly', 'flies', 'sing', 'sings', 'walk', 'walks'];
+        for (let i = 0; i < words.length; i++) {
+          if (commonDoVerbs.includes(words[i].toLowerCase())) {
+            vIdx = i;
+            break;
+          }
+        }
+      }
+
+      if (vIdx === -1) vIdx = Math.min(1, words.length - 1);
+
+      const subject = words.slice(0, vIdx).join(' ') || words[0];
+      const verb = words[vIdx];
+      const remaining = words.slice(vIdx + 1);
+
+      // FORM_2: [WHO, BE_FEEL, STATE]
+      if (isBeFeel) {
+        return {
+          form: "FORM_2",
+          slots: { WHO: subject, BE_FEEL: verb, STATE: remaining.join(' ') || "happy" }
+        };
+      }
+
+      // FORM_4: [WHO, DO, TO_WHOM, WHAT]
+      if (isGive && remaining.length >= 2) {
+        return {
+          form: "FORM_4",
+          slots: { WHO: subject, DO: verb, TO_WHOM: remaining[0], WHAT: remaining.slice(1).join(' ') }
+        };
+      }
+
+      // FORM_5: [WHO, DO, WHAT, STATE]
+      if (isMake && remaining.length >= 2) {
+        return {
+          form: "FORM_5",
+          slots: { WHO: subject, DO: verb, WHAT: remaining.slice(0, -1).join(' '), STATE: remaining[remaining.length - 1] }
+        };
+      }
+
+      // FORM_1: [WHO, DO, WHERE]
+      let prepIdx = -1;
+      for (let j = 0; j < remaining.length; j++) {
+        if (prepositions.includes(remaining[j].toLowerCase())) { prepIdx = j; break; }
+      }
+      if (prepIdx === 0 || (remaining.length === 1 && placeTimeAdverbs.includes(remaining[0].toLowerCase()))) {
+        return {
+          form: "FORM_1",
+          slots: { WHO: subject, DO: verb, WHERE: remaining.join(' ') }
+        };
+      }
+
+      // FORM_3: [WHO, DO, WHAT]
+      return {
+        form: "FORM_3",
+        slots: { WHO: subject, DO: verb, WHAT: remaining.join(' ') }
+      };
+    }
+
     function autoParseGrammarBlocks() {
       const en = (document.getElementById('newGrammarEnInput').value || "").trim();
       if (!en) return;
-      const parsed = parseEnglishToGrammarSlots(en);
-      document.getElementById('slotSubjectInput').value = parsed.subject || "";
-      document.getElementById('slotVerbInput').value = parsed.verb || "";
-      document.getElementById('slotObjectInput').value = parsed.object || "";
-      document.getElementById('slotAdverbInput').value = parsed.adverb || "";
+      const parsed = detectAndParseSentence(en);
+      if (parsed) {
+        document.getElementById('grammarFormSelect').value = parsed.form;
+        renderDynamicGrammarSlotInputs(parsed.form, parsed.slots);
+      }
       if (!document.getElementById('newGrammarKoInput').value) {
-        document.getElementById('newGrammarKoInput').value = parsed.koPrompt || "";
+        document.getElementById('newGrammarKoInput').value = autoTranslateKorean(en);
       }
     }
 
     function saveCustomGrammarSentence() {
       const enVal = (document.getElementById('newGrammarEnInput').value || "").trim();
       const koVal = (document.getElementById('newGrammarKoInput').value || "").trim() || enVal;
-      const subj = (document.getElementById('slotSubjectInput').value || "").trim();
-      const verb = (document.getElementById('slotVerbInput').value || "").trim();
-      const obj = (document.getElementById('slotObjectInput').value || "").trim();
-      const adv = (document.getElementById('slotAdverbInput').value || "").trim();
+      const formKey = document.getElementById('grammarFormSelect').value;
 
-      if (!enVal || !subj || !verb) {
-        alert("영어 문장과 최소 [누가/주어], [한다/동사]를 입력해 주세요!");
+      const inputs = document.querySelectorAll('.custom-grammar-slot-input');
+      const blocks = [];
+
+      inputs.forEach((inp, idx) => {
+        const text = inp.value.trim();
+        const role = inp.getAttribute('data-role');
+        if (text) {
+          blocks.push({
+            id: `b_custom_${Date.now()}_${idx}`,
+            text: text,
+            role: role
+          });
+        }
+      });
+
+      if (blocks.length < 2) {
+        alert("최소 2개 이상의 바구니에 단어를 입력해 주세요!");
         return;
       }
 
-      const fullEn = enVal.endsWith('.') ? enVal : (enVal + '.');
+      const fullEn = enVal ? (enVal.endsWith('.') || enVal.endsWith('?') ? enVal : enVal + '.') : blocks.map(b => b.text).join(' ') + '.';
       const newG = {
         id: "g_user_" + Date.now(),
+        form: formKey,
         korean: koVal,
         fullEnglish: fullEn,
-        blocks: [
-          { id: "b_u_s_" + Date.now(), text: subj, role: "subject" },
-          { id: "b_u_v_" + Date.now(), text: verb, role: "verb" },
-          ...(obj ? [{ id: "b_u_o_" + Date.now(), text: obj, role: "object" }] : []),
-          ...(adv ? [{ id: "b_u_a_" + Date.now(), text: adv, role: "adverb" }] : [])
-        ]
+        blocks: blocks
       };
 
       grammarSentences.unshift(newG);
@@ -2577,8 +2830,10 @@
       }
 
       // 2. 임의 문장 분석 (주어/동사 추출)
-      const parsed = parseEnglishToGrammarSlots(clean);
-      const patternTitle = (parsed.subject && parsed.verb) ? `${parsed.subject} ${parsed.verb} ~` : `${clean.split(/\s+/).slice(0, 2).join(' ')} ~`;
+      const parsed = detectAndParseSentence(clean);
+      const subj = (parsed && parsed.slots && (parsed.slots.WHO || parsed.slots.QUESTION_WORD)) || "I";
+      const v = (parsed && parsed.slots && (parsed.slots.DO || parsed.slots.BE_FEEL || parsed.slots.DO_HELPER)) || "like";
+      const patternTitle = `${subj} ${v} ~`;
       const sentences = [
         {
           en: clean + '.',
@@ -2586,9 +2841,6 @@
           hint: clean.split(/\s+/).slice(-2).join(' ')
         }
       ];
-
-      const subj = parsed.subject || "I";
-      const v = parsed.verb || "like";
       const sampleVariations = [
         { en: `${subj} ${v} sweet apples.`, ko: `사과를 ${v.includes('love') || v.includes('like') ? '좋아해' : '해'}.`, hint: "sweet apples" },
         { en: `${subj} ${v} cute puppies.`, ko: `귀여운 강아지를 ${v.includes('love') || v.includes('like') ? '좋아해' : '해'}.`, hint: "cute puppies" },

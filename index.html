@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- AI 검색 및 크롤러 원천 차단 (비공개 보호) -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
   <title>Pattern & Voca & Grammar - 태블릿 가로 전용</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -728,10 +731,145 @@
       font-size: 0.88rem;
     }
 
+    /* ================= 비밀번호 잠금 화면 ================= */
+    .pin-lock-overlay {
+      position: fixed;
+      inset: 0;
+      background: #F1F5F9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+      padding: 20px;
+    }
+    .pin-card {
+      background: white;
+      border-radius: 28px;
+      padding: 36px 28px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
+      border: 1.5px solid var(--border);
+      text-align: center;
+    }
+    .pin-lock-icon {
+      font-size: 3.2rem;
+      margin-bottom: 10px;
+    }
+    .pin-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .pin-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 24px;
+    }
+    .pin-input-container {
+      margin-bottom: 14px;
+    }
+    .pin-input-box {
+      width: 100%;
+      height: 60px;
+      letter-spacing: 16px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 900;
+      border-radius: 16px;
+      border: 2.5px solid var(--border);
+      outline: none;
+      background: #F8FAFC;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+    .pin-input-box:focus {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+    .pin-error-msg {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--danger);
+      min-height: 22px;
+      margin-bottom: 12px;
+    }
+    .pin-remember-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      cursor: pointer;
+    }
+    .pin-submit-btn {
+      width: 100%;
+      height: 52px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      border-radius: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+      transition: all 0.15s ease;
+    }
+    .pin-submit-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+    .pin-card.shake {
+      animation: shake 0.3s;
+    }
+
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }
   </style>
 </head>
 <body>
+
+  <!-- ================= 비밀번호 잠금 화면 ================= -->
+  <div class="pin-lock-overlay" id="pinLockOverlay" style="display: none;">
+    <div class="pin-card" id="pinCard">
+      <div class="pin-lock-icon">🔒</div>
+      <h2 class="pin-title">우리 가족 전용 영어 학습실</h2>
+      <p class="pin-desc">
+        비밀번호 4자리를 입력하시면 잠금이 해제됩니다.<br>
+        <span style="font-size: 0.8rem; color: #94A3B8;">(초기 기본 비밀번호: <strong>1234</strong>)</span>
+      </p>
+
+      <form onsubmit="handlePinSubmit(event)">
+        <div class="pin-input-container">
+          <input 
+            type="password" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            maxlength="4" 
+            class="pin-input-box" 
+            id="pinInput" 
+            placeholder="····" 
+            autocomplete="off"
+            oninput="handlePinAutoInput(this.value)"
+          >
+        </div>
+
+        <div class="pin-error-msg" id="pinErrorMsg"></div>
+
+        <label class="pin-remember-row">
+          <input type="checkbox" id="pinRememberToday" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+          <span>오늘 하루는 비밀번호 기억하기 (추천)</span>
+        </label>
+
+        <button type="submit" class="pin-submit-btn">잠금 해제 ➔</button>
+      </form>
+    </div>
+  </div>
 
   <div class="app-container">
 
@@ -769,6 +907,11 @@
       <!-- 태블릿 연결 퀵 버튼 -->
       <button class="nav-btn" style="flex: none; font-size: 0.85rem; padding: 7px 11px; background: #EEF2FF; border-color: #C7D2FE; color: #4338CA;" onclick="openTabletConnectModal()">
         📱 QR 연결
+      </button>
+
+      <!-- 암호 변경 버튼 -->
+      <button class="nav-btn" style="flex: none; font-size: 0.85rem; padding: 7px 11px;" onclick="changeFamilyPin()" title="가족 비밀번호 변경">
+        🔑 암호 변경
       </button>
     </div>
 
@@ -2159,7 +2302,113 @@
     function openTabletConnectModal() { document.getElementById('tabletConnectModal').style.display = 'flex'; }
     function closeTabletConnectModal() { document.getElementById('tabletConnectModal').style.display = 'none'; }
 
+    // =========================================================
+    // 비밀번호 잠금 시스템 (AI 및 외부인 100% 차단)
+    // =========================================================
+    function getStoredPin() {
+      try {
+        return localStorage.getItem("kids_family_pin") || "1234";
+      } catch(e) {
+        return "1234";
+      }
+    }
+
+    function checkInitialAuth() {
+      try {
+        const authDate = localStorage.getItem("kids_family_auth_date");
+        const todayStr = new Date().toISOString().slice(0, 10);
+        
+        // 오늘 이미 인증을 통과했다면 잠금 해제 상태 유지!
+        if (authDate === todayStr) {
+          unlockAppScreen(false);
+          return;
+        }
+      } catch(e) {}
+      
+      // 인증되지 않은 경우 잠금 화면 표시
+      const overlay = document.getElementById('pinLockOverlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+          const input = document.getElementById('pinInput');
+          if (input) input.focus();
+        }, 200);
+      }
+    }
+
+    function handlePinAutoInput(val) {
+      if (val && val.length === 4) {
+        validatePin(val);
+      }
+    }
+
+    function handlePinSubmit(e) {
+      if (e) e.preventDefault();
+      const val = document.getElementById('pinInput').value;
+      validatePin(val);
+    }
+
+    function validatePin(entered) {
+      const currentPin = getStoredPin();
+      const pinCard = document.getElementById('pinCard');
+      const errorMsg = document.getElementById('pinErrorMsg');
+
+      if (entered === currentPin) {
+        playSuccessSound();
+        const rememberToday = document.getElementById('pinRememberToday').checked;
+        if (rememberToday) {
+          const todayStr = new Date().toISOString().slice(0, 10);
+          try { localStorage.setItem("kids_family_auth_date", todayStr); } catch(e){}
+        }
+        unlockAppScreen(true);
+      } else {
+        playWrongSound();
+        pinCard.classList.remove('shake');
+        void pinCard.offsetWidth;
+        pinCard.classList.add('shake');
+        errorMsg.textContent = "❌ 비밀번호가 맞지 않아요! (초기 비밀번호: 1234)";
+        document.getElementById('pinInput').value = "";
+        document.getElementById('pinInput').focus();
+      }
+    }
+
+    function unlockAppScreen(animated) {
+      const overlay = document.getElementById('pinLockOverlay');
+      if (!overlay) return;
+      if (animated) {
+        overlay.style.transition = "opacity 0.25s ease";
+        overlay.style.opacity = "0";
+        setTimeout(() => {
+          overlay.style.display = "none";
+        }, 250);
+      } else {
+        overlay.style.display = "none";
+      }
+    }
+
+    function changeFamilyPin() {
+      const currentPin = getStoredPin();
+      const check = prompt("현재 비밀번호 4자리를 입력하세요:", "");
+      if (check === null) return;
+      if (check !== currentPin) {
+        alert("현재 비밀번호가 일치하지 않습니다.");
+        return;
+      }
+      const newPin = prompt("새로운 비밀번호 4자리를 입력하세요 (숫자 4자리):", "");
+      if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
+        alert("비밀번호는 숫자 4자리여야 합니다.");
+        return;
+      }
+      try {
+        localStorage.setItem("kids_family_pin", newPin);
+        alert(`비밀번호가 "${newPin}"으로 변경되었습니다!`);
+      } catch(e) {
+        alert("저장에 실패했습니다.");
+      }
+    }
+
     // 앱 시작 초기화
+    checkInitialAuth();
     initTabletGrammar();
     document.getElementById('streakCountText').textContent = `${getStoredStreak()}일 연속`;
 

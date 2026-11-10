@@ -1383,7 +1383,7 @@
         </div>
         <div style="overflow-y: auto; padding-right: 4px; flex: 1;">
           <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px;">
-            원하는 <strong>영어 문장이나 패턴</strong>을 적으시면, AI가 핵심 패턴을 자동 인식하여 <strong>9살 맞춤형 5문장</strong>을 즉시 생성해 드립니다!
+            원하는 <strong>영어 문장이나 패턴</strong>을 적으시면 <strong>[회화 5문장 말하기]</strong>와 함께 <strong>[문장퍼즐 2문제 맞추기]</strong>가 유기적으로 자동 등록됩니다!
           </p>
 
           <div style="margin-bottom: 12px;">
@@ -2550,6 +2550,9 @@
       };
 
       grammarSets.unshift(newGrammarSet);
+      if (!selectedGrammarSetIds.includes(newGrammarSet.id)) {
+        selectedGrammarSetIds.unshift(newGrammarSet.id);
+      }
       currentGrammarSetId = newGrammarSet.id;
       currentGrammarSubIdx = 0;
       currentGrammarFilter = 'ALL';
@@ -5203,11 +5206,79 @@
 
       patternsList.unshift(newPat);
       savePatternsToStorage();
+
+      // [회화패턴 ➔ 문장퍼즐 자동 연동]
+      // 회화패턴의 대표 문장(1번 문장)을 문장퍼즐에도 1세트(기본 1문제 + 비슷한 응용 1문제 = 총 2문제)로 자동 생성하여 등록!
+      let puzzleSyncMsg = "";
+      try {
+        const baseSentence = sentences[0];
+        const baseEn = baseSentence.en;
+        const baseKo = baseSentence.ko;
+
+        const parsedG = detectAndParseSentence(baseEn) || {
+          form: "FORM_3",
+          slots: { WHO: "I", DO: "like", WHAT: baseEn }
+        };
+
+        const finalForm = parsedG.form || "FORM_3";
+        const slots = SENTENCE_TYPES[finalForm] || ["WHO", "DO", "WHAT"];
+        const blocks = [];
+        slots.forEach((sKey, idx) => {
+          if (parsedG.slots && parsedG.slots[sKey]) {
+            blocks.push({
+              id: `b_pat_sync_${idx}_${Date.now()}`,
+              text: parsedG.slots[sKey],
+              role: sKey
+            });
+          }
+        });
+
+        if (blocks.length >= 2) {
+          const newGrammarItem = {
+            id: "g_pat_sync_" + Date.now(),
+            form: finalForm,
+            korean: baseKo,
+            fullEnglish: baseEn,
+            blocks: blocks,
+            isCompleted: false
+          };
+
+          const similarGrammarItem = generateSimilarGrammarSentence(newGrammarItem);
+          similarGrammarItem.id = "g_pat_sim_" + Date.now();
+          similarGrammarItem.isVariation = true;
+
+          const newGrammarSet = {
+            id: "gset_pat_" + Date.now(),
+            form: finalForm,
+            title: baseEn,
+            korean: baseKo,
+            completed: 0,
+            solvedSub: [false, false],
+            questions: [newGrammarItem, similarGrammarItem]
+          };
+
+          // 동일 문장 중복 방지
+          grammarSets = grammarSets.filter(s => s.title.toLowerCase() !== baseEn.toLowerCase());
+          grammarSets.unshift(newGrammarSet);
+
+          // 문장퍼즐 선택 풀기 큐 맨 앞에도 추가
+          if (!selectedGrammarSetIds.includes(newGrammarSet.id)) {
+            selectedGrammarSetIds.unshift(newGrammarSet.id);
+          }
+
+          saveGrammarSetsToStorage();
+          updateGrammarAchievementUI();
+          puzzleSyncMsg = `\n\n🧩 [문장퍼즐]에도 대표 문장("${baseEn}")이 1세트(기본 1문제 + 응용 1문제 = 총 2문제)로 자동 연동되었습니다!`;
+        }
+      } catch (e) {
+        console.warn("문장퍼즐 자동 연동 중 오류:", e);
+      }
+
       closeAddPatternModal();
       selectTabletPattern(newPat.id);
       switchAppTab('pattern');
       playSuccessSound();
-      alert(`🎉 [ ${pTitle} ] 패턴 5문장이 성공적으로 생성 및 등록되었습니다! 바로 말하기 연습을 시작해 보세요!`);
+      alert(`🎉 [ ${pTitle} ] 회화 5문장이 성공적으로 생성 및 등록되었습니다!${puzzleSyncMsg}\n\n👉 [회화 5문장 큰 소리로 말하기] 후 [문장퍼즐 2문제 맞추기]로 마스터해 보세요!`);
     }
 
 

@@ -1085,7 +1085,8 @@
     <div id="grammarSection" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
       <div class="nav-bar">
         <div class="nav-title"><span>🧩 문장퍼즐</span></div>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <button class="nav-btn" onclick="openGrammarListModal()" style="font-weight: 800; background: #FEF3C7; border-color: #FCD34D; color: #92400E;">📋 퍼즐 목록 & 달성표 (<span id="grammarCompletedCountBadge">0/7</span>)</button>
           <button class="voice-input-btn" onclick="quickAddGrammarByVoice()" title="음성으로 퍼즐 문장 등록">🎙️ 음성 문장 등록</button>
           <button class="nav-btn" style="background: #ECFDF5; border-color: #A7F3D0; color: #065F46; font-weight: 700;" onclick="openAddGrammarModal()">+ 문장 직접 등록</button>
           <button class="nav-btn" onclick="resetCurrentGrammarBlocks()">다시 놓기 ↺</button>
@@ -1112,6 +1113,7 @@
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
               <span class="guide-step-tag" id="grammarStepIndicator">문장 1 / 7</span>
               <span class="grammar-form-badge" id="grammarFormBadge">🏷️ 1형식: 누가 + 뭐해 + 어디서</span>
+              <span class="subtab-badge" id="grammarCurrentCompletedBadge" style="font-weight: 800; background: #FEF3C7; color: #B45309;">⏳ 도전 중</span>
             </div>
             <div class="guide-prompt-ko" id="grammarPromptKo">그 귀여운 강아지는 공원에서 달려.</div>
           </div>
@@ -1475,8 +1477,8 @@
 
         <div style="display: flex; gap: 10px; margin-top: 14px; flex-shrink: 0;">
           <button class="btn btn-secondary" style="flex: 1;" onclick="closeAddPatternModal()">취소</button>
-          <button class="btn btn-primary" id="savePatternBtn" style="flex: 2;" onclick="saveGeneratedPatternToApp()" disabled>
-            🚀 이 패턴으로 회화 학습 시작하기
+          <button class="btn btn-primary" id="savePatternBtn" style="flex: 2;" onclick="saveGeneratedPatternToApp()">
+            🚀 5문장 자동 생성 및 회화 학습 시작
           </button>
         </div>
       </div>
@@ -1541,6 +1543,43 @@
           <button class="btn btn-primary" style="flex: 2;" onclick="saveCustomGrammarSentence()">
             🚀 문장퍼즐에 등록하고 바로 풀기
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: 문장퍼즐 전체 목록 및 달성표 ================= -->
+    <div class="modal-overlay" id="grammarListModal">
+      <div class="modal-card" style="max-width: 600px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0;">
+          <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span>📋 문장퍼즐 목록 & 달성 현황</span>
+          </div>
+          <button class="modal-close-btn" onclick="closeGrammarListModal()">✕</button>
+        </div>
+
+        <!-- 달성도 프로그레스 바 배너 -->
+        <div style="background: linear-gradient(135deg, #FEF3C7 0%, #FFFBEB 100%); border: 1.5px solid #FDE68A; border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; flex-shrink: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-weight: 800; font-size: 0.95rem; color: #92400E;" id="grammarListProgressSummary">🏆 0 / 7 문장 완성 (0%)</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: #B45309;" id="grammarListRemainingText">7개 남음</span>
+          </div>
+          <div style="height: 10px; background: #FDE68A; border-radius: 9999px; overflow: hidden;">
+            <div id="grammarListProgressBar" style="height: 100%; width: 0%; background: #F59E0B; border-radius: 9999px; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <!-- 내부 필터 탭 -->
+        <div style="display: flex; gap: 6px; margin-bottom: 12px; flex-shrink: 0;">
+          <button class="grammar-filter-chip active" id="glist_filter_ALL" onclick="renderGrammarListModal('ALL')">전체 (<span id="glistCountAll">7</span>)</button>
+          <button class="grammar-filter-chip" id="glist_filter_INCOMPLETE" onclick="renderGrammarListModal('INCOMPLETE')">도전 중 ⏳ (<span id="glistCountIncomplete">7</span>)</button>
+          <button class="grammar-filter-chip" id="glist_filter_COMPLETED" onclick="renderGrammarListModal('COMPLETED')">완성 완료 ✅ (<span id="glistCountCompleted">0</span>)</button>
+        </div>
+
+        <!-- 스크롤 가능한 퍼즐 카드 목록 -->
+        <div id="grammarCardsListContainer" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;"></div>
+
+        <div style="margin-top: 14px; display: flex; gap: 10px; flex-shrink: 0;">
+          <button class="btn btn-secondary" style="width: 100%;" onclick="closeGrammarListModal()">닫기</button>
         </div>
       </div>
     </div>
@@ -1888,30 +1927,141 @@
       }
     }
 
-    // 9살 교재 기본 어휘 한-영 간이 사전
+    // 9살 교재 기본 어휘 한-영 간이 사전 (초등/동화책 핵심 200+ 단어)
     const CHILD_DICTIONARY = {
       monkey: "원숭이", banana: "바나나", bananas: "바나나", apple: "사과", apples: "사과",
       puppy: "강아지", dog: "개", dogs: "개", cat: "고양이", cats: "고양이",
       rabbit: "토끼", bear: "곰", frog: "개구리", bird: "새", birds: "새",
       tiger: "호랑이", lion: "사자", elephant: "코끼리", fish: "물고기",
       butterfly: "나비", dinosaur: "공룡", duck: "오리", pig: "돼지",
+      cow: "소", horse: "말", sheep: "양", chicken: "닭", mouse: "생쥐",
+      whale: "고래", shark: "상어", dolphin: "돌고래", turtle: "거북이",
+      spider: "거미", bee: "벌", ant: "개미", fox: "여우", wolf: "늑대",
+      deer: "사슴", zebra: "얼룩말", giraffe: "기린", penguin: "펭귄", owl: "올빼미",
       book: "책", books: "책", story: "이야기", stories: "이야기", toy: "장난감", toys: "장난감",
-      car: "자동차", ball: "공", pizza: "피자", milk: "우유", water: "물",
+      car: "자동차", ball: "공", pizza: "피자", milk: "우유", water: "물", bread: "빵",
       cookie: "쿠키", cookies: "쿠키", cake: "케이크", park: "공원", school: "학교",
       home: "집", room: "방", friend: "친구", friends: "친구", tree: "나무", trees: "나무",
-      sun: "태양", moon: "달", star: "별", stars: "별", rainbow: "무지개", flower: "꽃", flowers: "꽃",
-      sky: "하늘", rain: "비", snow: "눈", sea: "바다", river: "강",
-      mom: "엄마", dad: "아빠", baby: "아기", sister: "자매/언니", brother: "형제/오빠", family: "가족",
+      sun: "태양/해", moon: "달", star: "별", stars: "별", rainbow: "무지개", flower: "꽃", flowers: "꽃",
+      sky: "하늘", rain: "비", snow: "눈", sea: "바다", river: "강", cloud: "구름", wind: "바람",
+      leaf: "나뭇잎", grass: "풀밭", mountain: "산", lake: "호수", beach: "해변", forest: "숲",
+      mom: "엄마", dad: "아빠", baby: "아기", sister: "자매/언니/여동생", brother: "형제/오빠/남동생", family: "가족",
+      teacher: "선생님", boy: "소년", girl: "소녀", doctor: "의사", king: "왕", queen: "여왕",
       pencil: "연필", bag: "가방", shoes: "신발", hat: "모자", desk: "책상", chair: "의자",
+      bed: "침대", door: "문", window: "창문", table: "탁자", box: "상자", clock: "시계",
+      computer: "컴퓨터", bus: "버스", train: "기차", plane: "비행기", boat: "보트", bike: "자전거",
       sweet: "달콤한", cute: "귀여운", funny: "재미있는", happy: "행복한", pretty: "예쁜",
       fast: "빠른", big: "큰", small: "작은", sunny: "맑은", yellow: "노란색", red: "빨간색",
-      blue: "파란색", green: "초록색", warm: "따뜻한", cold: "차가운", clean: "깨끗한",
+      blue: "파란색", green: "초록색", white: "하얀색", black: "검은색", orange: "주황색/오렌지",
+      pink: "분홍색", purple: "보라색", brown: "갈색", warm: "따뜻한", cold: "차가운", clean: "깨끗한",
+      tall: "키가 큰", short: "작은/짧은", strong: "힘센", kind: "친절한/다정한", nice: "멋진/착한",
+      sad: "슬픈", angry: "화난", tired: "피곤한", hungry: "배고픈", delicious: "맛있는", favorite: "가장 좋아하는",
       love: "좋아하다", loves: "좋아하다", like: "좋아하다", likes: "좋아하다",
       want: "원하다", wants: "원하다", eat: "먹다", eats: "먹다", drink: "마시다", drinks: "마시다",
       run: "달리다", runs: "달리다", jump: "점프하다", jumps: "점프하다", play: "놀다", plays: "놀다",
       read: "읽다", reads: "읽다", see: "보다", sees: "보다", swim: "수영하다", fly: "날다",
-      walk: "걷다", sleep: "잠자다", sing: "노래하다", dance: "춤추다", help: "돕다", make: "만들다"
+      walk: "걷다", sleep: "잠자다", sing: "노래하다", dance: "춤추다", help: "돕다", make: "만들다",
+      look: "바라보다", listen: "듣다", watch: "보다", write: "쓰다", draw: "그리다",
+      open: "열다", close: "닫다", wash: "씻다", buy: "사다", give: "주다", come: "오다", go: "가다"
     };
+
+    // [핵심] 영단어 및 영어 문장 자동 한국어 번역기
+    function autoTranslateKorean(text) {
+      if (!text) return "";
+      const raw = text.trim();
+      const clean = raw.toLowerCase().replace(/[.?!]+$/, '').trim();
+
+      // 1. 단일 단어 사전 조회 (관사 제거 및 어미 변화 대응)
+      const singleWord = clean.replace(/^(a|an|the)\s+/, '').trim();
+      if (CHILD_DICTIONARY[clean]) return CHILD_DICTIONARY[clean];
+      if (CHILD_DICTIONARY[singleWord]) return CHILD_DICTIONARY[singleWord];
+
+      // 어미 변화 대응 (-s, -es, -ed, -ing)
+      if (singleWord.endsWith('s') && CHILD_DICTIONARY[singleWord.slice(0, -1)]) return CHILD_DICTIONARY[singleWord.slice(0, -1)];
+      if (singleWord.endsWith('es') && CHILD_DICTIONARY[singleWord.slice(0, -2)]) return CHILD_DICTIONARY[singleWord.slice(0, -2)];
+      if (singleWord.endsWith('ing') && CHILD_DICTIONARY[singleWord.slice(0, -3)]) return CHILD_DICTIONARY[singleWord.slice(0, -3)];
+      if (singleWord.endsWith('ed') && CHILD_DICTIONARY[singleWord.slice(0, -2)]) return CHILD_DICTIONARY[singleWord.slice(0, -2)];
+
+      // 2. 주요 어린이 회화 문장 패턴 한글 번역
+      if (/^i want to\s+(.+)/i.test(clean)) {
+        const action = clean.replace(/^i want to\s+/i, '');
+        const words = action.split(/\s+/);
+        const v = words[0];
+        const rest = words.slice(1).join(' ').replace(/^(a|an|the|some)\s+/, '');
+        const vKo = (CHILD_DICTIONARY[v] || v).replace(/다$/, '');
+        const restKo = CHILD_DICTIONARY[rest] || rest;
+        return `나는 ${restKo ? restKo + ' ' : ''}${vKo}고 싶어.`;
+      }
+
+      if (/^i want\s+(.+)/i.test(clean)) {
+        const item = clean.replace(/^i want\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
+        const itemKo = CHILD_DICTIONARY[item] || item;
+        return `나는 ${itemKo}을(를) 원해.`;
+      }
+
+      if (/^can i\s+(.+)/i.test(clean)) {
+        const action = clean.replace(/^can i\s+/i, '');
+        const words = action.split(/\s+/);
+        const v = words[0];
+        const rest = words.slice(1).join(' ').replace(/^(a|an|the|some)\s+/, '');
+        const vKo = (CHILD_DICTIONARY[v] || v).replace(/다$/, '');
+        const restKo = CHILD_DICTIONARY[rest] || rest;
+        return `${restKo ? restKo + ' ' : ''}${vKo}해도 돼요?`;
+      }
+
+      if (/^i like\s+(.+)/i.test(clean)) {
+        const item = clean.replace(/^i like\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
+        const itemKo = CHILD_DICTIONARY[item] || item;
+        return `나는 ${itemKo}을(를) 좋아해.`;
+      }
+
+      if (/^i have\s+(.+)/i.test(clean)) {
+        const item = clean.replace(/^i have\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
+        const itemKo = CHILD_DICTIONARY[item] || item;
+        return `나는 ${itemKo}을(를) 가지고 있어.`;
+      }
+
+      if (/^i can\s+(.+)/i.test(clean)) {
+        const action = clean.replace(/^i can\s+/i, '');
+        const vKo = (CHILD_DICTIONARY[action] || action).replace(/다$/, '');
+        return `나는 ${vKo}할 수 있어.`;
+      }
+
+      if (/^i see\s+(.+)/i.test(clean)) {
+        const item = clean.replace(/^i see\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
+        const itemKo = CHILD_DICTIONARY[item] || item;
+        return `내 눈에 ${itemKo}이(가) 보여.`;
+      }
+
+      if (/^let'?s\s+(.+)/i.test(clean)) {
+        const action = clean.replace(/^let'?s\s+/i, '');
+        const vKo = (CHILD_DICTIONARY[action] || action).replace(/다$/, '');
+        return `우리 함께 ${vKo}하자!`;
+      }
+
+      if (/^it is\s+(.+)/i.test(clean)) {
+        const state = clean.replace(/^it is\s+/i, '');
+        const stateKo = CHILD_DICTIONARY[state] || state;
+        return `날씨나 상태가 ${stateKo}해.`;
+      }
+
+      if (/^do you\s+(.+)/i.test(clean)) {
+        const rest = clean.replace(/^do you\s+/i, '');
+        return `너는 ${rest}하니?`;
+      }
+
+      // 3. 복합 단어 또는 일반 문장 처리
+      const words = clean.split(/\s+/);
+      if (words.length <= 4) {
+        const translatedParts = words.map(w => {
+          const stripped = w.replace(/^(a|an|the)\s*/, '');
+          return CHILD_DICTIONARY[stripped] || w;
+        });
+        return translatedParts.join(' ');
+      }
+
+      return raw;
+    }
 
     // [유기적 연결 핵심 함수] 입력한 문장 하나로 회화 5문장 + 단어장 + 문장퍼즐을 일괄 생성
     function applyOneStopSync() {
@@ -1943,8 +2093,11 @@
         form: parsedG.form,
         korean: autoTranslateKorean(text),
         fullEnglish: text.endsWith('.') || text.endsWith('?') ? text : (text + '.'),
-        blocks: blocks
+        blocks: blocks,
+        isCompleted: false
       };
+      const similarGrammarItem = generateSimilarGrammarSentence(newGrammarItem);
+      grammarSentences.unshift(similarGrammarItem);
       grammarSentences.unshift(newGrammarItem);
       currentGrammarFilter = 'ALL';
       document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
@@ -1952,6 +2105,7 @@
       if (allChip) allChip.classList.add('active');
       currentGrammarIdx = 0;
       saveGrammarSentencesToStorage();
+      updateGrammarAchievementUI();
 
       // 2. 단어장 자동 연동 (문장에서 핵심 단어 추출)
       const rawWords = text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).filter(w => w.length > 2 && !['the', 'and', 'for', 'with', 'from', 'this', 'that'].includes(w));
@@ -2286,6 +2440,7 @@
 
     function initTabletGrammar() {
       loadTabletGrammarQuestion();
+      updateGrammarAchievementUI();
     }
 
     function filterGrammarByForm(formKey) {
@@ -2439,6 +2594,20 @@
       document.getElementById('grammarFeedbackBox').style.color = "var(--text-muted)";
       document.getElementById('grammarNextBtn').disabled = true;
 
+      // 현재 문제 달성 여부 배지 갱신
+      const curBadge = document.getElementById('grammarCurrentCompletedBadge');
+      if (curBadge) {
+        if (current.isCompleted) {
+          curBadge.textContent = "✅ 달성 완료";
+          curBadge.style.background = "#ECFDF5";
+          curBadge.style.color = "#059669";
+        } else {
+          curBadge.textContent = "⏳ 도전 중";
+          curBadge.style.background = "#FEF3C7";
+          curBadge.style.color = "#B45309";
+        }
+      }
+
       // 1. 문제의 형식에 맞추어 품사 바구니 자동 적용!
       renderGrammarBaskets(current);
 
@@ -2579,6 +2748,17 @@
       });
 
       if (allFilled) {
+        current.isCompleted = true; // 달성 완료 영속 기록!
+        saveGrammarSentencesToStorage();
+        updateGrammarAchievementUI();
+
+        const curBadge = document.getElementById('grammarCurrentCompletedBadge');
+        if (curBadge) {
+          curBadge.textContent = "✅ 달성 완료";
+          curBadge.style.background = "#ECFDF5";
+          curBadge.style.color = "#059669";
+        }
+
         playFanfareSound(); // 문장 완성 팡파레 & 폭죽!
         markOneStopStepDone(3); // 원스톱 3단계 완료 처리!
         const feedback = document.getElementById('grammarFeedbackBox');
@@ -2613,6 +2793,351 @@
         currentGrammarIdx = 0;
         loadTabletGrammarQuestion();
       }
+    }
+
+    // =========================================================
+    // 문장퍼즐: 비슷한 구조의 응용 문장 1개 자동 생성 엔진
+    // =========================================================
+    function generateSimilarGrammarSentence(originalItem) {
+      const formKey = originalItem.form || "FORM_3";
+      const bank = {
+        FORM_1: [
+          {
+            korean: "그 작은 고양이는 정원에서 뛰어놀아.",
+            fullEnglish: "The little cat plays in the garden.",
+            blocks: [
+              { text: "The little cat", role: "WHO" },
+              { text: "plays", role: "DO" },
+              { text: "in the garden", role: "WHERE" }
+            ]
+          },
+          {
+            korean: "예쁜 새가 나무에서 노래해.",
+            fullEnglish: "A pretty bird sings in the tree.",
+            blocks: [
+              { text: "A pretty bird", role: "WHO" },
+              { text: "sings", role: "DO" },
+              { text: "in the tree", role: "WHERE" }
+            ]
+          },
+          {
+            korean: "내 친구는 놀이터로 빠르게 달려가.",
+            fullEnglish: "My friend runs to the playground.",
+            blocks: [
+              { text: "My friend", role: "WHO" },
+              { text: "runs", role: "DO" },
+              { text: "to the playground", role: "WHERE" }
+            ]
+          }
+        ],
+        FORM_2: [
+          {
+            korean: "따뜻한 날씨가 아주 기분 좋게 느껴져.",
+            fullEnglish: "The warm sunny day feels great.",
+            blocks: [
+              { text: "The warm sunny day", role: "WHO" },
+              { text: "feels", role: "BE_FEEL" },
+              { text: "great", role: "STATE" }
+            ]
+          },
+          {
+            korean: "내 곰인형은 아주 푹신하고 부드러워.",
+            fullEnglish: "My teddy bear is very soft.",
+            blocks: [
+              { text: "My teddy bear", role: "WHO" },
+              { text: "is", role: "BE_FEEL" },
+              { text: "very soft", role: "STATE" }
+            ]
+          },
+          {
+            korean: "그 어린 강아지는 무척 신나 보여.",
+            fullEnglish: "The little puppy looks so excited.",
+            blocks: [
+              { text: "The little puppy", role: "WHO" },
+              { text: "looks", role: "BE_FEEL" },
+              { text: "so excited", role: "STATE" }
+            ]
+          }
+        ],
+        FORM_3: [
+          {
+            korean: "우리는 바삭한 쿠키를 맛있게 먹어.",
+            fullEnglish: "We eat crispy cookies.",
+            blocks: [
+              { text: "We", role: "WHO" },
+              { text: "eat", role: "DO" },
+              { text: "crispy cookies", role: "WHAT" }
+            ]
+          },
+          {
+            korean: "그녀는 재미있는 동화책을 읽어.",
+            fullEnglish: "She reads a fun fairytale book.",
+            blocks: [
+              { text: "She", role: "WHO" },
+              { text: "reads", role: "DO" },
+              { text: "a fun fairytale book", role: "WHAT" }
+            ]
+          },
+          {
+            korean: "나는 달콤한 딸기 아이스크림을 좋아해.",
+            fullEnglish: "I like sweet strawberry ice cream.",
+            blocks: [
+              { text: "I", role: "WHO" },
+              { text: "like", role: "DO" },
+              { text: "sweet strawberry ice cream", role: "WHAT" }
+            ]
+          }
+        ],
+        FORM_4: [
+          {
+            korean: "아빠는 나에게 재미있는 만화책을 사주셨어.",
+            fullEnglish: "Dad bought me a comic book.",
+            blocks: [
+              { text: "Dad", role: "WHO" },
+              { text: "bought", role: "DO" },
+              { text: "me", role: "TO_WHOM" },
+              { text: "a comic book", role: "WHAT" }
+            ]
+          },
+          {
+            korean: "선생님은 우리에게 신기한 마술을 보여주셨어.",
+            fullEnglish: "Teacher showed us a cool magic trick.",
+            blocks: [
+              { text: "Teacher", role: "WHO" },
+              { text: "showed", role: "DO" },
+              { text: "us", role: "TO_WHOM" },
+              { text: "a cool magic trick", role: "WHAT" }
+            ]
+          },
+          {
+            korean: "할머니는 우리에게 달콤한 팬케이크를 구워주셨어.",
+            fullEnglish: "Grandma baked us sweet pancakes.",
+            blocks: [
+              { text: "Grandma", role: "WHO" },
+              { text: "baked", role: "DO" },
+              { text: "us", role: "TO_WHOM" },
+              { text: "sweet pancakes", role: "WHAT" }
+            ]
+          }
+        ],
+        FORM_5: [
+          {
+            korean: "화창한 날씨는 우리 모두를 행복하게 만들어.",
+            fullEnglish: "Sunny weather makes everyone happy.",
+            blocks: [
+              { text: "Sunny weather", role: "WHO" },
+              { text: "makes", role: "DO" },
+              { text: "everyone", role: "WHAT" },
+              { text: "happy", role: "STATE" }
+            ]
+          },
+          {
+            korean: "이 웃긴 만화는 나를 빵 터지게 웃겨.",
+            fullEnglish: "This funny comic makes me laugh.",
+            blocks: [
+              { text: "This funny comic", role: "WHO" },
+              { text: "makes", role: "DO" },
+              { text: "me", role: "WHAT" },
+              { text: "laugh", role: "STATE" }
+            ]
+          },
+          {
+            korean: "우리는 우리 교실을 깨끗하게 정리해.",
+            fullEnglish: "We keep our classroom clean.",
+            blocks: [
+              { text: "We", role: "WHO" },
+              { text: "keep", role: "DO" },
+              { text: "our classroom", role: "WHAT" },
+              { text: "clean", role: "STATE" }
+            ]
+          }
+        ],
+        QUESTION_DO: [
+          {
+            korean: "너는 달콤한 아이스크림을 원하니?",
+            fullEnglish: "Do you want sweet ice cream?",
+            blocks: [
+              { text: "Do", role: "DO_HELPER" },
+              { text: "you", role: "WHO" },
+              { text: "want", role: "DO" },
+              { text: "sweet ice cream?", role: "WHAT" }
+            ]
+          },
+          {
+            korean: "너는 친구들과 축구하는 것을 좋아하니?",
+            fullEnglish: "Do you like playing soccer?",
+            blocks: [
+              { text: "Do", role: "DO_HELPER" },
+              { text: "you", role: "WHO" },
+              { text: "like", role: "DO" },
+              { text: "playing soccer?", role: "WHAT" }
+            ]
+          }
+        ],
+        QUESTION_WH: [
+          {
+            korean: "너는 어디서 신나게 놀고 싶니?",
+            fullEnglish: "Where do you want to play?",
+            blocks: [
+              { text: "Where", role: "QUESTION_WORD" },
+              { text: "do", role: "DO_HELPER" },
+              { text: "you", role: "WHO" },
+              { text: "want to play?", role: "DO" }
+            ]
+          },
+          {
+            korean: "너는 파란 하늘에서 무엇이 보이니?",
+            fullEnglish: "What do you see in the sky?",
+            blocks: [
+              { text: "What", role: "QUESTION_WORD" },
+              { text: "do", role: "DO_HELPER" },
+              { text: "you", role: "WHO" },
+              { text: "see in the sky?", role: "DO" }
+            ]
+          }
+        ]
+      };
+
+      const candidates = bank[formKey] || bank["FORM_3"];
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      return {
+        id: "g_sim_" + Date.now(),
+        form: formKey,
+        korean: chosen.korean + " (응용 복습)",
+        fullEnglish: chosen.fullEnglish,
+        isCompleted: false,
+        isBonusVariation: true,
+        blocks: chosen.blocks.map((b, idx) => ({
+          id: `b_sim_${Date.now()}_${idx}`,
+          text: b.text,
+          role: b.role
+        }))
+      };
+    }
+
+    // =========================================================
+    // 문장퍼즐 전체 목록 & 달성 현황 모달 제어
+    // =========================================================
+    let currentGrammarListFilter = 'ALL';
+
+    function openGrammarListModal() {
+      playClickSound();
+      currentGrammarListFilter = 'ALL';
+      renderGrammarListModal('ALL');
+      document.getElementById('grammarListModal').style.display = 'flex';
+    }
+
+    function closeGrammarListModal() {
+      document.getElementById('grammarListModal').style.display = 'none';
+    }
+
+    function updateGrammarAchievementUI() {
+      const total = grammarSentences.length;
+      const completedCount = grammarSentences.filter(s => s.isCompleted).length;
+      const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+
+      const badge = document.getElementById('grammarCompletedCountBadge');
+      if (badge) badge.textContent = `${completedCount}/${total}`;
+
+      const summary = document.getElementById('grammarListProgressSummary');
+      if (summary) summary.textContent = `🏆 ${completedCount} / ${total} 문장 완성 (${pct}%)`;
+
+      const remaining = document.getElementById('grammarListRemainingText');
+      if (remaining) remaining.textContent = `${total - completedCount}개 남음`;
+
+      const bar = document.getElementById('grammarListProgressBar');
+      if (bar) bar.style.width = `${pct}%`;
+
+      const glistAll = document.getElementById('glistCountAll');
+      if (glistAll) glistAll.textContent = total;
+
+      const glistIncomplete = document.getElementById('glistCountIncomplete');
+      if (glistIncomplete) glistIncomplete.textContent = total - completedCount;
+
+      const glistCompleted = document.getElementById('glistCountCompleted');
+      if (glistCompleted) glistCompleted.textContent = completedCount;
+    }
+
+    function renderGrammarListModal(filterType = 'ALL') {
+      currentGrammarListFilter = filterType;
+      updateGrammarAchievementUI();
+
+      ['ALL', 'INCOMPLETE', 'COMPLETED'].forEach(f => {
+        const btn = document.getElementById(`glist_filter_${f}`);
+        if (btn) {
+          if (f === filterType) btn.classList.add('active');
+          else btn.classList.remove('active');
+        }
+      });
+
+      const container = document.getElementById('grammarCardsListContainer');
+      if (!container) return;
+      container.innerHTML = "";
+
+      let items = [...grammarSentences];
+      if (filterType === 'INCOMPLETE') {
+        items = items.filter(s => !s.isCompleted);
+      } else if (filterType === 'COMPLETED') {
+        items = items.filter(s => s.isCompleted);
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px 10px; font-weight: 700;">해당하는 퍼즐 문장이 없습니다.</div>`;
+        return;
+      }
+
+      items.forEach((s) => {
+        const meta = FORM_META[s.form] || { title: s.form || "3형식", pattern: "문장 구조", color: "#3B82F6", bg: "#EFF6FF" };
+        const card = document.createElement('div');
+        card.style.cssText = `background: white; border: 1.8px solid ${s.isCompleted ? '#10B981' : 'var(--border)'}; border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);`;
+
+        card.innerHTML = `
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: white; background: ${meta.color}; padding: 2px 7px; border-radius: 6px;">${meta.title}</span>
+              ${s.isBonusVariation ? '<span style="font-size: 0.72rem; font-weight: 800; color: #7C3AED; background: #EDE9FE; padding: 2px 6px; border-radius: 6px;">✨ 응용 문제</span>' : ''}
+              ${s.isCompleted 
+                ? '<span style="font-size: 0.75rem; font-weight: 800; color: #059669; background: #ECFDF5; padding: 2px 8px; border-radius: 6px;">✅ 완성 완료</span>' 
+                : '<span style="font-size: 0.75rem; font-weight: 800; color: #D97706; background: #FFFBEB; padding: 2px 8px; border-radius: 6px;">⏳ 도전 중</span>'}
+            </div>
+            <div style="font-weight: 800; font-size: 1rem; color: var(--text-main); word-break: break-word;">${s.fullEnglish}</div>
+            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">${s.korean}</div>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
+            <button class="small-btn" onclick="speakEnglish('${s.fullEnglish.replace(/'/g, "\\'")}', 0.9)" title="발음 듣기">🔊</button>
+            <button class="small-btn" style="background: var(--primary); color: white; border-color: var(--primary); font-weight: 800;" onclick="selectGrammarQuestionFromList('${s.id}')">풀기 ➔</button>
+            ${s.id.startsWith('g_user_') || s.id.startsWith('g_sim_') || s.id.startsWith('g_os_') 
+              ? `<button class="small-btn" style="color: #EF4444; border-color: #FECACA; background: #FEF2F2;" onclick="deleteCustomGrammarSentence('${s.id}')" title="삭제">✕</button>` 
+              : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function selectGrammarQuestionFromList(sentenceId) {
+      currentGrammarFilter = 'ALL';
+      document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
+      const allChip = document.getElementById('chip_ALL');
+      if (allChip) allChip.classList.add('active');
+
+      const activeList = getActiveGrammarSentences();
+      const idx = activeList.findIndex(s => s.id === sentenceId);
+      if (idx !== -1) {
+        currentGrammarIdx = idx;
+        loadTabletGrammarQuestion();
+      }
+      closeGrammarListModal();
+    }
+
+    function deleteCustomGrammarSentence(sentenceId) {
+      if (!confirm("이 퍼즐 문장을 삭제하시겠습니까?")) return;
+      grammarSentences = grammarSentences.filter(s => s.id !== sentenceId);
+      saveGrammarSentencesToStorage();
+      updateGrammarAchievementUI();
+      renderGrammarListModal(currentGrammarListFilter);
+      currentGrammarIdx = 0;
+      loadTabletGrammarQuestion();
     }
 
     // ================= 새 문장퍼즐 동적 모달 제어 =================
@@ -2823,11 +3348,17 @@
         form: finalForm,
         korean: koVal,
         fullEnglish: fullEn,
+        isCompleted: false,
         blocks: blocks
       };
 
+      // [요청 반영] 비슷한 패턴의 응용 문장 1개 추가 생성!
+      const similarG = generateSimilarGrammarSentence(newG);
+
+      grammarSentences.unshift(similarG);
       grammarSentences.unshift(newG);
       saveGrammarSentencesToStorage();
+      updateGrammarAchievementUI();
       closeAddGrammarModal();
       currentGrammarFilter = 'ALL';
       document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
@@ -2837,7 +3368,7 @@
       switchAppTab('grammar');
       loadTabletGrammarQuestion();
       playSuccessSound();
-      alert(`🎉 새 문장퍼즐이 등록되었습니다! [${FORM_META[finalForm] ? FORM_META[finalForm].title : finalForm}] 형식의 맞춤 바구니로 바로 풀어보세요!`);
+      alert(`🎉 문장퍼즐 등록 완료!\n\n1. 직접 등록하신 문장\n2. 동일한 [${FORM_META[finalForm] ? FORM_META[finalForm].title : finalForm}] 패턴의 응용 퍼즐 1개\n\n총 2문장이 문장퍼즐에 추가되었습니다!`);
     }
 
 
@@ -3196,12 +3727,12 @@
           const inputWords = clean.split(/\s+/);
           const hintWord = inputWords.slice(-2).join(' ') || clean;
           sentences.push({
-            en: clean + (clean.endsWith('?') ? '' : '.'),
+            en: clean + (rawInput.endsWith('?') ? '?' : '.'),
             ko: autoTranslateKorean(clean),
             hint: hintWord
           });
           p.defaults.forEach(d => {
-            if (sentences.length < 5 && d.en.toLowerCase() !== (clean + '.').toLowerCase()) {
+            if (sentences.length < 5 && d.en.toLowerCase() !== (clean + '.').toLowerCase() && d.en.toLowerCase() !== (clean + '?').toLowerCase()) {
               sentences.push(d);
             }
           });
@@ -3213,26 +3744,88 @@
         }
       }
 
-      // 2. 임의 문장 분석 (주어/동사 추출)
+      // 2. 임의 문장 분석 (주어/동사 추출 및 자연스러운 5문장 변형 생성)
       const parsed = detectAndParseSentence(clean);
       const subj = (parsed && parsed.slots && (parsed.slots.WHO || parsed.slots.QUESTION_WORD)) || "I";
       const v = (parsed && parsed.slots && (parsed.slots.DO || parsed.slots.BE_FEEL || parsed.slots.DO_HELPER)) || "like";
+      const vLower = v.toLowerCase();
       const patternTitle = `${subj} ${v} ~`;
+
       const sentences = [
         {
-          en: clean + '.',
+          en: clean + (rawInput.endsWith('?') ? '?' : '.'),
           ko: autoTranslateKorean(clean),
           hint: clean.split(/\s+/).slice(-2).join(' ')
         }
       ];
-      const sampleVariations = [
-        { en: `${subj} ${v} sweet apples.`, ko: `사과를 ${v.includes('love') || v.includes('like') ? '좋아해' : '해'}.`, hint: "sweet apples" },
-        { en: `${subj} ${v} cute puppies.`, ko: `귀여운 강아지를 ${v.includes('love') || v.includes('like') ? '좋아해' : '해'}.`, hint: "cute puppies" },
-        { en: `${subj} ${v} fun books.`, ko: `재미있는 책을 ${v.includes('love') || v.includes('like') ? '좋아해' : '해'}.`, hint: "fun books" },
-        { en: `${subj} ${v} delicious pizza.`, ko: `맛있는 피자를 ${v.includes('love') || v.includes('like') ? '좋아해' : '해'}.`, hint: "pizza" }
-      ];
 
-      sampleVariations.forEach(s => {
+      let variations = [];
+      if (['read', 'reads'].includes(vLower)) {
+        variations = [
+          { en: `${subj} ${v} a fun comic book.`, ko: "재미있는 만화책을 읽어.", hint: "comic book" },
+          { en: `${subj} ${v} an exciting fairytale.`, ko: "신나는 동화책을 읽어.", hint: "fairytale" },
+          { en: `${subj} ${v} storybooks every night.`, ko: "매일 밤 이야기책을 읽어.", hint: "every night" },
+          { en: `${subj} ${v} picture books together.`, ko: "그림책을 함께 읽어.", hint: "picture books" }
+        ];
+      } else if (['play', 'plays'].includes(vLower)) {
+        variations = [
+          { en: `${subj} ${v} soccer with friends.`, ko: "친구들과 축구를 해.", hint: "soccer" },
+          { en: `${subj} ${v} with fun toys.`, ko: "재미있는 장난감을 갖고 놀아.", hint: "toys" },
+          { en: `${subj} ${v} exciting games.`, ko: "신나는 게임을 해.", hint: "games" },
+          { en: `${subj} ${v} in the playground.`, ko: "놀이터에서 뛰어놀아.", hint: "playground" }
+        ];
+      } else if (['eat', 'eats'].includes(vLower)) {
+        variations = [
+          { en: `${subj} ${v} delicious pizza.`, ko: "맛있는 피자를 먹어.", hint: "pizza" },
+          { en: `${subj} ${v} sweet red apples.`, ko: "달콤한 빨간 사과를 먹어.", hint: "apples" },
+          { en: `${subj} ${v} warm crispy cookies.`, ko: "따뜻하고 바삭한 쿠키를 먹어.", hint: "cookies" },
+          { en: `${subj} ${v} fresh fruit every day.`, ko: "매일 신선한 과일을 먹어.", hint: "fresh fruit" }
+        ];
+      } else if (['go', 'goes'].includes(vLower)) {
+        variations = [
+          { en: `${subj} ${v} to school happily.`, ko: "즐겁게 학교에 가.", hint: "to school" },
+          { en: `${subj} ${v} to the park.`, ko: "공원에 가.", hint: "to the park" },
+          { en: `${subj} ${v} to the library.`, ko: "도서관에 가.", hint: "to the library" },
+          { en: `${subj} ${v} to the zoo.`, ko: "동물원에 가.", hint: "to the zoo" }
+        ];
+      } else if (['see', 'sees'].includes(vLower)) {
+        variations = [
+          { en: `${subj} ${v} a cute puppy.`, ko: "귀여운 강아지가 보여.", hint: "cute puppy" },
+          { en: `${subj} ${v} a colorful rainbow.`, ko: "알록달록한 무지개가 보여.", hint: "rainbow" },
+          { en: `${subj} ${v} birds in the sky.`, ko: "하늘에 새들이 보여.", hint: "birds" },
+          { en: `${subj} ${v} my kind teacher.`, ko: "다정한 선생님이 보여.", hint: "teacher" }
+        ];
+      } else if (['run', 'runs'].includes(vLower)) {
+        variations = [
+          { en: `${subj} ${v} in the green park.`, ko: "초록 공원에서 달려.", hint: "in the park" },
+          { en: `${subj} ${v} very fast.`, ko: "아주 빠르게 달려.", hint: "very fast" },
+          { en: `${subj} ${v} on the grass.`, ko: "풀밭 위를 달려.", hint: "on the grass" },
+          { en: `${subj} ${v} with my dog.`, ko: "강아지와 함께 달려.", hint: "with dog" }
+        ];
+      } else if (['make', 'makes'].includes(vLower)) {
+        variations = [
+          { en: `${subj} ${v} sweet cookies.`, ko: "달콤한 쿠키를 만들어.", hint: "cookies" },
+          { en: `${subj} ${v} a paper airplane.`, ko: "종이비행기를 만들어.", hint: "airplane" },
+          { en: `${subj} ${v} a cute snowman.`, ko: "귀여운 눈사람을 만들어.", hint: "snowman" },
+          { en: `${subj} ${v} a nice toy house.`, ko: "멋진 장난감 집을 만들어.", hint: "toy house" }
+        ];
+      } else if (['is', 'are', 'am'].includes(vLower)) {
+        variations = [
+          { en: `${subj} ${v} very happy today.`, ko: "오늘 아주 행복해.", hint: "happy" },
+          { en: `${subj} ${v} so cute and smart.`, ko: "아주 귀엽고 똑똑해.", hint: "cute and smart" },
+          { en: `${subj} ${v} very kind to friends.`, ko: "친구들에게 아주 친절해.", hint: "kind" },
+          { en: `${subj} ${v} strong and fast.`, ko: "힘이 세고 빨라.", hint: "strong" }
+        ];
+      } else {
+        variations = [
+          { en: `${subj} ${v} sweet apples.`, ko: "달콤한 사과와 함께해.", hint: "sweet apples" },
+          { en: `${subj} ${v} cute puppies.`, ko: "귀여운 강아지와 함께해.", hint: "cute puppies" },
+          { en: `${subj} ${v} fun books.`, ko: "재미있는 책과 함께해.", hint: "fun books" },
+          { en: `${subj} ${v} delicious pizza.`, ko: "맛있는 피자와 함께해.", hint: "pizza" }
+        ];
+      }
+
+      variations.forEach(s => {
         if (sentences.length < 5) sentences.push(s);
       });
 
@@ -3247,7 +3840,6 @@
       document.getElementById('addPatternModal').style.display = 'flex';
       document.getElementById('patternSentenceInput').value = "";
       document.getElementById('patternGeneratedResultArea').style.display = 'none';
-      document.getElementById('savePatternBtn').disabled = true;
       setTimeout(() => document.getElementById('patternSentenceInput').focus(), 200);
     }
 
@@ -3294,30 +3886,42 @@
       });
 
       document.getElementById('patternGeneratedResultArea').style.display = 'block';
-      document.getElementById('savePatternBtn').disabled = false;
       playSuccessSound();
     }
 
     function saveGeneratedPatternToApp() {
-      const ens = document.querySelectorAll('.pattern-edit-en');
+      const inputEl = document.getElementById('patternSentenceInput');
+      const inputVal = (inputEl ? inputEl.value : "").trim();
+
+      // 아직 5문장이 생성되지 않았으면 즉시 자동 생성 실행
+      let ens = document.querySelectorAll('.pattern-edit-en');
+      if (ens.length === 0 || tempGeneratedSentences.length === 0) {
+        if (!inputVal) {
+          alert("영어 문장이나 패턴을 입력해 주세요! (예: I want to eat pizza.)");
+          return;
+        }
+        autoGeneratePatternSentences();
+        ens = document.querySelectorAll('.pattern-edit-en');
+      }
+
       const kos = document.querySelectorAll('.pattern-edit-ko');
       const hints = document.querySelectorAll('.pattern-edit-hint');
 
       const sentences = [];
       ens.forEach((el, i) => {
         const en = el.value.trim();
-        const ko = kos[i] ? kos[i].value.trim() : en;
+        const ko = kos[i] ? kos[i].value.trim() : autoTranslateKorean(en);
         const hint = hints[i] ? hints[i].value.trim() : "";
         if (en) sentences.push({ en, ko, hint });
       });
 
       if (sentences.length === 0) {
-        alert("최소 1개 이상의 문장이 필요합니다!");
+        alert("문장을 생성할 수 없습니다. 문장을 다시 확인해 주세요!");
         return;
       }
 
-      const pTitle = document.getElementById('genPatternTitle').textContent;
-      const pDesc = document.getElementById('genPatternDesc').textContent;
+      const pTitle = document.getElementById('genPatternTitle').textContent || (inputVal + " ~");
+      const pDesc = document.getElementById('genPatternDesc').textContent || "문장 회화 패턴";
 
       const newPat = {
         id: "pat_user_" + Date.now(),
@@ -3333,7 +3937,7 @@
       selectTabletPattern(newPat.id);
       switchAppTab('pattern');
       playSuccessSound();
-      alert(`🎉 [ ${pTitle} ] 패턴 5문장이 성공적으로 생성되어 등록되었습니다!`);
+      alert(`🎉 [ ${pTitle} ] 패턴 5문장이 성공적으로 생성 및 등록되었습니다! 바로 말하기 연습을 시작해 보세요!`);
     }
 
 
@@ -3904,14 +4508,14 @@
     }
 
     function autoLookupVocaKo() {
-      const en = (document.getElementById('newVocaEnInput').value || "").trim().toLowerCase();
+      const en = (document.getElementById('newVocaEnInput').value || "").trim();
       const koInput = document.getElementById('newVocaKoInput');
       if (en) {
-        const clean = en.replace(/[^a-z]/g, '');
-        if (CHILD_DICTIONARY[clean]) {
-          koInput.value = CHILD_DICTIONARY[clean];
+        const trans = autoTranslateKorean(en);
+        if (trans && trans.toLowerCase() !== en.toLowerCase()) {
+          koInput.value = trans;
         } else if (!koInput.value) {
-          koInput.value = autoTranslateKorean(en);
+          koInput.value = trans || "";
         }
       }
     }

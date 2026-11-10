@@ -1161,6 +1161,12 @@
   </div>
 
   <script>
+    // 태블릿 캐시 및 이전 비밀번호 데이터 자동 청소
+    try {
+      localStorage.removeItem("kids_family_pin");
+      localStorage.removeItem("kids_family_auth_date");
+    } catch(e){}
+
     // =========================================================================
     // [보완 1] 사운드 신디사이저 엔진 (Web Audio API) & 폭죽 (Confetti)
     // =========================================================================

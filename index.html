@@ -1019,9 +1019,9 @@
         ↺ 초기화
       </button>
 
-      <!-- 태블릿 연결 퀵 버튼 -->
-      <button class="nav-btn" style="flex: none; font-size: 0.85rem; padding: 7px 11px; background: #EEF2FF; border-color: #C7D2FE; color: #4338CA;" onclick="openTabletConnectModal()">
-        📱 QR 연결
+      <!-- 태블릿 데이터 전송 & 동기화 퀵 버튼 -->
+      <button class="nav-btn" style="flex: none; font-size: 0.85rem; font-weight: 800; padding: 7px 12px; background: linear-gradient(135deg, #4F46E5, #6366F1); color: white; border: none; border-radius: 10px; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);" onclick="openTabletConnectModal()" title="PC에서 입력한 단어와 문장을 태블릿으로 1초 만에 전송">
+        📲 태블릿 데이터 전송/동기화
       </button>
 
       <!-- 최신 버전 강제 새로고침 버튼 (태블릿 캐시 즉시 비우기) -->
@@ -1234,30 +1234,112 @@
     </div>
 
 
-    <!-- ================= MODAL: 태블릿 연결 (QR / 링크) ================= -->
+    <!-- ================= MODAL: PC ➔ 태블릿 데이터 전송 & 동기화 ================= -->
     <div class="modal-overlay" id="tabletConnectModal">
-      <div class="modal-card" style="text-align: center;">
+      <div class="modal-card" style="max-width: 530px; width: 95%; max-height: 90vh; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">📱 아이 태블릿으로 열기</div>
+          <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span>📲</span> PC ➔ 태블릿 데이터 동기화
+          </div>
           <button class="modal-close-btn" onclick="closeTabletConnectModal()">✕</button>
         </div>
-        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px;">
-          태블릿 카메라로 아래 <strong>QR 코드</strong>를 비추시거나,<br>태블릿 인터넷 주소창에 링크를 입력하세요.
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 12px;">
+          PC에서 입력하신 <strong>단어장, 맞춤 회화/문장퍼즐, 학습 연속 기록</strong>을 태블릿으로 안전하게 그대로 전송합니다.
         </p>
 
-        <div style="display: flex; justify-content: center; margin-bottom: 14px;">
-          <div style="background: white; padding: 10px; border-radius: 16px; border: 2px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-            <img id="tabletQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://nooninsky7.github.io/kids-english/" alt="태블릿 접속 QR코드" width="180" height="180" style="display: block;">
+        <!-- 현재 저장된 데이터 요약 배너 -->
+        <div id="syncDataSummaryBadge" style="background: #EEF2FF; border: 1.5px solid #C7D2FE; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.86rem; color: #3730A3; line-height: 1.5;">
+          <div id="syncDataSummaryText">동기화 데이터 준비 중...</div>
+        </div>
+
+        <!-- 3-탭 스위처 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; background: #F1F5F9; padding: 4px; border-radius: 10px;">
+          <button id="syncTabBtn_qr" class="btn" style="font-size: 0.82rem; font-weight: 800; padding: 8px 4px; border-radius: 8px; background: white; color: #4F46E5; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" onclick="switchSyncModalTab('qr')">
+            📸 1초 QR 스캔
+          </button>
+          <button id="syncTabBtn_code" class="btn" style="font-size: 0.82rem; font-weight: 700; padding: 8px 4px; border-radius: 8px; background: transparent; color: #64748B;" onclick="switchSyncModalTab('code')">
+            📋 코드 복사/복원
+          </button>
+          <button id="syncTabBtn_file" class="btn" style="font-size: 0.82rem; font-weight: 700; padding: 8px 4px; border-radius: 8px; background: transparent; color: #64748B;" onclick="switchSyncModalTab('file')">
+            💾 백업 파일
+          </button>
+        </div>
+
+        <!-- TAB 1: 📸 카메라 QR 스캔 -->
+        <div id="syncTabContent_qr" style="display: block; text-align: center;">
+          <div style="background: white; border: 2px solid #E2E8F0; border-radius: 16px; padding: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 12px;">
+            <img id="tabletQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://nooninsky7.github.io/kids-english/" alt="스마트 동기화 QR코드" width="220" height="220" style="display: block; margin: 0 auto; border-radius: 8px;">
+            <div id="syncQrTooLargeWarning" style="display: none; color: #DC2626; font-size: 0.85rem; padding: 20px;">
+              ⚠️ 데이터 양이 많아 QR 코드 대신 [📋 코드 복사/복원] 탭을 이용해 주세요.
+            </div>
+          </div>
+          <div style="background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 12px; padding: 10px 14px; text-align: left; font-size: 0.82rem; color: #334155; line-height: 1.5; margin-bottom: 12px;">
+            <strong style="color: #4F46E5;">💡 태블릿으로 1초 만에 전송하는 법:</strong><br>
+            1. 아이 태블릿의 <strong>기본 카메라</strong> 앱을 켭니다.<br>
+            2. 화면에 보이는 위 <strong>QR 코드를 비추어 노란 링크</strong>를 터치합니다.<br>
+            3. 태블릿 화면에 <em>"동기화 완료!"</em> 알림이 뜨며 모든 단어와 문장이 자동으로 들어옵니다!
+          </div>
+
+          <div style="background: #F8FAFC; border: 1.5px solid var(--border); border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <span id="tabletDirectUrlText" style="font-size: 0.82rem; font-weight: 700; color: #4338CA; word-break: break-all;">https://nooninsky7.github.io/kids-english/</span>
+            <button class="small-btn" onclick="copyTabletUrl()" style="flex-shrink: 0;">기본주소 복사</button>
           </div>
         </div>
 
-        <div style="background: #F8FAFC; border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px;">
-          <span id="tabletDirectUrlText" style="font-size: 0.95rem; font-weight: 800; color: #4338CA;">https://nooninsky7.github.io/kids-english/</span>
-          <button class="small-btn" onclick="copyTabletUrl()">복사</button>
+        <!-- TAB 2: 📋 동기화 코드 복사 / 붙여넣기 -->
+        <div id="syncTabContent_code" style="display: none; text-align: left;">
+          <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+            <div style="font-size: 0.88rem; font-weight: 800; color: var(--text-main); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+              <span>📤 1. PC 데이터 동기화 코드</span>
+              <button class="btn" style="background: #4F46E5; color: white; font-size: 0.8rem; font-weight: 800; padding: 5px 10px; border-radius: 8px;" onclick="copySyncBackupCode()">
+                📋 1클릭 복사
+              </button>
+            </div>
+            <textarea id="syncExportCodeInput" readonly style="width: 100%; height: 75px; font-family: monospace; font-size: 0.74rem; border: 1px solid #CBD5E1; border-radius: 8px; padding: 8px; resize: none; background: #FFFFFF; color: #475569; word-break: break-all; box-sizing: border-box;"></textarea>
+            <div style="font-size: 0.76rem; color: #64748B; margin-top: 4px;">
+              * 위 코드를 복사하여 카카오톡이나 메모장으로 태블릿에 보내세요.
+            </div>
+          </div>
+
+          <div style="background: #F0FDF4; border: 1.5px solid #BBF7D0; border-radius: 12px; padding: 12px;">
+            <div style="font-size: 0.88rem; font-weight: 800; color: #166534; margin-bottom: 6px;">
+              📥 2. 태블릿에서 코드 붙여넣어 복원
+            </div>
+            <textarea id="syncImportCodeInput" placeholder="복사하신 동기화 코드를 여기에 붙여넣으세요..." style="width: 100%; height: 75px; font-family: monospace; font-size: 0.74rem; border: 1.5px solid #86EFAC; border-radius: 8px; padding: 8px; resize: none; background: #FFFFFF; margin-bottom: 8px; box-sizing: border-box;"></textarea>
+            <button class="btn" style="width: 100%; background: #16A34A; color: white; font-weight: 800; font-size: 0.88rem; padding: 9px; border-radius: 8px;" onclick="applySyncCodeImport()">
+              ✨ 이 코드로 태블릿에 데이터 복원하기
+            </button>
+          </div>
         </div>
-        <div style="font-size: 0.78rem; color: #64748B; background: #F1F5F9; padding: 8px 12px; border-radius: 8px;">
-          💡 집 안뿐만 아니라 외출 시나 다른 Wi-Fi에서도 자유롭게 열 수 있는 영구 고정 주소입니다!
+
+        <!-- TAB 3: 💾 파일 내보내기 / 불러오기 -->
+        <div id="syncTabContent_file" style="display: none; text-align: left;">
+          <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 12px;">
+            <div style="font-size: 0.92rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">
+              💾 내 데이터 백업 파일 저장
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+              PC의 모든 단어와 문장을 컴퓨터에 안전한 파일(.json)로 저장해 둘 수 있습니다.
+            </p>
+            <button class="btn" style="width: 100%; background: #4F46E5; color: white; font-weight: 800; font-size: 0.88rem; padding: 10px; border-radius: 8px;" onclick="downloadBackupJsonFile()">
+              📥 백업 파일 다운로드 (.json)
+            </button>
+          </div>
+
+          <div style="background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 14px;">
+            <div style="font-size: 0.92rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">
+              📂 백업 파일에서 복원
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+              저장해 둔 백업 파일을 태블릿이나 다른 브라우저에서 불러와 복원합니다.
+            </p>
+            <input type="file" id="syncBackupFileInput" accept=".json" style="display: none;" onchange="loadBackupJsonFile(event)">
+            <button class="btn" style="width: 100%; background: #059669; color: white; font-weight: 800; font-size: 0.88rem; padding: 10px; border-radius: 8px;" onclick="document.getElementById('syncBackupFileInput').click()">
+              📂 파일 선택하여 복원하기
+            </button>
+          </div>
         </div>
+
       </div>
     </div>
 
@@ -6791,13 +6873,320 @@
       }
     }
 
-    // 태블릿 QR 모달
+    // =========================================================================
+    // [PC ➔ 태블릿 데이터 전송 & 동기화 시스템 (QR, 코드 복사, 파일 백업)]
+    // =========================================================================
+    function utf8ToBase64(str) {
+      return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+      }));
+    }
+    function base64ToUtf8(b64) {
+      return decodeURIComponent(atob(b64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+    }
+
+    function switchSyncModalTab(tabId) {
+      ['qr', 'code', 'file'].forEach(t => {
+        const btn = document.getElementById('syncTabBtn_' + t);
+        const content = document.getElementById('syncTabContent_' + t);
+        if (t === tabId) {
+          if (btn) {
+            btn.style.background = 'white';
+            btn.style.color = '#4F46E5';
+            btn.style.fontWeight = '800';
+            btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+          }
+          if (content) content.style.display = 'block';
+        } else {
+          if (btn) {
+            btn.style.background = 'transparent';
+            btn.style.color = '#64748B';
+            btn.style.fontWeight = '700';
+            btn.style.boxShadow = 'none';
+          }
+          if (content) content.style.display = 'none';
+        }
+      });
+    }
+
+    function getAppExportPayload(compact = false) {
+      const voca = getStoredVocaList();
+      const patterns = getStoredPatterns();
+      const grammar = getStoredGrammarSets();
+      const streak = getStoredStreak();
+      const quizMode = localStorage.getItem("voca_quiz_mode") || "both";
+
+      if (!compact) {
+        return {
+          version: 2,
+          exportDate: new Date().toISOString(),
+          voca: voca,
+          patterns: patterns,
+          grammar: grammar,
+          streak: streak,
+          quizMode: quizMode
+        };
+      }
+
+      // Compact version for QR code
+      const defaultPatIds = new Set(initialPatterns.map(x => x.id));
+      const customPats = patterns.filter(x => !defaultPatIds.has(x.id) || (x.completed && x.completed > 0));
+
+      const defaultGrammarIds = new Set(defaultGrammarSets.map(x => x.id));
+      const customGrammar = grammar.filter(x => !defaultGrammarIds.has(x.id) || (x.completed && x.completed > 0));
+
+      return {
+        version: 2,
+        compact: true,
+        v: voca,
+        p: customPats,
+        g: customGrammar,
+        s: streak,
+        m: quizMode
+      };
+    }
+
+    function applyAppImportPayload(payload, showAlert = true) {
+      if (!payload || typeof payload !== 'object') {
+        throw new Error("유효하지 않은 동기화 데이터입니다.");
+      }
+
+      let importedVocaCount = 0;
+      let importedSentencesCount = 0;
+
+      // 1. Voca list
+      const incomingVoca = payload.voca || payload.v;
+      if (Array.isArray(incomingVoca)) {
+        incomingVoca.forEach(w => {
+          if (w.english) w.english = w.english.trim().toLowerCase();
+        });
+        vocaList = incomingVoca;
+        saveVocaListToStorage();
+        renderVocaList();
+        importedVocaCount = vocaList.length;
+      }
+
+      // 2. Patterns list
+      const incomingPatterns = payload.patterns;
+      const compactPatterns = payload.p;
+      if (Array.isArray(incomingPatterns)) {
+        patternsList = incomingPatterns;
+        savePatternsToStorage();
+        if (typeof renderTabletPatterns === 'function') renderTabletPatterns();
+        if (typeof loadPatternQuestionTablet === 'function') loadPatternQuestionTablet();
+        importedSentencesCount += patternsList.length;
+      } else if (Array.isArray(compactPatterns)) {
+        compactPatterns.forEach(cp => {
+          const idx = patternsList.findIndex(existing => existing.id === cp.id);
+          if (idx >= 0) {
+            patternsList[idx] = cp;
+          } else {
+            patternsList.unshift(cp);
+          }
+        });
+        savePatternsToStorage();
+        if (typeof renderTabletPatterns === 'function') renderTabletPatterns();
+        if (typeof loadPatternQuestionTablet === 'function') loadPatternQuestionTablet();
+        importedSentencesCount += compactPatterns.length;
+      }
+
+      // 3. Grammar sets
+      const incomingGrammar = payload.grammar;
+      const compactGrammar = payload.g;
+      if (Array.isArray(incomingGrammar)) {
+        grammarSets = incomingGrammar;
+        selectedGrammarSetIds = grammarSets.map(s => s.id);
+        saveGrammarSetsToStorage();
+        renderGrammarSetsList();
+        initTabletGrammar();
+        updateGrammarAchievementUI();
+        importedSentencesCount += grammarSets.length;
+      } else if (Array.isArray(compactGrammar)) {
+        compactGrammar.forEach(cg => {
+          const idx = grammarSets.findIndex(existing => existing.id === cg.id);
+          if (idx >= 0) {
+            grammarSets[idx] = cg;
+          } else {
+            grammarSets.unshift(cg);
+          }
+        });
+        selectedGrammarSetIds = grammarSets.map(s => s.id);
+        saveGrammarSetsToStorage();
+        renderGrammarSetsList();
+        initTabletGrammar();
+        updateGrammarAchievementUI();
+        importedSentencesCount += compactGrammar.length;
+      }
+
+      // 4. Streak
+      const streak = payload.streak !== undefined ? payload.streak : payload.s;
+      if (streak !== undefined) {
+        try {
+          localStorage.setItem("english_streak_days", String(streak));
+          const el = document.getElementById('streakCountText');
+          if (el) el.textContent = `${streak}일 연속`;
+        } catch(e){}
+      }
+
+      // 5. Quiz mode
+      const mode = payload.quizMode || payload.m;
+      if (mode) {
+        try { localStorage.setItem("voca_quiz_mode", mode); } catch(e){}
+      }
+
+      try { localStorage.setItem(CLEAN_PRODUCTION_KEY, "true"); } catch(e){}
+
+      if (showAlert) {
+        alert(`🎉 [데이터 동기화 완료!]\n\n• 단어: ${importedVocaCount}개\n• 문장 및 기록: 반영 완료\n• 출석 연속: ${streak || 0}일\n\n모든 학습 데이터가 안전하게 적용되었습니다!`);
+      }
+    }
+
+    function checkAutoSyncFromUrl() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const syncParam = urlParams.get('sync');
+        if (syncParam) {
+          const decodedJson = base64ToUtf8(syncParam);
+          const payload = JSON.parse(decodedJson);
+          applyAppImportPayload(payload, false);
+
+          const cleanUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, document.title, cleanUrl);
+
+          setTimeout(() => {
+            alert("🎉 [PC ➔ 태블릿 데이터 전송 완료!]\n\nPC에서 등록하셨던 모든 단어와 문장, 학습 기록이 태블릿에 안전하게 복원되었습니다!\n즐겁게 학습을 시작해보세요. 😊");
+          }, 350);
+        }
+      } catch(e) {
+        console.error("Auto sync from URL failed:", e);
+      }
+    }
+
     function copyTabletUrl() {
       const url = document.getElementById('tabletDirectUrlText').textContent;
       navigator.clipboard.writeText(url).then(() => alert("태블릿 주소가 복사되었습니다!"));
     }
-    function openTabletConnectModal() { document.getElementById('tabletConnectModal').style.display = 'flex'; }
-    function closeTabletConnectModal() { document.getElementById('tabletConnectModal').style.display = 'none'; }
+
+    function openTabletConnectModal() {
+      const modal = document.getElementById('tabletConnectModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      switchSyncModalTab('qr');
+
+      try {
+        const compactPayload = getAppExportPayload(true);
+        const vocaCount = (compactPayload.v || []).length;
+        const customPatCount = (compactPayload.p || []).length;
+        const customGrammarCount = (compactPayload.g || []).length;
+        const streak = compactPayload.s || 0;
+
+        const summaryEl = document.getElementById('syncDataSummaryText');
+        if (summaryEl) {
+          summaryEl.innerHTML = `
+            <strong>현재 이 PC에 저장된 학습 데이터:</strong><br>
+            단어 <strong>${vocaCount}개</strong> · 맞춤 문장/기록 <strong>${customPatCount + customGrammarCount}개</strong> · 출석 <strong>${streak}일</strong>
+          `;
+        }
+
+        const compactStr = JSON.stringify(compactPayload);
+        const b64 = utf8ToBase64(compactStr);
+        const baseUrl = "https://nooninsky7.github.io/kids-english/";
+        const syncUrl = `${baseUrl}?sync=${encodeURIComponent(b64)}`;
+
+        const qrImg = document.getElementById('tabletQrCodeImg');
+        const qrWarning = document.getElementById('syncQrTooLargeWarning');
+        if (syncUrl.length < 2400 && qrImg) {
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(syncUrl)}`;
+          qrImg.style.display = 'block';
+          if (qrWarning) qrWarning.style.display = 'none';
+        } else {
+          if (qrImg) qrImg.style.display = 'none';
+          if (qrWarning) qrWarning.style.display = 'block';
+        }
+
+        const fullPayload = getAppExportPayload(false);
+        const fullB64 = utf8ToBase64(JSON.stringify(fullPayload));
+        const exportInput = document.getElementById('syncExportCodeInput');
+        if (exportInput) exportInput.value = fullB64;
+      } catch(e) {
+        console.warn("QR Sync preparation warning:", e);
+      }
+    }
+
+    function closeTabletConnectModal() {
+      const modal = document.getElementById('tabletConnectModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function copySyncBackupCode() {
+      const input = document.getElementById('syncExportCodeInput');
+      if (!input || !input.value) return;
+      navigator.clipboard.writeText(input.value).then(() => {
+        alert("📋 동기화 코드가 클립보드에 복사되었습니다!\n\n태블릿에서 카카오톡이나 메모장으로 전달한 뒤, 태블릿 앱의 [📋 코드 복사/복원] 탭에 붙여넣으시면 1초 만에 복원됩니다.");
+      }).catch(() => {
+        input.select();
+        document.execCommand('copy');
+        alert("📋 동기화 코드가 복사되었습니다!");
+      });
+    }
+
+    function applySyncCodeImport() {
+      const input = document.getElementById('syncImportCodeInput');
+      const code = (input ? input.value : "").trim();
+      if (!code) {
+        alert("붙여넣으실 동기화 코드를 입력해 주세요.");
+        return;
+      }
+      try {
+        const jsonStr = base64ToUtf8(code);
+        const payload = JSON.parse(jsonStr);
+        applyAppImportPayload(payload, true);
+        input.value = "";
+        closeTabletConnectModal();
+      } catch(e) {
+        alert("⚠️ 유효하지 않은 동기화 코드입니다.\n코드가 잘리지 않고 전체 복사되었는지 확인해 주세요.\n(" + e.message + ")");
+      }
+    }
+
+    function downloadBackupJsonFile() {
+      try {
+        const payload = getAppExportPayload(false);
+        const jsonStr = JSON.stringify(payload, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const now = new Date();
+        const dateStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
+        a.href = url;
+        a.download = `kids_english_backup_${dateStr}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch(e) {
+        alert("백업 파일 생성 중 오류가 발생했습니다: " + e.message);
+      }
+    }
+
+    function loadBackupJsonFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const payload = JSON.parse(e.target.result);
+          applyAppImportPayload(payload, true);
+          event.target.value = "";
+          closeTabletConnectModal();
+        } catch(err) {
+          alert("⚠️ 파일 형식이 올바르지 않습니다: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
     function forceLatestVersionReload() {
       const ts = Date.now();
       const url = new URL(window.location.href);
@@ -6806,7 +7195,7 @@
     }
 
     // =========================================================================
-    // [실제 학습 시작을 위한 테스트 데이터 완전 리셋 & 마이그레이션]
+    // [실제 학습 시작을 위한 테스트 데이터 완전 리셋]
     // =========================================================================
     const CLEAN_PRODUCTION_KEY = "kids_clean_prod_20261110_v2";
     function executeFreshStartReset() {
@@ -6835,15 +7224,6 @@
 
       // 초기화 플래그 기록
       localStorage.setItem(CLEAN_PRODUCTION_KEY, "true");
-    }
-
-    try {
-      if (localStorage.getItem(CLEAN_PRODUCTION_KEY) !== "true") {
-        executeFreshStartReset();
-        console.log("✨ 테스트 데이터 리셋 완료: 실제 학습을 위한 클린 상태로 초기화되었습니다.");
-      }
-    } catch(e) {
-      console.warn("데이터 초기화 중 오류:", e);
     }
 
     function resetAllAppDataForFreshStart() {
@@ -6880,6 +7260,9 @@
     initTabletGrammar();
     renderVocaList();
     document.getElementById('streakCountText').textContent = `${getStoredStreak()}일 연속`;
+
+    // 태블릿 URL 파라미터(?sync=...) 자동 감지 및 1초 복원 실행
+    checkAutoSyncFromUrl();
 
     // 바탕 클릭 시 문장 퍼즐 선택 해제
     document.addEventListener('click', (e) => {

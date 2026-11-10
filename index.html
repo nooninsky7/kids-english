@@ -597,6 +597,73 @@
       box-shadow: 0 2px 6px rgba(59, 130, 246, 0.28);
     }
 
+    /* 문장퍼즐 분할 레이아웃 (회화패턴 스타일) */
+    .grammar-split-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .grammar-list-col {
+      width: 350px;
+      min-width: 300px;
+      border-right: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: #FAFBFD;
+      padding: 14px;
+      gap: 10px;
+      overflow-y: auto;
+    }
+    .grammar-workspace-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      background: #FFFFFF;
+    }
+    .grammar-filter-bar-compact {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      flex-wrap: wrap;
+    }
+    .grammar-set-card {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .grammar-set-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
+      transform: translateY(-1px);
+    }
+    .grammar-set-card.active {
+      border: 2px solid var(--primary);
+      background: #F0FDF4;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+    }
+    .grammar-card-title {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.35;
+    }
+    .grammar-set-card.active .grammar-card-title {
+      color: var(--primary);
+    }
+    .grammar-card-ko {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
     /* 모달 */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px);
@@ -950,62 +1017,78 @@
 
 
     <!-- ==================================================================== -->
-    <!-- [TAB 3] 🧩 문장퍼즐 영역 -->
+    <!-- [TAB 3] 🧩 문장퍼즐 영역 (회화패턴 스타일 좌우 분할 레이아웃) -->
     <!-- ==================================================================== -->
     <div id="grammarSection" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
       <div class="nav-bar">
         <div class="nav-title"><span>🧩 문장퍼즐</span></div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-          <button class="nav-btn" onclick="openGrammarListModal()" style="font-weight: 800; background: #FEF3C7; border-color: #FCD34D; color: #92400E;">📋 퍼즐 목록 & 달성표 (<span id="grammarCompletedCountBadge">0/7</span>)</button>
+          <button class="nav-btn" onclick="openGrammarListModal()" style="font-weight: 800; background: #FEF3C7; border-color: #FCD34D; color: #92400E;">📋 전체 세트 달성표 (<span id="grammarCompletedCountBadge">0/7</span>)</button>
           <button class="nav-btn primary" onclick="openAddGrammarModal()">+ 문장 등록</button>
           <button class="nav-btn" onclick="resetCurrentGrammarBlocks()">다시 놓기 ↺</button>
-          <button class="nav-btn primary" id="grammarNextBtn" onclick="nextGrammarQuestion()" disabled>다음 문장 ➔</button>
+          <button class="nav-btn primary" id="grammarNextBtn" onclick="nextGrammarQuestion()" disabled>다음 문제 ➔</button>
         </div>
       </div>
 
-      <!-- 7가지 문장 형식 퀵 필터 바 -->
-      <div class="grammar-filter-bar" id="grammarFilterBar">
-        <button class="grammar-filter-chip active" id="chip_ALL" onclick="filterGrammarByForm('ALL')">✨ 전체 7가지 형식 (자동 전환)</button>
-        <button class="grammar-filter-chip" id="chip_FORM_1" onclick="filterGrammarByForm('FORM_1')">1형식 (누가·뭐해·어디서)</button>
-        <button class="grammar-filter-chip" id="chip_FORM_2" onclick="filterGrammarByForm('FORM_2')">2형식 (누가·어때·상태)</button>
-        <button class="grammar-filter-chip" id="chip_FORM_3" onclick="filterGrammarByForm('FORM_3')">3형식 (누가·뭐해·무엇을)</button>
-        <button class="grammar-filter-chip" id="chip_FORM_4" onclick="filterGrammarByForm('FORM_4')">4형식 (누가·뭐해·누구에게·무엇을)</button>
-        <button class="grammar-filter-chip" id="chip_FORM_5" onclick="filterGrammarByForm('FORM_5')">5형식 (누가·뭐해·무엇을·상태)</button>
-        <button class="grammar-filter-chip" id="chip_QUESTION_DO" onclick="filterGrammarByForm('QUESTION_DO')">Do의문문 (물어봐)</button>
-        <button class="grammar-filter-chip" id="chip_QUESTION_WH" onclick="filterGrammarByForm('QUESTION_WH')">Wh의문문 (궁금한 것)</button>
-      </div>
+      <!-- 회화패턴 스타일 좌우 분할 레이아웃 -->
+      <div class="grammar-split-layout">
+        <!-- 좌측: 7형식 퀵 필터 및 문장 세트 목록 -->
+        <div class="grammar-list-col">
+          <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 2px;">
+            🏷️ 문장 구조(형식) 필터
+          </div>
+          <div class="grammar-filter-bar-compact" id="grammarFilterBar">
+            <button class="grammar-filter-chip active" id="chip_ALL" onclick="filterGrammarByForm('ALL')">✨ 전체</button>
+            <button class="grammar-filter-chip" id="chip_FORM_1" onclick="filterGrammarByForm('FORM_1')">1형식</button>
+            <button class="grammar-filter-chip" id="chip_FORM_2" onclick="filterGrammarByForm('FORM_2')">2형식</button>
+            <button class="grammar-filter-chip" id="chip_FORM_3" onclick="filterGrammarByForm('FORM_3')">3형식</button>
+            <button class="grammar-filter-chip" id="chip_FORM_4" onclick="filterGrammarByForm('FORM_4')">4형식</button>
+            <button class="grammar-filter-chip" id="chip_FORM_5" onclick="filterGrammarByForm('FORM_5')">5형식</button>
+            <button class="grammar-filter-chip" id="chip_QUESTION_DO" onclick="filterGrammarByForm('QUESTION_DO')">Do의문</button>
+            <button class="grammar-filter-chip" id="chip_QUESTION_WH" onclick="filterGrammarByForm('QUESTION_WH')">Wh의문</button>
+          </div>
+          <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+            <span>문장 세트 목록</span>
+            <span style="font-size: 0.78rem; font-weight: 800; color: var(--primary); background: #EFF6FF; padding: 2px 7px; border-radius: 9999px;">1선택 2문제</span>
+          </div>
+          <div id="grammarSetsList" style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto;"></div>
+        </div>
 
-      <div class="tablet-grammar-container">
-        <!-- 1. 안내 배너 -->
-        <div class="tablet-guide-banner">
-          <div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
-              <span class="guide-step-tag" id="grammarStepIndicator">문장 1 / 7</span>
-              <span class="grammar-form-badge" id="grammarFormBadge">🏷️ 1형식: 누가 + 뭐해 + 어디서</span>
-              <span class="subtab-badge" id="grammarCurrentCompletedBadge" style="font-weight: 800; background: #FEF3C7; color: #B45309;">⏳ 도전 중</span>
+        <!-- 우측: 퍼즐 풀이 작업 영역 -->
+        <div class="grammar-workspace-col">
+          <div class="tablet-grammar-container">
+            <!-- 1. 안내 배너 -->
+            <div class="tablet-guide-banner">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                  <span class="guide-step-tag" id="grammarStepIndicator" style="font-weight: 800; color: var(--primary);">문제 1 / 2 (기본 문장)</span>
+                  <span class="grammar-form-badge" id="grammarFormBadge">🏷️ 1형식: 누가 + 뭐해 + 어디서</span>
+                  <span class="subtab-badge" id="grammarCurrentCompletedBadge" style="font-weight: 800; background: #FEF3C7; color: #B45309;">⏳ 도전 중</span>
+                </div>
+                <div class="guide-prompt-ko" id="grammarPromptKo">그 귀여운 강아지는 공원에서 달려.</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">원어민 소리</span>
+                <button class="speaker-btn" onclick="playCurrentGrammarTTS()" title="전체 문장 듣기">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                </button>
+              </div>
             </div>
-            <div class="guide-prompt-ko" id="grammarPromptKo">그 귀여운 강아지는 공원에서 달려.</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">원어민 소리</span>
-            <button class="speaker-btn" onclick="playCurrentGrammarTTS()" title="전체 문장 듣기">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-            </button>
+
+            <!-- 2. 단어 블록 보관소 -->
+            <div>
+              <div style="font-size: 0.86rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-align: center;">
+                👇 단어 블록을 마우스나 손가락으로 끌거나 클릭해서 알맞은 바구니에 쏙 넣어보세요!
+              </div>
+              <div class="tablet-blocks-pool" id="wordBlocksPool"></div>
+            </div>
+
+            <!-- 3. 품사 바구니 기차 (문장 구조에 맞춰 동적 렌더링) -->
+            <div class="tablet-baskets-row" id="grammarBasketsArea"></div>
+
+            <div class="grammar-feedback-msg" id="grammarFeedbackBox">단어 블록을 끌거나 클릭해서 알맞은 바구니에 넣어보세요!</div>
           </div>
         </div>
-
-        <!-- 2. 단어 블록 보관소 -->
-        <div>
-          <div style="font-size: 0.86rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-align: center;">
-            👇 단어 블록을 마우스나 손가락으로 끌거나 클릭해서 알맞은 바구니에 쏙 넣어보세요!
-          </div>
-          <div class="tablet-blocks-pool" id="wordBlocksPool"></div>
-        </div>
-
-        <!-- 3. 품사 바구니 기차 (문장 구조에 맞춰 동적 렌더링) -->
-        <div class="tablet-baskets-row" id="grammarBasketsArea"></div>
-
-        <div class="grammar-feedback-msg" id="grammarFeedbackBox">단어 블록을 끌거나 클릭해서 알맞은 바구니에 넣어보세요!</div>
       </div>
     </div>
 
@@ -2435,14 +2518,28 @@
         isCompleted: false
       };
       const similarGrammarItem = generateSimilarGrammarSentence(newGrammarItem);
-      grammarSentences.unshift(similarGrammarItem);
-      grammarSentences.unshift(newGrammarItem);
+      similarGrammarItem.id = "g_os_sim_" + Date.now();
+      similarGrammarItem.isVariation = true;
+
+      const newGrammarSet = {
+        id: "gset_os_" + Date.now(),
+        form: parsedG.form,
+        title: newGrammarItem.fullEnglish,
+        korean: naturalKo,
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [newGrammarItem, similarGrammarItem]
+      };
+
+      grammarSets.unshift(newGrammarSet);
+      currentGrammarSetId = newGrammarSet.id;
+      currentGrammarSubIdx = 0;
       currentGrammarFilter = 'ALL';
       document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
       const allChip = document.getElementById('chip_ALL');
       if (allChip) allChip.classList.add('active');
-      currentGrammarIdx = 0;
-      saveGrammarSentencesToStorage();
+      saveGrammarSetsToStorage();
+      renderGrammarSetsList();
       updateGrammarAchievementUI();
 
       // 2. 단어장 자동 연동 (문장에서 핵심 단어 추출)
@@ -2694,132 +2791,322 @@
       }
     };
 
-    const defaultGrammarList = [
+    // 7가지 형식 기본 2문제 1세트 데이터
+    const defaultGrammarSets = [
       {
-        id: "g1",
+        id: "gset_1",
         form: "FORM_1",
+        title: "The cute puppy runs in the park.",
         korean: "그 귀여운 강아지는 공원에서 달려.",
-        fullEnglish: "The cute puppy runs in the park.",
-        blocks: [
-          { id: "b1", text: "The cute puppy", role: "WHO" },
-          { id: "b2", text: "runs", role: "DO" },
-          { id: "b3", text: "in the park", role: "WHERE" }
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [
+          {
+            id: "g1_q1",
+            form: "FORM_1",
+            korean: "그 귀여운 강아지는 공원에서 달려.",
+            fullEnglish: "The cute puppy runs in the park.",
+            blocks: [
+              { id: "b1", text: "The cute puppy", role: "WHO" },
+              { id: "b2", text: "runs", role: "DO" },
+              { id: "b3", text: "in the park", role: "WHERE" }
+            ],
+            isVariation: false
+          },
+          {
+            id: "g1_q2",
+            form: "FORM_1",
+            korean: "그 작은 고양이는 정원에서 뛰어놀아.",
+            fullEnglish: "The little cat plays in the garden.",
+            blocks: [
+              { id: "b1_v", text: "The little cat", role: "WHO" },
+              { id: "b2_v", text: "plays", role: "DO" },
+              { id: "b3_v", text: "in the garden", role: "WHERE" }
+            ],
+            isVariation: true
+          }
         ]
       },
       {
-        id: "g2",
+        id: "gset_2",
         form: "FORM_2",
+        title: "My best friend looks very happy.",
         korean: "내 제일 친한 친구는 아주 행복해 보여.",
-        fullEnglish: "My best friend looks very happy.",
-        blocks: [
-          { id: "b4", text: "My best friend", role: "WHO" },
-          { id: "b5", text: "looks", role: "BE_FEEL" },
-          { id: "b6", text: "very happy", role: "STATE" }
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [
+          {
+            id: "g2_q1",
+            form: "FORM_2",
+            korean: "내 제일 친한 친구는 아주 행복해 보여.",
+            fullEnglish: "My best friend looks very happy.",
+            blocks: [
+              { id: "b4", text: "My best friend", role: "WHO" },
+              { id: "b5", text: "looks", role: "BE_FEEL" },
+              { id: "b6", text: "very happy", role: "STATE" }
+            ],
+            isVariation: false
+          },
+          {
+            id: "g2_q2",
+            form: "FORM_2",
+            korean: "그 친절한 선생님은 정말 따뜻해 보여.",
+            fullEnglish: "The kind teacher looks so warm.",
+            blocks: [
+              { id: "b4_v", text: "The kind teacher", role: "WHO" },
+              { id: "b5_v", text: "looks", role: "BE_FEEL" },
+              { id: "b6_v", text: "so warm", role: "STATE" }
+            ],
+            isVariation: true
+          }
         ]
       },
       {
-        id: "g3",
+        id: "gset_3",
         form: "FORM_3",
+        title: "I want a sweet apple.",
         korean: "나는 달콤한 사과를 원해.",
-        fullEnglish: "I want a sweet apple.",
-        blocks: [
-          { id: "b7", text: "I", role: "WHO" },
-          { id: "b8", text: "want", role: "DO" },
-          { id: "b9", text: "a sweet apple", role: "WHAT" }
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [
+          {
+            id: "g3_q1",
+            form: "FORM_3",
+            korean: "나는 달콤한 사과를 원해.",
+            fullEnglish: "I want a sweet apple.",
+            blocks: [
+              { id: "b7", text: "I", role: "WHO" },
+              { id: "b8", text: "want", role: "DO" },
+              { id: "b9", text: "a sweet apple", role: "WHAT" }
+            ],
+            isVariation: false
+          },
+          {
+            id: "g3_q2",
+            form: "FORM_3",
+            korean: "우리는 시원한 우유를 마셔.",
+            fullEnglish: "We drink fresh milk.",
+            blocks: [
+              { id: "b7_v", text: "We", role: "WHO" },
+              { id: "b8_v", text: "drink", role: "DO" },
+              { id: "b9_v", text: "fresh milk", role: "WHAT" }
+            ],
+            isVariation: true
+          }
         ]
       },
       {
-        id: "g4",
+        id: "gset_4",
         form: "FORM_4",
+        title: "Mom gave me sweet candies.",
         korean: "엄마는 나에게 달콤한 사탕을 주셨어.",
-        fullEnglish: "Mom gave me sweet candies.",
-        blocks: [
-          { id: "b10", text: "Mom", role: "WHO" },
-          { id: "b11", text: "gave", role: "DO" },
-          { id: "b12", text: "me", role: "TO_WHOM" },
-          { id: "b13", text: "sweet candies", role: "WHAT" }
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [
+          {
+            id: "g4_q1",
+            form: "FORM_4",
+            korean: "엄마는 나에게 달콤한 사탕을 주셨어.",
+            fullEnglish: "Mom gave me sweet candies.",
+            blocks: [
+              { id: "b10", text: "Mom", role: "WHO" },
+              { id: "b11", text: "gave", role: "DO" },
+              { id: "b12", text: "me", role: "TO_WHOM" },
+              { id: "b13", text: "sweet candies", role: "WHAT" }
+            ],
+            isVariation: false
+          },
+          {
+            id: "g4_q2",
+            form: "FORM_4",
+            korean: "아빠는 우리에게 재미있는 책을 사주셨어.",
+            fullEnglish: "Dad bought us a fun book.",
+            blocks: [
+              { id: "b10_v", text: "Dad", role: "WHO" },
+              { id: "b11_v", text: "bought", role: "DO" },
+              { id: "b12_v", text: "us", role: "TO_WHOM" },
+              { id: "b13_v", text: "a fun book", role: "WHAT" }
+            ],
+            isVariation: true
+          }
         ]
       },
       {
-        id: "g5",
+        id: "gset_5",
         form: "FORM_5",
+        title: "This music makes me smile.",
         korean: "이 신나는 음악은 나를 미소 짓게 만들어.",
-        fullEnglish: "This music makes me smile.",
-        blocks: [
-          { id: "b14", text: "This music", role: "WHO" },
-          { id: "b15", text: "makes", role: "DO" },
-          { id: "b16", text: "me", role: "WHAT" },
-          { id: "b17", text: "smile", role: "STATE" }
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [
+          {
+            id: "g5_q1",
+            form: "FORM_5",
+            korean: "이 신나는 음악은 나를 미소 짓게 만들어.",
+            fullEnglish: "This music makes me smile.",
+            blocks: [
+              { id: "b14", text: "This music", role: "WHO" },
+              { id: "b15", text: "makes", role: "DO" },
+              { id: "b16", text: "me", role: "WHAT" },
+              { id: "b17", text: "smile", role: "STATE" }
+            ],
+            isVariation: false
+          },
+          {
+            id: "g5_q2",
+            form: "FORM_5",
+            korean: "이 귀여운 강아지는 나를 정말 행복하게 해.",
+            fullEnglish: "The puppy makes me so happy.",
+            blocks: [
+              { id: "b14_v", text: "The puppy", role: "WHO" },
+              { id: "b15_v", text: "makes", role: "DO" },
+              { id: "b16_v", text: "me", role: "WHAT" },
+              { id: "b17_v", text: "so happy", role: "STATE" }
+            ],
+            isVariation: true
+          }
         ]
       },
       {
-        id: "g6",
+        id: "gset_6",
         form: "QUESTION_DO",
+        title: "Do you like delicious pizza?",
         korean: "너는 맛있는 피자를 좋아하니?",
-        fullEnglish: "Do you like delicious pizza?",
-        blocks: [
-          { id: "b18", text: "Do", role: "DO_HELPER" },
-          { id: "b19", text: "you", role: "WHO" },
-          { id: "b20", text: "like", role: "DO" },
-          { id: "b21", text: "delicious pizza?", role: "WHAT" }
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [
+          {
+            id: "g6_q1",
+            form: "QUESTION_DO",
+            korean: "너는 맛있는 피자를 좋아하니?",
+            fullEnglish: "Do you like delicious pizza?",
+            blocks: [
+              { id: "b18", text: "Do", role: "DO_HELPER" },
+              { id: "b19", text: "you", role: "WHO" },
+              { id: "b20", text: "like", role: "DO" },
+              { id: "b21", text: "delicious pizza?", role: "WHAT" }
+            ],
+            isVariation: false
+          },
+          {
+            id: "g6_q2",
+            form: "QUESTION_DO",
+            korean: "너는 귀여운 강아지를 좋아하니?",
+            fullEnglish: "Do you like cute puppies?",
+            blocks: [
+              { id: "b18_v", text: "Do", role: "DO_HELPER" },
+              { id: "b19_v", text: "you", role: "WHO" },
+              { id: "b20_v", text: "like", role: "DO" },
+              { id: "b21_v", text: "cute puppies?", role: "WHAT" }
+            ],
+            isVariation: true
+          }
         ]
       },
       {
-        id: "g7",
+        id: "gset_7",
         form: "QUESTION_WH",
+        title: "What do you want to eat?",
         korean: "너는 무엇을 먹고 싶니?",
-        fullEnglish: "What do you want to eat?",
-        blocks: [
-          { id: "b22", text: "What", role: "QUESTION_WORD" },
-          { id: "b23", text: "do", role: "DO_HELPER" },
-          { id: "b24", text: "you", role: "WHO" },
-          { id: "b25", text: "want to eat?", role: "DO" }
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [
+          {
+            id: "g7_q1",
+            form: "QUESTION_WH",
+            korean: "너는 무엇을 먹고 싶니?",
+            fullEnglish: "What do you want to eat?",
+            blocks: [
+              { id: "b22", text: "What", role: "QUESTION_WORD" },
+              { id: "b23", text: "do", role: "DO_HELPER" },
+              { id: "b24", text: "you", role: "WHO" },
+              { id: "b25", text: "want to eat?", role: "DO" }
+            ],
+            isVariation: false
+          },
+          {
+            id: "g7_q2",
+            form: "QUESTION_WH",
+            korean: "너는 어디에서 놀고 싶니?",
+            fullEnglish: "Where do you want to play?",
+            blocks: [
+              { id: "b22_v", text: "Where", role: "QUESTION_WORD" },
+              { id: "b23_v", text: "do", role: "DO_HELPER" },
+              { id: "b24_v", text: "you", role: "WHO" },
+              { id: "b25_v", text: "want to play?", role: "DO" }
+            ],
+            isVariation: true
+          }
         ]
       }
     ];
 
-    function getStoredGrammarSentences() {
+    const defaultGrammarList = defaultGrammarSets.flatMap(s => s.questions);
+
+    function getStoredGrammarSets() {
       try {
-        const data = localStorage.getItem("kids_grammar_sentences");
+        const data = localStorage.getItem("kids_grammar_sets_v2");
         if (data) {
           const list = JSON.parse(data);
-          const formsPresent = new Set(list.map(item => item.form).filter(Boolean));
-          const allRequiredForms = ["FORM_1", "FORM_2", "FORM_3", "FORM_4", "FORM_5", "QUESTION_DO", "QUESTION_WH"];
-          const isMissingForms = allRequiredForms.some(f => !formsPresent.has(f));
-
-          // 구버전(3문장만 있거나 7형식이 부족한 경우) 자동 업그레이드
-          if (isMissingForms || list.length < 7) {
-            const userAdded = list.filter(item => item.id && (item.id.startsWith("g_user_") || item.id.startsWith("g_os_")));
-            const upgraded = [...defaultGrammarList, ...userAdded];
-            localStorage.setItem("kids_grammar_sentences", JSON.stringify(upgraded));
-            return upgraded;
+          if (Array.isArray(list) && list.length >= 7) {
+            list.forEach(set => {
+              if (!Array.isArray(set.solvedSub)) set.solvedSub = [!!set.isCompleted, !!set.isCompleted];
+              if (!set.questions || set.questions.length < 2) {
+                const q1 = (set.questions && set.questions[0]) || { form: set.form, korean: set.korean, fullEnglish: set.title, blocks: [] };
+                const q2 = (set.questions && set.questions[1]) || generateSimilarGrammarSentence(q1);
+                set.questions = [q1, q2];
+              }
+            });
+            return list;
           }
-
-          list.forEach(item => {
-            if (item.blocks) {
-              item.blocks.forEach(b => b.role = normalizeRole(b.role));
-            }
-          });
-          return list;
         }
-        return defaultGrammarList;
-      } catch(e) { return defaultGrammarList; }
+      } catch(e) {}
+      return JSON.parse(JSON.stringify(defaultGrammarSets));
     }
 
-    function saveGrammarSentencesToStorage() {
+    function saveGrammarSetsToStorage() {
       try {
-        localStorage.setItem("kids_grammar_sentences", JSON.stringify(grammarSentences));
+        localStorage.setItem("kids_grammar_sets_v2", JSON.stringify(grammarSets));
       } catch(e) {}
     }
 
-    let grammarSentences = getStoredGrammarSentences();
-    let currentGrammarIdx = 0;
+    let grammarSets = getStoredGrammarSets();
+    let currentGrammarSetId = grammarSets[0] ? grammarSets[0].id : "gset_1";
+    let currentGrammarSubIdx = 0; // 0: 기본 문장, 1: 응용 문장
     let currentGrammarFilter = 'ALL';
     let placedBlocks = {};
     let selectedGrammarBlock = null;
 
+    function getActiveGrammarSets() {
+      if (currentGrammarFilter === 'ALL') return grammarSets;
+      return grammarSets.filter(s => s.form === currentGrammarFilter);
+    }
+
+    function getCurrentGrammarSet() {
+      let set = grammarSets.find(s => s.id === currentGrammarSetId);
+      if (!set) {
+        const active = getActiveGrammarSets();
+        set = active[0] || grammarSets[0];
+        if (set) currentGrammarSetId = set.id;
+      }
+      return set;
+    }
+
+    function getCurrentGrammarQuestion() {
+      const set = getCurrentGrammarSet();
+      if (!set || !set.questions || set.questions.length === 0) return null;
+      return set.questions[currentGrammarSubIdx] || set.questions[0];
+    }
+
+    // 하위 호환성용
+    function getActiveGrammarSentences() {
+      const q = getCurrentGrammarQuestion();
+      return q ? [q] : [];
+    }
+
     function initTabletGrammar() {
       loadTabletGrammarQuestion();
+      renderGrammarSetsList();
       updateGrammarAchievementUI();
     }
 
@@ -2828,28 +3115,94 @@
       currentGrammarFilter = formKey;
 
       document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
-      const activeChip = document.getElementById(`chip_${formKey}`);
-      if (activeChip) activeChip.classList.add('active');
+      const activeChips = document.querySelectorAll(`[id="chip_${formKey}"]`);
+      activeChips.forEach(c => c.classList.add('active'));
 
-      const activeList = getActiveGrammarSentences();
-      if (activeList.length === 0) {
-        alert("선택하신 형식의 문장이 아직 없습니다. [+ 문장 직접 등록]으로 추가하실 수 있습니다!");
+      const activeSets = getActiveGrammarSets();
+      if (activeSets.length === 0) {
+        alert("선택하신 형식의 문장이 아직 없습니다. [+ 문장 등록]으로 추가하실 수 있습니다!");
+        currentGrammarFilter = 'ALL';
+        document.querySelectorAll(`[id="chip_ALL"]`).forEach(c => c.classList.add('active'));
+        renderGrammarSetsList();
         return;
       }
-      currentGrammarIdx = 0;
+
+      if (!activeSets.some(s => s.id === currentGrammarSetId)) {
+        currentGrammarSetId = activeSets[0].id;
+        currentGrammarSubIdx = 0;
+      }
       loadTabletGrammarQuestion();
+      renderGrammarSetsList();
     }
 
-    function getActiveGrammarSentences() {
-      if (currentGrammarFilter === 'ALL') return grammarSentences;
-      return grammarSentences.filter(s => {
-        let f = s.form;
-        if (!f) {
-          const d = detectAndParseSentence(s.fullEnglish);
-          f = d ? d.form : "FORM_3";
+    function renderGrammarSetsList() {
+      const container = document.getElementById('grammarSetsList');
+      if (!container) return;
+      container.innerHTML = "";
+
+      const activeSets = getActiveGrammarSets();
+      if (activeSets.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:0.9rem;">선택하신 형식의 문장이 없습니다.<br>+ 문장 등록으로 추가해 보세요!</div>`;
+        return;
+      }
+
+      activeSets.forEach((set) => {
+        const isActive = set.id === currentGrammarSetId;
+        const formMeta = FORM_META[set.form] || { title: set.form || "문장", color: "#3B82F6", bg: "#EFF6FF" };
+
+        const p1Done = !!(set.solvedSub && set.solvedSub[0]);
+        const p2Done = !!(set.solvedSub && set.solvedSub[1]);
+        const isFullDone = (set.completed && set.completed > 0) || (p1Done && p2Done);
+
+        let statusText = "도전 전 (0/2)";
+        let statusBg = "#F1F5F9";
+        let statusColor = "#64748B";
+
+        if (isFullDone) {
+          statusText = `🎉 2/2 완료`;
+          statusBg = "#ECFDF5";
+          statusColor = "#059669";
+        } else if (p1Done || p2Done) {
+          statusText = `⏳ 1/2 진행 중`;
+          statusBg = "#FEF3C7";
+          statusColor = "#D97706";
         }
-        return f === currentGrammarFilter;
+
+        const card = document.createElement('div');
+        card.className = `grammar-set-card ${isActive ? 'active' : ''}`;
+        card.onclick = () => selectGrammarSet(set.id);
+
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.75rem; font-weight:800; color:${formMeta.color}; background:${formMeta.bg}; padding:2px 8px; border-radius:6px; border:1px solid ${formMeta.color}40;">
+              ${formMeta.title}
+            </span>
+            <span style="font-size:0.75rem; font-weight:800; color:${statusColor}; background:${statusBg}; padding:2px 8px; border-radius:9999px;">
+              ${statusText}
+            </span>
+          </div>
+          <div class="grammar-card-title">${set.title}</div>
+          <div class="grammar-card-ko">${set.korean}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <span style="font-size:0.8rem; font-weight:800; color:#059669;">🔥 ${set.completed || 0}세트 완료</span>
+            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">2문제 1세트</span>
+          </div>
+        `;
+        container.appendChild(card);
       });
+    }
+
+    function selectGrammarSet(setId) {
+      playClickSound();
+      currentGrammarSetId = setId;
+      const set = getCurrentGrammarSet();
+      if (set && set.solvedSub && set.solvedSub[0] && !set.solvedSub[1]) {
+        currentGrammarSubIdx = 1;
+      } else {
+        currentGrammarSubIdx = 0;
+      }
+      loadTabletGrammarQuestion();
+      renderGrammarSetsList();
     }
 
     // [핵심] 문제의 형식에 따라 자동으로 품사 바구니 생성 및 적용
@@ -2858,7 +3211,6 @@
       if (!container) return;
       container.innerHTML = "";
 
-      // 1. 문제의 형식 자동 판별
       let formKey = sentence.form;
       if (!formKey || !SENTENCE_TYPES[formKey]) {
         const detected = detectAndParseSentence(sentence.fullEnglish);
@@ -2866,7 +3218,6 @@
         sentence.form = formKey;
       }
 
-      // 2. 상단 형식 배지 표시 갱신 (형식별 맞춤 색상 & 한국어 구조 안내)
       const meta = FORM_META[formKey] || { title: formKey, pattern: "문장 구조", color: "#3B82F6", bg: "#EFF6FF" };
       const badgeEl = document.getElementById('grammarFormBadge');
       if (badgeEl) {
@@ -2876,7 +3227,6 @@
         badgeEl.style.borderColor = meta.color;
       }
 
-      // 3. 문제 형식에 따른 슬롯 목록 결정 (SENTENCE_TYPES[formKey]가 기본)
       const formSlots = SENTENCE_TYPES[formKey] || ["WHO", "DO", "WHAT"];
       const finalSlots = [...formSlots];
       if (sentence.blocks) {
@@ -2886,7 +3236,6 @@
         });
       }
 
-      // 4. 슬롯별로 품사 바구니 카드 동적 생성
       finalSlots.forEach(role => {
         const def = SLOT_META[role] || { icon: "📦", desc: "단어 바구니", color: "#3B82F6", border: "#CBD5E1", bg: "#F8FAFC" };
         const label = SLOT_LABELS_KO[role] || role;
@@ -2961,43 +3310,67 @@
     function loadTabletGrammarQuestion() {
       placedBlocks = {};
       clearSelectedBlock();
-      const activeList = getActiveGrammarSentences();
-      if (activeList.length === 0) return;
-      if (currentGrammarIdx >= activeList.length) currentGrammarIdx = 0;
 
-      const current = activeList[currentGrammarIdx];
-      const total = activeList.length;
+      const set = getCurrentGrammarSet();
+      if (!set) return;
+      const current = getCurrentGrammarQuestion();
+      if (!current) return;
 
-      document.getElementById('grammarStepIndicator').textContent = `문장 ${currentGrammarIdx + 1} / ${total}`;
-      document.getElementById('grammarPromptKo').textContent = current.korean;
-      document.getElementById('grammarFeedbackBox').textContent = "단어 블록을 끌거나 클릭해서 알맞은 바구니에 넣어보세요!";
-      document.getElementById('grammarFeedbackBox').style.color = "var(--text-muted)";
-      document.getElementById('grammarNextBtn').disabled = true;
+      const subNum = currentGrammarSubIdx + 1;
+      const subLabel = currentGrammarSubIdx === 0 ? "기본 문장" : "비슷한 응용 문장";
 
-      // 현재 문제 달성 여부 배지 갱신
+      const stepIndicator = document.getElementById('grammarStepIndicator');
+      if (stepIndicator) {
+        stepIndicator.textContent = `문제 ${subNum} / 2 (${subLabel})`;
+      }
+
+      const promptKo = document.getElementById('grammarPromptKo');
+      if (promptKo) promptKo.textContent = current.korean;
+
+      const feedback = document.getElementById('grammarFeedbackBox');
+      if (feedback) {
+        feedback.textContent = `단어 블록을 끌거나 클릭해서 알맞은 바구니에 넣어보세요! (${subLabel})`;
+        feedback.style.color = "var(--text-muted)";
+      }
+
+      const nextBtn = document.getElementById('grammarNextBtn');
+      if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.textContent = currentGrammarSubIdx === 0 ? "다음 문제 (응용 문장) ➔" : "다음 세트 풀기 ➔";
+      }
+
+      // 현재 세트 달성 여부 배지 갱신
       const curBadge = document.getElementById('grammarCurrentCompletedBadge');
       if (curBadge) {
-        if (current.isCompleted) {
-          curBadge.textContent = "✅ 달성 완료";
+        const isSetDone = (set.completed && set.completed > 0) || (set.solvedSub && set.solvedSub[0] && set.solvedSub[1]);
+        const isCurrentSubDone = !!(set.solvedSub && set.solvedSub[currentGrammarSubIdx]);
+        if (isSetDone) {
+          curBadge.textContent = `🔥 ${set.completed || 1}세트 완료`;
+          curBadge.style.background = "#ECFDF5";
+          curBadge.style.color = "#059669";
+        } else if (isCurrentSubDone) {
+          curBadge.textContent = `✅ ${subNum}번 정답 완료`;
           curBadge.style.background = "#ECFDF5";
           curBadge.style.color = "#059669";
         } else {
-          curBadge.textContent = "⏳ 도전 중";
+          curBadge.textContent = `⏳ ${subNum}/2 도전 중`;
           curBadge.style.background = "#FEF3C7";
           curBadge.style.color = "#B45309";
         }
       }
 
-      // 1. 문제의 형식에 맞추어 품사 바구니 자동 적용!
+      // 1. 문제 형식에 맞춰 품사 바구니 동적 생성
       renderGrammarBaskets(current);
 
       // 2. 단어 블록 풀 생성
       const pool = document.getElementById('wordBlocksPool');
-      pool.innerHTML = "";
-      const shuffled = [...current.blocks].sort(() => Math.random() - 0.5);
-      shuffled.forEach(block => {
-        pool.appendChild(createTouchDragBlock(block));
-      });
+      if (pool) {
+        pool.innerHTML = "";
+        const shuffled = [...current.blocks].sort(() => Math.random() - 0.5);
+        shuffled.forEach(block => {
+          pool.appendChild(createTouchDragBlock(block));
+        });
+      }
     }
 
     function createTouchDragBlock(block) {
@@ -3095,9 +3468,8 @@
       speakEnglish(block.text);
 
       if (normBlockRole === normTargetRole) {
-        if (placedBlocks[normTargetRole]) return; // 이미 채워진 자리
+        if (placedBlocks[normTargetRole]) return;
 
-        // 정답! 딩동댕 소리
         playSuccessSound();
         placedBlocks[normTargetRole] = block;
         if (blockEl) blockEl.remove();
@@ -3112,7 +3484,6 @@
         clearSelectedBlock();
         checkGrammarComplete();
       } else {
-        // 오답 통~ 소리
         playWrongSound();
         feedback.innerHTML = `💡 아쉬워요! <strong>"${block.text}"</strong>은(는) <strong>${getRoleName(normTargetRole)}</strong> 자리가 아니에요. 다시 놓아보세요!`;
         feedback.style.color = "var(--danger)";
@@ -3120,39 +3491,72 @@
     }
 
     function checkGrammarComplete() {
-      const activeList = getActiveGrammarSentences();
-      const current = activeList[currentGrammarIdx];
+      const set = getCurrentGrammarSet();
+      const current = getCurrentGrammarQuestion();
+      if (!set || !current) return;
+
       const allFilled = current.blocks.every(b => {
         const r = normalizeRole(b.role);
         return placedBlocks[r] && placedBlocks[r].id === b.id;
       });
 
       if (allFilled) {
-        current.isCompleted = true; // 달성 완료 영속 기록!
-        saveGrammarSentencesToStorage();
-        updateGrammarAchievementUI();
+        if (!Array.isArray(set.solvedSub)) set.solvedSub = [false, false];
+        set.solvedSub[currentGrammarSubIdx] = true;
 
+        const feedback = document.getElementById('grammarFeedbackBox');
+        const nextBtn = document.getElementById('grammarNextBtn');
         const curBadge = document.getElementById('grammarCurrentCompletedBadge');
-        if (curBadge) {
-          curBadge.textContent = "✅ 달성 완료";
-          curBadge.style.background = "#ECFDF5";
-          curBadge.style.color = "#059669";
+
+        if (currentGrammarSubIdx === 0) {
+          // 1번 기본 문장 정답 완료!
+          playSuccessSound();
+          if (feedback) {
+            feedback.innerHTML = `👏 <strong>1번 기본 문장 정답!</strong> 다음 <strong>비슷한 응용 문제</strong>에 도전해 보세요! (1/2 완료)`;
+            feedback.style.color = "#059669";
+          }
+          if (curBadge) {
+            curBadge.textContent = "✅ 1/2 완료 (응용 도전!)";
+            curBadge.style.background = "#FEF3C7";
+            curBadge.style.color = "#B45309";
+          }
+          if (nextBtn) {
+            nextBtn.textContent = "다음 문제 (응용 문장) ➔";
+            nextBtn.disabled = false;
+          }
+        } else {
+          // 2번 응용 문장까지 2/2 모두 완료 -> 1세트 완료!
+          set.completed = (set.completed || 0) + 1;
+          set.isCompleted = true;
+          playFanfareSound();
+          markOneStopStepDone(3);
+          recordTodayCompletionStamp();
+
+          if (feedback) {
+            feedback.innerHTML = `🎉 <strong>축하합니다! 2문제를 모두 풀어 1세트를 완료했어요! (2/2 완료 🏆)</strong>`;
+            feedback.style.color = "#059669";
+          }
+          if (curBadge) {
+            curBadge.textContent = `🎉 2/2 완료 (🔥 ${set.completed}세트 완료)`;
+            curBadge.style.background = "#ECFDF5";
+            curBadge.style.color = "#059669";
+          }
+          if (nextBtn) {
+            nextBtn.textContent = "다음 세트 풀기 ➔";
+            nextBtn.disabled = false;
+          }
         }
 
-        playFanfareSound(); // 문장 완성 팡파레 & 폭죽!
-        markOneStopStepDone(3); // 원스톱 3단계 완료 처리!
-        const feedback = document.getElementById('grammarFeedbackBox');
-        feedback.innerHTML = `🎉 <strong>완벽해요! 문장 구조가 멋지게 완성되었습니다!</strong>`;
-        feedback.style.color = "#059669";
+        saveGrammarSetsToStorage();
+        renderGrammarSetsList();
+        updateGrammarAchievementUI();
 
         setTimeout(() => { speakEnglish(current.fullEnglish, 0.9); }, 400);
-        document.getElementById('grammarNextBtn').disabled = false;
       }
     }
 
     function playCurrentGrammarTTS() {
-      const activeList = getActiveGrammarSentences();
-      const current = activeList[currentGrammarIdx];
+      const current = getCurrentGrammarQuestion();
       if (current && current.fullEnglish) speakEnglish(current.fullEnglish, 0.9);
     }
 
@@ -3163,15 +3567,17 @@
 
     function nextGrammarQuestion() {
       playClickSound();
-      const activeList = getActiveGrammarSentences();
-      if (currentGrammarIdx < activeList.length - 1) {
-        currentGrammarIdx++;
+      if (currentGrammarSubIdx === 0) {
+        currentGrammarSubIdx = 1;
         loadTabletGrammarQuestion();
       } else {
-        markOneStopStepDone(3);
-        recordTodayCompletionStamp(); // 모든 퍼즐 완성 시 도장 쾅!
-        currentGrammarIdx = 0;
+        const activeSets = getActiveGrammarSets();
+        const currentIdx = activeSets.findIndex(s => s.id === currentGrammarSetId);
+        const nextIdx = (currentIdx + 1) % activeSets.length;
+        currentGrammarSetId = activeSets[nextIdx].id;
+        currentGrammarSubIdx = 0;
         loadTabletGrammarQuestion();
+        renderGrammarSetsList();
       }
     }
 
@@ -3412,18 +3818,18 @@
     }
 
     function updateGrammarAchievementUI() {
-      const total = grammarSentences.length;
-      const completedCount = grammarSentences.filter(s => s.isCompleted).length;
+      const total = grammarSets.length;
+      const completedCount = grammarSets.filter(s => (s.completed && s.completed > 0) || (s.solvedSub && s.solvedSub[0] && s.solvedSub[1])).length;
       const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
       const badge = document.getElementById('grammarCompletedCountBadge');
-      if (badge) badge.textContent = `${completedCount}/${total}`;
+      if (badge) badge.textContent = `${completedCount}/${total} 세트`;
 
       const summary = document.getElementById('grammarListProgressSummary');
-      if (summary) summary.textContent = `🏆 ${completedCount} / ${total} 문장 완성 (${pct}%)`;
+      if (summary) summary.textContent = `🏆 ${completedCount} / ${total} 세트 완성 (${pct}%)`;
 
       const remaining = document.getElementById('grammarListRemainingText');
-      if (remaining) remaining.textContent = `${total - completedCount}개 남음`;
+      if (remaining) remaining.textContent = `${total - completedCount}세트 남음`;
 
       const bar = document.getElementById('grammarListProgressBar');
       if (bar) bar.style.width = `${pct}%`;
@@ -3454,39 +3860,43 @@
       if (!container) return;
       container.innerHTML = "";
 
-      let items = [...grammarSentences];
+      let items = [...grammarSets];
       if (filterType === 'INCOMPLETE') {
-        items = items.filter(s => !s.isCompleted);
+        items = items.filter(s => !s.completed && !(s.solvedSub && s.solvedSub[0] && s.solvedSub[1]));
       } else if (filterType === 'COMPLETED') {
-        items = items.filter(s => s.isCompleted);
+        items = items.filter(s => (s.completed && s.completed > 0) || (s.solvedSub && s.solvedSub[0] && s.solvedSub[1]));
       }
 
       if (items.length === 0) {
-        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px 10px; font-weight: 700;">해당하는 퍼즐 문장이 없습니다.</div>`;
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px 10px; font-weight: 700;">해당하는 퍼즐 세트가 없습니다.</div>`;
         return;
       }
 
       items.forEach((s) => {
         const meta = FORM_META[s.form] || { title: s.form || "3형식", pattern: "문장 구조", color: "#3B82F6", bg: "#EFF6FF" };
+        const isDone = (s.completed && s.completed > 0) || (s.solvedSub && s.solvedSub[0] && s.solvedSub[1]);
         const card = document.createElement('div');
-        card.style.cssText = `background: white; border: 1.8px solid ${s.isCompleted ? '#10B981' : 'var(--border)'}; border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);`;
+        card.style.cssText = `background: white; border: 1.8px solid ${isDone ? '#10B981' : 'var(--border)'}; border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);`;
+
+        const isUserCustom = s.id.startsWith('gset_user_') || s.id.startsWith('gset_os_');
 
         card.innerHTML = `
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
               <span style="font-size: 0.75rem; font-weight: 800; color: white; background: ${meta.color}; padding: 2px 7px; border-radius: 6px;">${meta.title}</span>
-              ${s.isBonusVariation ? '<span style="font-size: 0.72rem; font-weight: 800; color: #7C3AED; background: #EDE9FE; padding: 2px 6px; border-radius: 6px;">✨ 응용 문제</span>' : ''}
-              ${s.isCompleted 
-                ? '<span style="font-size: 0.75rem; font-weight: 800; color: #059669; background: #ECFDF5; padding: 2px 8px; border-radius: 6px;">✅ 완성 완료</span>' 
-                : '<span style="font-size: 0.75rem; font-weight: 800; color: #D97706; background: #FFFBEB; padding: 2px 8px; border-radius: 6px;">⏳ 도전 중</span>'}
+              ${isDone 
+                ? `<span style="font-size: 0.75rem; font-weight: 800; color: #059669; background: #ECFDF5; padding: 2px 8px; border-radius: 6px;">🎉 2/2 완료 (🔥 ${s.completed || 1}세트)</span>` 
+                : (s.solvedSub && (s.solvedSub[0] || s.solvedSub[1])
+                    ? `<span style="font-size: 0.75rem; font-weight: 800; color: #D97706; background: #FFFBEB; padding: 2px 8px; border-radius: 6px;">⏳ 1/2 진행 중</span>`
+                    : `<span style="font-size: 0.75rem; font-weight: 800; color: #64748B; background: #F1F5F9; padding: 2px 8px; border-radius: 6px;">도전 전 (0/2)</span>`)}
             </div>
-            <div style="font-weight: 800; font-size: 1rem; color: var(--text-main); word-break: break-word;">${s.fullEnglish}</div>
-            <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">${s.korean}</div>
+            <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-main); word-break: break-word;">${s.title}</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">${s.korean}</div>
+            ${s.questions && s.questions[1] ? `<div style="font-size: 0.78rem; color: #7C3AED; margin-top: 4px; font-weight: 700;">✨ 비슷한 응용 문장: ${s.questions[1].fullEnglish}</div>` : ''}
           </div>
           <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
-            <button class="small-btn" onclick="speakEnglish('${s.fullEnglish.replace(/'/g, "\\'")}', 0.9)" title="발음 듣기">🔊</button>
-            <button class="small-btn" style="background: var(--primary); color: white; border-color: var(--primary); font-weight: 800;" onclick="selectGrammarQuestionFromList('${s.id}')">풀기 ➔</button>
-            ${s.id.startsWith('g_user_') || s.id.startsWith('g_sim_') || s.id.startsWith('g_os_') 
+            <button class="small-btn primary" onclick="selectGrammarFromModal('${s.id}')">이 세트 풀기 ➔</button>
+            ${isUserCustom 
               ? `<button class="small-btn" style="color: #EF4444; border-color: #FECACA; background: #FEF2F2;" onclick="deleteCustomGrammarSentence('${s.id}')" title="삭제">✕</button>` 
               : ''}
           </div>
@@ -3495,29 +3905,27 @@
       });
     }
 
-    function selectGrammarQuestionFromList(sentenceId) {
-      currentGrammarFilter = 'ALL';
-      document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
-      const allChip = document.getElementById('chip_ALL');
-      if (allChip) allChip.classList.add('active');
-
-      const activeList = getActiveGrammarSentences();
-      const idx = activeList.findIndex(s => s.id === sentenceId);
-      if (idx !== -1) {
-        currentGrammarIdx = idx;
-        loadTabletGrammarQuestion();
-      }
+    function selectGrammarFromModal(setId) {
+      selectGrammarSet(setId);
       closeGrammarListModal();
     }
 
-    function deleteCustomGrammarSentence(sentenceId) {
-      if (!confirm("이 퍼즐 문장을 삭제하시겠습니까?")) return;
-      grammarSentences = grammarSentences.filter(s => s.id !== sentenceId);
-      saveGrammarSentencesToStorage();
+    function selectGrammarQuestionFromList(sentenceId) {
+      selectGrammarFromModal(sentenceId);
+    }
+
+    function deleteCustomGrammarSentence(setId) {
+      if (!confirm("이 퍼즐 문장 세트를 삭제하시겠습니까?")) return;
+      grammarSets = grammarSets.filter(s => s.id !== setId && !s.questions.some(q => q.id === setId));
+      saveGrammarSetsToStorage();
       updateGrammarAchievementUI();
       renderGrammarListModal(currentGrammarListFilter);
-      currentGrammarIdx = 0;
+      if (currentGrammarSetId === setId) {
+        currentGrammarSetId = grammarSets[0] ? grammarSets[0].id : "gset_1";
+        currentGrammarSubIdx = 0;
+      }
       loadTabletGrammarQuestion();
+      renderGrammarSetsList();
     }
 
     // ================= 새 문장퍼즐 동적 모달 제어 =================
@@ -3760,27 +4168,40 @@
         form: finalForm,
         korean: koVal,
         fullEnglish: fullEn,
-        isCompleted: false,
-        blocks: blocks
+        blocks: blocks,
+        isVariation: false
       };
 
-      // [요청 반영] 비슷한 패턴의 응용 문장 1개 추가 생성!
+      // 비슷한 패턴의 응용 문장 1개 추가 생성하여 1세트(2문제)로 구성!
       const similarG = generateSimilarGrammarSentence(newG);
+      similarG.id = "g_user_sim_" + Date.now();
+      similarG.isVariation = true;
 
-      grammarSentences.unshift(similarG);
-      grammarSentences.unshift(newG);
-      saveGrammarSentencesToStorage();
+      const newSet = {
+        id: "gset_user_" + Date.now(),
+        form: finalForm,
+        title: fullEn,
+        korean: koVal,
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [newG, similarG]
+      };
+
+      grammarSets.unshift(newSet);
+      saveGrammarSetsToStorage();
       updateGrammarAchievementUI();
       closeAddGrammarModal();
       currentGrammarFilter = 'ALL';
       document.querySelectorAll('.grammar-filter-chip').forEach(c => c.classList.remove('active'));
       const allChip = document.getElementById('chip_ALL');
       if (allChip) allChip.classList.add('active');
-      currentGrammarIdx = 0;
+      currentGrammarSetId = newSet.id;
+      currentGrammarSubIdx = 0;
       switchAppTab('grammar');
       loadTabletGrammarQuestion();
+      renderGrammarSetsList();
       playSuccessSound();
-      alert(`🎉 문장퍼즐 등록 완료!\n\n1. 직접 등록하신 문장\n2. 동일한 [${FORM_META[finalForm] ? FORM_META[finalForm].title : finalForm}] 패턴의 응용 퍼즐 1개\n\n총 2문장이 문장퍼즐에 추가되었습니다!`);
+      alert(`🎉 문장퍼즐 세트 등록 완료!\n\n1. 기본 문장: ${fullEn}\n2. 응용 문장: ${similarG.fullEnglish}\n\n선택한 문장 1개로 비슷한 응용 문장까지 총 2문제가 1세트로 구성되었습니다!`);
     }
 
 

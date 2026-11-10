@@ -1945,8 +1945,56 @@
       watch: "보다, 지켜보다, 손목시계", write: "쓰다, 작성하다, 편지를 쓰다",
       draw: "그리다, 끌다, 끌어당기다", open: "열다, 펼치다, 개방된",
       close: "닫다, 가까운, 끝내다", wash: "씻다, 세탁하다, 빨다",
-      buy: "사다, 구입하다", give: "주다, 건네다, 베풀다", come: "오다, 다가오다", go: "가다, 진행되다"
+      buy: "사다, 구입하다", give: "주다, 건네다, 베풀다", come: "오다, 다가오다", go: "가다, 진행되다",
+      get: "얻다, 받다, 가져오다", have: "가지다, 먹다, 마시다",
+      invite: "초대하다, 부르다", bathroom: "화장실", playground: "놀이터, 운동장",
+      outside: "밖, 야외", television: "텔레비전, TV", tv: "TV, 텔레비전",
+      soccer: "축구", game: "게임, 경기", games: "게임, 놀이들",
+      paper: "종이, 서류", juice: "주스, 과즙", cup: "컵, 잔", slice: "조각"
     };
+
+    function attachJosa(word, type) {
+      if (!word) return "";
+      const lastChar = word.trim().slice(-1);
+      const code = lastChar.charCodeAt(0);
+      const hasBatchim = code >= 0xAC00 && code <= 0xD7A3 && ((code - 0xAC00) % 28 !== 0);
+      if (type === '을/를') return word + (hasBatchim ? '을' : '를');
+      if (type === '이/가') return word + (hasBatchim ? '이' : '가');
+      if (type === '은/는') return word + (hasBatchim ? '은' : '는');
+      if (type === '과/와') return word + (hasBatchim ? '과' : '와');
+      return word;
+    }
+
+    function translateKidPhrase(phrase) {
+      if (!phrase) return "";
+      const p = phrase.toLowerCase().trim().replace(/^(a|an|the|some)\s+/, '');
+      if (p === 'water') return '물';
+      if (p === 'milk' || p === 'cup of milk' || p === 'a cup of milk') return '우유';
+      if (p === 'cookie' || p === 'cookies' || p === 'sweet cookie' || p === 'sweet cookies') return '달콤한 쿠키';
+      if (p === 'apple' || p === 'apples' || p === 'delicious apple' || p === 'delicious apples') return '맛있는 사과';
+      if (p === 'pizza' || p === 'slice of pizza' || p === 'delicious pizza') return '맛있는 피자';
+      if (p === 'paper' || p === 'more paper' || p === 'some more paper') return '종이';
+      if (p === 'storybook' || p === 'fun storybook' || p === 'this storybook') return '재미있는 동화책';
+      if (p === 'book' || p === 'fun book') return '재미있는 책';
+      if (p === 'playground' || p === 'in the playground') return '놀이터에서';
+      if (p === 'bathroom' || p === 'to the bathroom') return '화장실에';
+      if (p === 'outside') return '밖에서';
+      if (p === 'tv' || p === 'television') return 'TV';
+      if (p === 'computer games' || p === 'games' || p === 'game') return '컴퓨터 게임';
+      if (p === 'soccer' || p === 'playing soccer') return '축구';
+      if (p === 'very fast' || p === 'fast') return '아주 빨리';
+      if (p === 'friend' || p === 'friends' || p === 'my friend') return '내 친구';
+      if (p === 'red backpack') return '빨간 가방';
+      if (p === 'pretty rainbow') return '예쁜 무지개';
+      if (p === 'cute puppy' || p === 'a cute puppy') return '귀여운 강아지';
+      if (p === 'sweet strawberries' || p === 'strawberries') return '달콤한 딸기';
+      if (p === 'cheese pizza') return '치즈 피자';
+      if (p === 'toy airplane') return '장난감 비행기';
+
+      // 복합 어구 분해 번역
+      const parts = p.split(/\s+/).map(w => getPrimaryKo(CHILD_DICTIONARY[w] || w));
+      return parts.join(' ');
+    }
 
     // [핵심] 영단어 및 영어 문장 자동 한국어 번역기
     function autoTranslateKorean(text) {
@@ -1956,84 +2004,188 @@
 
       // 1. 단일 단어 사전 조회 (관사 제거 및 어미 변화 대응)
       const singleWord = clean.replace(/^(a|an|the)\s+/, '').trim();
-      if (CHILD_DICTIONARY[clean]) return CHILD_DICTIONARY[clean];
-      if (CHILD_DICTIONARY[singleWord]) return CHILD_DICTIONARY[singleWord];
+      if (CHILD_DICTIONARY[clean]) return getPrimaryKo(CHILD_DICTIONARY[clean]);
+      if (CHILD_DICTIONARY[singleWord]) return getPrimaryKo(CHILD_DICTIONARY[singleWord]);
 
       // 어미 변화 대응 (-s, -es, -ed, -ing)
-      if (singleWord.endsWith('s') && CHILD_DICTIONARY[singleWord.slice(0, -1)]) return CHILD_DICTIONARY[singleWord.slice(0, -1)];
-      if (singleWord.endsWith('es') && CHILD_DICTIONARY[singleWord.slice(0, -2)]) return CHILD_DICTIONARY[singleWord.slice(0, -2)];
-      if (singleWord.endsWith('ing') && CHILD_DICTIONARY[singleWord.slice(0, -3)]) return CHILD_DICTIONARY[singleWord.slice(0, -3)];
-      if (singleWord.endsWith('ed') && CHILD_DICTIONARY[singleWord.slice(0, -2)]) return CHILD_DICTIONARY[singleWord.slice(0, -2)];
+      if (singleWord.endsWith('s') && CHILD_DICTIONARY[singleWord.slice(0, -1)]) return getPrimaryKo(CHILD_DICTIONARY[singleWord.slice(0, -1)]);
+      if (singleWord.endsWith('es') && CHILD_DICTIONARY[singleWord.slice(0, -2)]) return getPrimaryKo(CHILD_DICTIONARY[singleWord.slice(0, -2)]);
+      if (singleWord.endsWith('ing') && CHILD_DICTIONARY[singleWord.slice(0, -3)]) return getPrimaryKo(CHILD_DICTIONARY[singleWord.slice(0, -3)]);
+      if (singleWord.endsWith('ed') && CHILD_DICTIONARY[singleWord.slice(0, -2)]) return getPrimaryKo(CHILD_DICTIONARY[singleWord.slice(0, -2)]);
 
-      // 2. 주요 어린이 회화 문장 패턴 한글 번역 (대표 의미 활용)
+      // 2. Can I get ~? (음식/물건 부탁)
+      if (/^can i get\s+(.+)/i.test(clean)) {
+        const item = clean.replace(/^can i get\s+/i, '');
+        const itemKo = translateKidPhrase(item);
+        if (/water|milk|juice/i.test(item)) return `${itemKo} 좀 주시겠어요?`;
+        if (/cookie|apple|pizza|bread|cake/i.test(item)) return `${itemKo} 하나 주시겠어요?`;
+        if (/help/i.test(item)) return '도움 좀 받을 수 있을까요?';
+        return `${itemKo} 좀 주시겠어요?`;
+      }
+
+      // 3. Can I have ~? (음식/물건 요청)
+      if (/^can i have\s+(.+)/i.test(clean)) {
+        const item = clean.replace(/^can i have\s+/i, '');
+        const itemKo = translateKidPhrase(item);
+        if (/water|milk|juice/i.test(item)) return `${itemKo} 좀 마셔도 돼요?`;
+        if (/cookie|apple|pizza|bread|cake/i.test(item)) return `${itemKo} 좀 먹어도 돼요?`;
+        return `${itemKo} 좀 가져도 돼요?`;
+      }
+
+      // 4. Can I [동사] [보충어]?
+      if (/^can i\s+(.+)/i.test(clean)) {
+        const rest = clean.replace(/^can i\s+/i, '');
+        if (/^watch\s+/i.test(rest)) {
+          const target = translateKidPhrase(rest.replace(/^watch\s+/i, ''));
+          return `${target} 봐도 돼요?`;
+        }
+        if (/^play\s+/i.test(rest)) {
+          const target = rest.replace(/^play\s+/i, '');
+          if (/in the playground/i.test(target)) return '놀이터에서 놀아도 돼요?';
+          if (/outside/i.test(target)) return '밖에서 놀아도 돼요?';
+          if (/game/i.test(target)) return '컴퓨터 게임 해도 돼요?';
+          if (/soccer/i.test(target)) return '축구 해도 돼요?';
+          return `${translateKidPhrase(target)} 놀아도 돼요?`;
+        }
+        if (/^eat\s+/i.test(rest)) {
+          const target = translateKidPhrase(rest.replace(/^eat\s+/i, ''));
+          return `${target} 먹어도 돼요?`;
+        }
+        if (/^drink\s+/i.test(rest)) {
+          const target = translateKidPhrase(rest.replace(/^drink\s+/i, ''));
+          return `${target} 마셔도 돼요?`;
+        }
+        if (/^go\s+/i.test(rest)) {
+          const target = rest.replace(/^go\s+/i, '');
+          if (/bathroom/i.test(target)) return '화장실 가도 돼요?';
+          if (/outside/i.test(target)) return '밖에 나가도 돼요?';
+          if (/home/i.test(target)) return '집에 가도 돼요?';
+          return `${translateKidPhrase(target)} 가도 돼요?`;
+        }
+        if (/^read\s+/i.test(rest)) {
+          const target = translateKidPhrase(rest.replace(/^read\s+/i, ''));
+          return `${target} 읽어도 돼요?`;
+        }
+        if (/^run\s+/i.test(rest)) {
+          const target = translateKidPhrase(rest.replace(/^run\s+/i, ''));
+          return `${target ? target + ' ' : ''}달려도 돼요?`;
+        }
+        if (/^draw\s+/i.test(rest)) {
+          const target = translateKidPhrase(rest.replace(/^draw\s+/i, ''));
+          return `${target} 그려도 돼요?`;
+        }
+        if (/^invite\s+/i.test(rest)) {
+          const target = translateKidPhrase(rest.replace(/^invite\s+/i, ''));
+          return `${target} 초대해도 돼요?`;
+        }
+        if (/^sleep\s+/i.test(rest)) {
+          return '지금 자도 돼요?';
+        }
+        const words = rest.split(/\s+/);
+        const v = words[0];
+        const vKo = getPrimaryKo(CHILD_DICTIONARY[v] || v).replace(/다$/, '');
+        const objKo = translateKidPhrase(words.slice(1).join(' '));
+        return `${objKo ? objKo + ' ' : ''}${vKo}해도 돼요?`;
+      }
+
+      // 5. Can you ~? (정중한 부탁)
+      if (/^can you\s+(.+)/i.test(clean)) {
+        const rest = clean.replace(/^can you\s+/i, '');
+        if (/^help me/i.test(rest)) return '저를 좀 도와줄 수 있나요?';
+        if (/^open the door/i.test(rest)) return '문 좀 열어줄 수 있나요?';
+        if (/^read/i.test(rest)) return '이야기를 읽어줄 수 있나요?';
+        if (/^pass the water/i.test(rest)) return '물 좀 건네줄 수 있나요?';
+        const words = rest.split(/\s+/);
+        const v = words[0];
+        const vKo = getPrimaryKo(CHILD_DICTIONARY[v] || v).replace(/다$/, '');
+        const objKo = translateKidPhrase(words.slice(1).join(' '));
+        return `${objKo ? objKo + ' ' : ''}${vKo}해 줄 수 있나요?`;
+      }
+
+      // 6. I want to ~ (행동 희망)
       if (/^i want to\s+(.+)/i.test(clean)) {
         const action = clean.replace(/^i want to\s+/i, '');
+        if (/^eat\s+/i.test(action)) return `나는 ${attachJosa(translateKidPhrase(action.replace(/^eat\s+/i, '')), '을/를')} 먹고 싶어.`;
+        if (/^drink\s+/i.test(action)) return `나는 ${attachJosa(translateKidPhrase(action.replace(/^drink\s+/i, '')), '을/를')} 마시고 싶어.`;
+        if (/^play\s+/i.test(action)) return `나는 ${translateKidPhrase(action.replace(/^play\s+/i, ''))} 놀고 싶어.`;
+        if (/^read\s+/i.test(action)) return `나는 ${attachJosa(translateKidPhrase(action.replace(/^read\s+/i, '')), '을/를')} 읽고 싶어.`;
+        if (/^sleep/i.test(action)) return '나는 지금 잠자고 싶어.';
         const words = action.split(/\s+/);
         const v = words[0];
-        const rest = words.slice(1).join(' ').replace(/^(a|an|the|some)\s+/, '');
         const vKo = getPrimaryKo(CHILD_DICTIONARY[v] || v).replace(/다$/, '');
-        const restKo = getPrimaryKo(CHILD_DICTIONARY[rest] || rest);
-        return `나는 ${restKo ? restKo + ' ' : ''}${vKo}고 싶어.`;
+        const objKo = translateKidPhrase(words.slice(1).join(' '));
+        return `나는 ${objKo ? attachJosa(objKo, '을/를') + ' ' : ''}${vKo}고 싶어.`;
       }
 
+      // 7. I want [noun] (물건 희망)
       if (/^i want\s+(.+)/i.test(clean)) {
-        const item = clean.replace(/^i want\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
-        const itemKo = getPrimaryKo(CHILD_DICTIONARY[item] || item);
-        return `나는 ${itemKo}을(를) 원해.`;
+        const item = translateKidPhrase(clean.replace(/^i want\s+/i, ''));
+        return `나는 ${attachJosa(item, '을/를')} 원해.`;
       }
 
-      if (/^can i\s+(.+)/i.test(clean)) {
-        const action = clean.replace(/^can i\s+/i, '');
-        const words = action.split(/\s+/);
-        const v = words[0];
-        const rest = words.slice(1).join(' ').replace(/^(a|an|the|some)\s+/, '');
-        const vKo = getPrimaryKo(CHILD_DICTIONARY[v] || v).replace(/다$/, '');
-        const restKo = getPrimaryKo(CHILD_DICTIONARY[rest] || rest);
-        return `${restKo ? restKo + ' ' : ''}${vKo}해도 돼요?`;
-      }
-
+      // 8. I like [noun / -ing] (선호)
       if (/^i like\s+(.+)/i.test(clean)) {
-        const item = clean.replace(/^i like\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
-        const itemKo = getPrimaryKo(CHILD_DICTIONARY[item] || item);
-        return `나는 ${itemKo}을(를) 좋아해.`;
+        const item = clean.replace(/^i like\s+/i, '');
+        if (/^playing\s+/i.test(item)) return `나는 ${translateKidPhrase(item.replace(/^playing\s+/i, ''))}하는 것을 좋아해.`;
+        if (/^drawing\s+/i.test(item)) return `나는 ${translateKidPhrase(item.replace(/^drawing\s+/i, ''))} 그리는 것을 좋아해.`;
+        if (/^listening to\s+/i.test(item)) return `나는 ${translateKidPhrase(item.replace(/^listening to\s+/i, ''))} 듣는 것을 좋아해.`;
+        return `나는 ${attachJosa(translateKidPhrase(item), '을/를')} 좋아해.`;
       }
 
+      // 9. I have [noun] (소유)
       if (/^i have\s+(.+)/i.test(clean)) {
-        const item = clean.replace(/^i have\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
-        const itemKo = getPrimaryKo(CHILD_DICTIONARY[item] || item);
-        return `나는 ${itemKo}을(를) 가지고 있어.`;
+        const item = translateKidPhrase(clean.replace(/^i have\s+/i, ''));
+        return `나는 ${attachJosa(item, '이/가')} 있어.`;
       }
 
+      // 10. I can [action] (능력)
       if (/^i can\s+(.+)/i.test(clean)) {
         const action = clean.replace(/^i can\s+/i, '');
-        const vKo = getPrimaryKo(CHILD_DICTIONARY[action] || action).replace(/다$/, '');
-        return `나는 ${vKo}할 수 있어.`;
+        if (/^run\s+/i.test(action)) return `나는 ${translateKidPhrase(action.replace(/^run\s+/i, ''))} 달릴 수 있어.`;
+        if (/^swim/i.test(action)) return '나는 수영할 수 있어.';
+        if (/^jump/i.test(action)) return '나는 높이 점프할 수 있어.';
+        const words = action.split(/\s+/);
+        const v = words[0];
+        const vKo = getPrimaryKo(CHILD_DICTIONARY[v] || v).replace(/다$/, '');
+        return `나는 ${translateKidPhrase(words.slice(1).join(' '))} ${vKo}할 수 있어.`;
       }
 
+      // 11. I see [noun] (시각)
       if (/^i see\s+(.+)/i.test(clean)) {
-        const item = clean.replace(/^i see\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
-        const itemKo = getPrimaryKo(CHILD_DICTIONARY[item] || item);
-        return `내 눈에 ${itemKo}이(가) 보여.`;
+        const item = translateKidPhrase(clean.replace(/^i see\s+/i, ''));
+        return `내 눈에 ${attachJosa(item, '이/가')} 보여.`;
       }
 
+      // 12. Let's [action] (제안)
       if (/^let'?s\s+(.+)/i.test(clean)) {
         const action = clean.replace(/^let'?s\s+/i, '');
-        const vKo = getPrimaryKo(CHILD_DICTIONARY[action] || action).replace(/다$/, '');
-        return `우리 함께 ${vKo}하자!`;
+        const words = action.split(/\s+/);
+        const v = words[0];
+        const vKo = getPrimaryKo(CHILD_DICTIONARY[v] || v).replace(/다$/, '');
+        const objKo = translateKidPhrase(words.slice(1).join(' '));
+        return `우리 함께 ${objKo ? objKo + ' ' : ''}${vKo}하자!`;
       }
 
+      // 13. It is [state]
       if (/^it is\s+(.+)/i.test(clean)) {
         const state = clean.replace(/^it is\s+/i, '');
-        const stateKo = getPrimaryKo(CHILD_DICTIONARY[state] || state);
+        const stateKo = translateKidPhrase(state);
         return `날씨나 상태가 ${stateKo}해.`;
       }
 
-      if (/^do you\s+(.+)/i.test(clean)) {
-        const rest = clean.replace(/^do you\s+/i, '');
-        return `너는 ${rest}하니?`;
+      // 14. Do you like [noun]?
+      if (/^do you like\s+(.+)/i.test(clean)) {
+        const item = translateKidPhrase(clean.replace(/^do you like\s+/i, ''));
+        return `너는 ${attachJosa(item, '을/를')} 좋아하니?`;
       }
 
-      // 3. 복합 단어 또는 일반 문장 처리
+      // 15. Where is [noun]?
+      if (/^where is\s+(.+)/i.test(clean)) {
+        const item = translateKidPhrase(clean.replace(/^where is\s+/i, ''));
+        return `${attachJosa(item, '은/는')} 어디에 있니?`;
+      }
+
+      // 16. 복합 단어 또는 일반 문장 처리
       const words = clean.split(/\s+/);
       if (words.length <= 4) {
         const translatedParts = words.map(w => {
@@ -3609,6 +3761,30 @@
     // ================= 새 패턴 & 5문장 생성 모달 로직 =================
     const PATTERN_PRESETS = [
       {
+        regex: /^can i get\s+(.+)/i,
+        title: "Can I get ~?",
+        desc: "음식이나 물건 정중하게 부탁하기",
+        defaults: [
+          { en: "Can I get some water?", ko: "물 좀 주시겠어요?", hint: "water" },
+          { en: "Can I get a sweet cookie?", ko: "달콤한 쿠키 하나 주시겠어요?", hint: "cookie" },
+          { en: "Can I get a cup of milk?", ko: "우유 한 잔 주시겠어요?", hint: "milk" },
+          { en: "Can I get a delicious apple?", ko: "맛있는 사과 하나 주시겠어요?", hint: "apple" },
+          { en: "Can I get some more paper?", ko: "종이 좀 더 주시겠어요?", hint: "paper" }
+        ]
+      },
+      {
+        regex: /^can i have\s+(.+)/i,
+        title: "Can I have ~?",
+        desc: "음식이나 물건 달라고 요청하기",
+        defaults: [
+          { en: "Can I have some water?", ko: "물 좀 마셔도 돼요?", hint: "water" },
+          { en: "Can I have some cookies?", ko: "쿠키 좀 먹어도 돼요?", hint: "cookies" },
+          { en: "Can I have a slice of pizza?", ko: "피자 한 조각 먹어도 돼요?", hint: "pizza" },
+          { en: "Can I have some orange juice?", ko: "오렌지 주스 좀 마셔도 돼요?", hint: "juice" },
+          { en: "Can I have this cute toy?", ko: "이 귀여운 장난감 가져도 돼요?", hint: "toy" }
+        ]
+      },
+      {
         regex: /^i want to\s+(.+)/i,
         title: "I want to ~",
         desc: "내가 하고 싶은 행동 말하기",
@@ -3732,6 +3908,7 @@
 
     function getPatternDescForStem(stem) {
       const s = (stem || "").toLowerCase();
+      if (s.includes("can i get") || s.includes("can i have")) return "음식이나 물건 정중하게 부탁하기";
       if (s.includes("want to") || s.includes("like to") || s.includes("love to") || s.includes("need to") || s.includes("wish to")) return "내가 하고 싶은 행동 말하기";
       if (s.includes("can i") || s.includes("may i") || s.includes("could i")) return "정중하게 허락이나 부탁하기";
       if (s.includes("can you") || s.includes("could you") || s.includes("would you")) return "상대방에게 친절하게 요청하기";
@@ -3777,7 +3954,39 @@
       // stem 특성에 맞춰 적절한 보충 어구(tail) 풀 선택
       let variations = [];
 
-      if (stemLower.endsWith("to")) {
+      if (/\b(get|take|buy|bring)\b/i.test(stemLower) || /(get|take|buy|bring)$/i.test(stemLower)) {
+        variations = [
+          { v: "some water", hint: "water" },
+          { v: "a sweet cookie", hint: "cookie" },
+          { v: "a cup of milk", hint: "milk" },
+          { v: "a delicious apple", hint: "apple" },
+          { v: "a fun storybook", hint: "storybook" }
+        ];
+      } else if (/\bhave\b/i.test(stemLower) || /have$/i.test(stemLower)) {
+        variations = [
+          { v: "some water", hint: "water" },
+          { v: "some sweet cookies", hint: "cookies" },
+          { v: "a slice of pizza", hint: "pizza" },
+          { v: "a cup of orange juice", hint: "juice" },
+          { v: "a fun toy to play with", hint: "toy" }
+        ];
+      } else if (/\b(can i|could i|may i)\b/i.test(stemLower)) {
+        variations = [
+          { v: "watch TV", hint: "watch TV" },
+          { v: "play outside with friends", hint: "play outside" },
+          { v: "eat a sweet cookie", hint: "cookie" },
+          { v: "go to the bathroom", hint: "bathroom" },
+          { v: "read this storybook", hint: "storybook" }
+        ];
+      } else if (/\b(can you|could you|would you)\b/i.test(stemLower)) {
+        variations = [
+          { v: "help me please", hint: "help me" },
+          { v: "open the door", hint: "open door" },
+          { v: "read this storybook", hint: "read book" },
+          { v: "pass the water", hint: "water" },
+          { v: "draw a picture with me", hint: "draw picture" }
+        ];
+      } else if (stemLower.endsWith("to")) {
         variations = [
           { v: "eat delicious pizza", hint: "pizza" },
           { v: "play soccer with friends", hint: "soccer" },
@@ -3785,7 +3994,15 @@
           { v: "go to the green park", hint: "park" },
           { v: "sing a cheerful song", hint: "sing song" }
         ];
-      } else if (/\b(can|could|may|will|would|should|must)\b/i.test(stemLower)) {
+      } else if (/\b(want|need|see|like|love|find)\b/i.test(stemLower)) {
+        variations = [
+          { v: "a cute little puppy", hint: "puppy" },
+          { v: "delicious cheese pizza", hint: "pizza" },
+          { v: "a fun storybook", hint: "storybook" },
+          { v: "sweet red strawberries", hint: "strawberries" },
+          { v: "a cool toy airplane", hint: "airplane" }
+        ];
+      } else if (/\b(will|would|should|must|i can)\b/i.test(stemLower)) {
         variations = [
           { v: "run very fast", hint: "run fast" },
           { v: "play in the playground", hint: "playground" },
@@ -4049,10 +4266,11 @@
       if (!card) return;
       const koInput = card.querySelector('.pattern-edit-ko');
       const hintInput = card.querySelector('.pattern-edit-hint');
-      if (koInput && !koInput.value) {
-        koInput.value = autoTranslateKorean(en);
+      const translated = autoTranslateKorean(en);
+      if (koInput && translated && translated !== en) {
+        koInput.value = translated;
       }
-      if (hintInput && !hintInput.value) {
+      if (hintInput) {
         hintInput.value = en.split(/\s+/).slice(-2).join(' ');
       }
     }

@@ -1458,17 +1458,30 @@
 
           <!-- 생성된 결과 영역 -->
           <div id="patternGeneratedResultArea" style="display: none; background: #F8FAFC; border: 1.5px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 14px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1.5px solid var(--border); padding-bottom: 8px;">
-              <div>
-                <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">인식된 대표 패턴</div>
-                <div id="genPatternTitle" style="font-size: 1.2rem; font-weight: 900; color: var(--primary);">I want to ~</div>
-                <div id="genPatternDesc" style="font-size: 0.82rem; color: #64748B;">내가 하고 싶은 행동 말하기</div>
+            <!-- 인식된 패턴 직접 수정 영역 -->
+            <div style="background: white; border: 1.5px solid #CBD5E1; border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label style="font-size: 0.82rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+                  ✏️ 인식된 대표 패턴 (직접 수정 가능):
+                </label>
+                <span id="genPatternStatusBadge" style="font-size: 0.75rem; font-weight: 800; color: #059669; background: #ECFDF5; padding: 2px 8px; border-radius: 6px;">5문제 준비 완료!</span>
               </div>
-              <span style="font-size: 0.8rem; font-weight: 800; background: #ECFDF5; color: #059669; padding: 4px 10px; border-radius: 8px;">5문장 완성!</span>
+
+              <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                <input type="text" id="genPatternTitleInput" class="input-text" style="flex: 2; font-weight: 800; font-size: 1.05rem; color: var(--primary); border: 2px solid #94A3B8; background: #F8FAFC;" placeholder="대표 패턴 (예: I want to ~)" oninput="onPatternTitleModified()" onkeydown="if(event.key==='Enter'){event.preventDefault();regenerateQuestionsFromModifiedPattern();}">
+                <button type="button" class="btn btn-primary" onclick="regenerateQuestionsFromModifiedPattern()" style="flex: 1.2; padding: 8px 12px; font-size: 0.82rem; font-weight: 800; white-space: nowrap; background: #6366F1; border-color: #6366F1;">
+                  🔄 패턴 반영 문제 새로고침
+                </button>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">패턴 설명:</span>
+                <input type="text" id="genPatternDescInput" class="input-text" style="flex: 1; padding: 5px 8px; font-size: 0.8rem; color: #475569;" placeholder="패턴 설명 (예: 내가 하고 싶은 행동 말하기)">
+              </div>
             </div>
 
-            <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px;">
-              👇 생성된 5문장 (필요 시 직접 수정도 가능합니다):
+            <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">
+              👇 패턴으로 생성된 5개 연습 문제 (직접 수정 가능):
             </div>
 
             <div id="patternSentencesEditList" style="display: flex; flex-direction: column; gap: 8px;"></div>
@@ -3716,9 +3729,155 @@
       }
     ];
 
+    function getPatternDescForStem(stem) {
+      const s = (stem || "").toLowerCase();
+      if (s.includes("want to") || s.includes("like to") || s.includes("love to") || s.includes("need to") || s.includes("wish to")) return "내가 하고 싶은 행동 말하기";
+      if (s.includes("can i") || s.includes("may i") || s.includes("could i")) return "정중하게 허락이나 부탁하기";
+      if (s.includes("can you") || s.includes("could you") || s.includes("would you")) return "상대방에게 친절하게 요청하기";
+      if (s.includes("let's") || s.includes("lets")) return "친구에게 신나게 제안하기";
+      if (s.includes("like") || s.includes("love") || s.includes("enjoy")) return "내가 좋아하는 것 표현하기";
+      if (s.includes("have") || s.includes("has") || s.includes("got")) return "가지고 있는 것 말하기";
+      if (s.includes("see") || s.includes("look")) return "눈에 보이는 것 표현하기";
+      if (s.includes("is") || s.includes("are") || s.includes("am") || s.includes("feel")) return "상태나 기분 설명하기";
+      if (s.includes("where")) return "위치나 장소 물어보기";
+      if (s.includes("what")) return "무엇인지 궁금한 것 물어보기";
+      if (s.includes("how")) return "어떻게 하는지 또는 상태 물어보기";
+      return "자주 쓰는 핵심 문장 패턴 익히기";
+    }
+
+    function generateSentencesFromPattern(patternTitle, baseSentence) {
+      let raw = (patternTitle || "").trim();
+      if (!raw) raw = "I want to ~";
+
+      const isQuestion = raw.includes('?') || /^(can|could|may|do|does|did|is|are|am|will|would|should|where|what|who|why|how|when)\b/i.test(raw);
+      const punct = isQuestion ? '?' : '.';
+
+      // 물결표, 물음표, 마침표 제거하여 순수 패턴 줄기 추출
+      let stem = raw.replace(/[~…._?!]+$/g, '').trim();
+      if (!stem) stem = "I like";
+      const stemLower = stem.toLowerCase();
+
+      // baseSentence가 주어졌을 때 보충어(tail) 추출 시도
+      let customTail = "";
+      if (baseSentence) {
+        const cleanBase = baseSentence.trim().replace(/[.?!]+$/, '');
+        if (cleanBase.toLowerCase().startsWith(stemLower)) {
+          customTail = cleanBase.slice(stem.length).trim();
+        } else {
+          const words = cleanBase.split(/\s+/);
+          if (words.length > 2) {
+            customTail = words.slice(Math.max(1, words.length - 2)).join(' ');
+          }
+        }
+      }
+
+      const sentences = [];
+
+      // stem 특성에 맞춰 적절한 보충 어구(tail) 풀 선택
+      let variations = [];
+
+      if (stemLower.endsWith("to")) {
+        variations = [
+          { v: "eat delicious pizza", hint: "pizza" },
+          { v: "play soccer with friends", hint: "soccer" },
+          { v: "read a fun comic book", hint: "comic book" },
+          { v: "go to the green park", hint: "park" },
+          { v: "sing a cheerful song", hint: "sing song" }
+        ];
+      } else if (/\b(can|could|may|will|would|should|must)\b/i.test(stemLower)) {
+        variations = [
+          { v: "run very fast", hint: "run fast" },
+          { v: "play in the playground", hint: "playground" },
+          { v: "eat sweet cookies", hint: "cookies" },
+          { v: "read this storybook", hint: "storybook" },
+          { v: "draw a pretty rainbow", hint: "rainbow" }
+        ];
+      } else if (/\b(let's|lets)\b/i.test(stemLower)) {
+        variations = [
+          { v: "play together happily", hint: "play together" },
+          { v: "eat sweet ice cream", hint: "ice cream" },
+          { v: "read an exciting fairytale", hint: "fairytale" },
+          { v: "go to the big playground", hint: "playground" },
+          { v: "dance to the music", hint: "dance" }
+        ];
+      } else if (/\b(like|love|enjoy)\b/i.test(stemLower)) {
+        variations = [
+          { v: "eating sweet ice cream", hint: "ice cream" },
+          { v: "playing with cute puppies", hint: "puppies" },
+          { v: "reading exciting stories", hint: "stories" },
+          { v: "drawing pretty flowers", hint: "flowers" },
+          { v: "listening to music", hint: "music" }
+        ];
+      } else if (/\b(have|has|had|see|sees|saw|want|wants|need|needs|find|finds)\b/i.test(stemLower)) {
+        variations = [
+          { v: "a cute little puppy", hint: "puppy" },
+          { v: "delicious cheese pizza", hint: "pizza" },
+          { v: "a fun storybook", hint: "storybook" },
+          { v: "sweet red strawberries", hint: "strawberries" },
+          { v: "a cool toy airplane", hint: "airplane" }
+        ];
+      } else if (/\b(is|are|am|was|were|feel|feels|look|looks)\b/i.test(stemLower)) {
+        variations = [
+          { v: "very happy today", hint: "happy" },
+          { v: "so cute and smart", hint: "cute" },
+          { v: "kind to all friends", hint: "kind" },
+          { v: "warm and sunny", hint: "sunny" },
+          { v: "strong and brave", hint: "strong" }
+        ];
+      } else if (/\b(where|what|who|which)\s+(is|are)\b/i.test(stemLower)) {
+        variations = [
+          { v: "my yellow backpack", hint: "backpack" },
+          { v: "the cute little puppy", hint: "puppy" },
+          { v: "my favorite toy box", hint: "toy box" },
+          { v: "the new storybook", hint: "storybook" },
+          { v: "our lovely teacher", hint: "teacher" }
+        ];
+      } else {
+        variations = [
+          { v: "sweet fresh apples", hint: "apples" },
+          { v: "a friendly puppy", hint: "puppy" },
+          { v: "an exciting fairytale", hint: "fairytale" },
+          { v: "delicious food with friends", hint: "food" },
+          { v: "a wonderful sunny day", hint: "sunny day" }
+        ];
+      }
+
+      if (customTail && customTail.length > 1) {
+        const firstEn = `${stem} ${customTail}${punct}`;
+        sentences.push({
+          en: firstEn,
+          ko: autoTranslateKorean(firstEn),
+          hint: customTail.split(/\s+/).slice(-2).join(' ') || customTail
+        });
+      }
+
+      for (const item of variations) {
+        if (sentences.length >= 5) break;
+        const fullEn = `${stem} ${item.v}${punct}`;
+        if (!sentences.some(s => s.en.toLowerCase() === fullEn.toLowerCase())) {
+          sentences.push({
+            en: fullEn,
+            ko: autoTranslateKorean(fullEn),
+            hint: item.hint
+          });
+        }
+      }
+
+      const formattedTitle = `${stem} ~${isQuestion ? '?' : ''}`;
+      return {
+        patternTitle: formattedTitle,
+        patternDesc: getPatternDescForStem(stem),
+        sentences: sentences.slice(0, 5)
+      };
+    }
+
     function generate5SentencesFromInput(rawInput) {
       const clean = (rawInput || "").trim().replace(/[.?!]+$/, '');
-      if (!clean) return { patternTitle: "I want ~", patternDesc: "원하는 것 말하기", sentences: initialPatterns[0].questions };
+      if (!clean) return { patternTitle: "I want to ~", patternDesc: "내가 하고 싶은 행동 말하기", sentences: initialPatterns[0].questions };
+
+      if (clean.includes('~')) {
+        return generateSentencesFromPattern(clean, "");
+      }
 
       // 1. 프리셋 패턴 검사
       for (const p of PATTERN_PRESETS) {
@@ -3840,6 +3999,11 @@
       document.getElementById('addPatternModal').style.display = 'flex';
       document.getElementById('patternSentenceInput').value = "";
       document.getElementById('patternGeneratedResultArea').style.display = 'none';
+      tempGeneratedSentences = [];
+      const titleInput = document.getElementById('genPatternTitleInput');
+      if (titleInput) titleInput.value = "";
+      const descInput = document.getElementById('genPatternDescInput');
+      if (descInput) descInput.value = "";
       setTimeout(() => document.getElementById('patternSentenceInput').focus(), 200);
     }
 
@@ -3854,29 +4018,20 @@
 
     let tempGeneratedSentences = [];
 
-    function autoGeneratePatternSentences() {
-      const input = (document.getElementById('patternSentenceInput').value || "").trim();
-      if (!input) {
-        alert("문장이나 패턴을 입력해 주세요!");
-        return;
-      }
-      const res = generate5SentencesFromInput(input);
-      document.getElementById('genPatternTitle').textContent = res.patternTitle;
-      document.getElementById('genPatternDesc').textContent = res.patternDesc;
-
-      tempGeneratedSentences = res.sentences;
+    function renderPatternSentencesEditList(sentences) {
       const listEl = document.getElementById('patternSentencesEditList');
+      if (!listEl) return;
       listEl.innerHTML = "";
 
-      res.sentences.forEach((s, idx) => {
+      sentences.forEach((s, idx) => {
         const item = document.createElement('div');
         item.className = "pattern-sentence-item";
         item.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-size:0.8rem; font-weight:800; color:var(--primary);">문장 ${idx + 1}</span>
-            <button class="small-btn" onclick="speakEnglish('${s.en.replace(/'/g, "\\'")}', 0.9)" title="발음 듣기">🔊 발음</button>
+            <button type="button" class="small-btn" onclick="speakEnglish(this.parentElement.nextElementSibling.value, 0.9)" title="발음 듣기">🔊 발음</button>
           </div>
-          <input type="text" class="input-text pattern-edit-en" value="${s.en}" style="font-weight:700; padding:6px 10px; font-size:0.9rem;" placeholder="영어 문장">
+          <input type="text" class="input-text pattern-edit-en" value="${s.en}" style="font-weight:700; padding:6px 10px; font-size:0.9rem;" placeholder="영어 문장" oninput="onPatternSentenceEnChanged(this, ${idx})">
           <div style="display:grid; grid-template-columns: 2fr 1fr; gap:6px;">
             <input type="text" class="input-text pattern-edit-ko" value="${s.ko}" style="padding:6px 10px; font-size:0.85rem;" placeholder="한국어 뜻">
             <input type="text" class="input-text pattern-edit-hint" value="${s.hint}" style="padding:6px 10px; font-size:0.85rem;" placeholder="힌트 단어">
@@ -3884,6 +4039,80 @@
         `;
         listEl.appendChild(item);
       });
+    }
+
+    function onPatternSentenceEnChanged(inputEl, idx) {
+      const en = (inputEl.value || "").trim();
+      if (!en) return;
+      const card = inputEl.closest('.pattern-sentence-item');
+      if (!card) return;
+      const koInput = card.querySelector('.pattern-edit-ko');
+      const hintInput = card.querySelector('.pattern-edit-hint');
+      if (koInput && !koInput.value) {
+        koInput.value = autoTranslateKorean(en);
+      }
+      if (hintInput && !hintInput.value) {
+        hintInput.value = en.split(/\s+/).slice(-2).join(' ');
+      }
+    }
+
+    function onPatternTitleModified() {
+      const statusBadge = document.getElementById('genPatternStatusBadge');
+      if (statusBadge) {
+        statusBadge.textContent = "⚡ 패턴 수정됨 (🔄 버튼을 눌러 문제를 새로고침하세요)";
+        statusBadge.style.background = "#FEF3C7";
+        statusBadge.style.color = "#B45309";
+      }
+    }
+
+    function regenerateQuestionsFromModifiedPattern() {
+      const titleInput = document.getElementById('genPatternTitleInput');
+      const modPattern = (titleInput ? titleInput.value : "").trim();
+      if (!modPattern) {
+        alert("수정할 패턴을 입력해 주세요! (예: I want to ~, Can I ~?)");
+        return;
+      }
+      const rawInput = (document.getElementById('patternSentenceInput').value || "").trim();
+      const res = generateSentencesFromPattern(modPattern, rawInput);
+
+      titleInput.value = res.patternTitle;
+      const descInput = document.getElementById('genPatternDescInput');
+      if (descInput) descInput.value = res.patternDesc;
+
+      tempGeneratedSentences = res.sentences;
+      renderPatternSentencesEditList(res.sentences);
+
+      const statusBadge = document.getElementById('genPatternStatusBadge');
+      if (statusBadge) {
+        statusBadge.textContent = "✨ 수정된 패턴 반영 완료!";
+        statusBadge.style.background = "#ECFDF5";
+        statusBadge.style.color = "#059669";
+      }
+
+      playSuccessSound();
+    }
+
+    function autoGeneratePatternSentences() {
+      const input = (document.getElementById('patternSentenceInput').value || "").trim();
+      if (!input) {
+        alert("문장이나 패턴을 입력해 주세요!");
+        return;
+      }
+      const res = generate5SentencesFromInput(input);
+      const titleInput = document.getElementById('genPatternTitleInput');
+      if (titleInput) titleInput.value = res.patternTitle;
+      const descInput = document.getElementById('genPatternDescInput');
+      if (descInput) descInput.value = res.patternDesc;
+
+      const statusBadge = document.getElementById('genPatternStatusBadge');
+      if (statusBadge) {
+        statusBadge.textContent = "5문제 완성!";
+        statusBadge.style.background = "#ECFDF5";
+        statusBadge.style.color = "#059669";
+      }
+
+      tempGeneratedSentences = res.sentences;
+      renderPatternSentencesEditList(res.sentences);
 
       document.getElementById('patternGeneratedResultArea').style.display = 'block';
       playSuccessSound();
@@ -3920,8 +4149,10 @@
         return;
       }
 
-      const pTitle = document.getElementById('genPatternTitle').textContent || (inputVal + " ~");
-      const pDesc = document.getElementById('genPatternDesc').textContent || "문장 회화 패턴";
+      const titleInput = document.getElementById('genPatternTitleInput');
+      const descInput = document.getElementById('genPatternDescInput');
+      const pTitle = (titleInput ? titleInput.value.trim() : "") || (inputVal + " ~");
+      const pDesc = (descInput ? descInput.value.trim() : "") || "문장 회화 패턴";
 
       const newPat = {
         id: "pat_user_" + Date.now(),

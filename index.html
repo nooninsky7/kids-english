@@ -2046,9 +2046,6 @@
       return raw;
     }
 
-      return raw;
-    }
-
     // [유기적 연결 핵심 함수] 입력한 문장 하나로 회화 5문장 + 단어장 + 문장퍼즐을 일괄 생성
     function applyOneStopSync() {
       const inputEl = document.getElementById('onestopSentenceInput');
@@ -4864,15 +4861,6 @@
         const twoMeanings = parts.slice(0, 2).join(', ');
         koInput.value = twoMeanings;
         if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 뜻 2개가 자동으로 채워졌습니다!</span>`;
-      } else {
-        if (statusEl) statusEl.innerHTML = `<span style="color:#E11D48;">💡 뜻을 직접 입력해 주세요.</span>`;
-      }
-    }
-      const multi = await fetchMultiMeaningsOnline(cleanWord);
-      if (multi && multi.toLowerCase() !== cleanWord) {
-        koInput.value = multi;
-        const count = multi.includes(',') ? multi.split(',').length : 1;
-        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 뜻 ${count}개가 자동으로 채워졌습니다!</span>`;
       } else {
         if (statusEl) statusEl.innerHTML = `<span style="color:#E11D48;">💡 뜻을 직접 입력해 주세요.</span>`;
       }

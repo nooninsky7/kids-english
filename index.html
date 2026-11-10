@@ -3077,6 +3077,40 @@
     // 7가지 형식 기본 2문제 1세트 데이터
     const defaultGrammarSets = [
       {
+        id: "gset_user_her_car",
+        form: "FORM_2",
+        title: "It's her car.",
+        korean: "그것은 그녀의 자동차야.",
+        completed: 0,
+        solvedSub: [false, false],
+        questions: [
+          {
+            id: "g_user_q1",
+            form: "FORM_2",
+            korean: "그것은 그녀의 자동차야.",
+            fullEnglish: "It's her car.",
+            blocks: [
+              { id: "b_u1", text: "It", role: "WHO" },
+              { id: "b_u2", text: "'s", role: "BE_FEEL" },
+              { id: "b_u3", text: "her car", role: "STATE" }
+            ],
+            isVariation: false
+          },
+          {
+            id: "g_user_q2",
+            form: "FORM_2",
+            korean: "이건 내가 제일 좋아하는 장난감이야.",
+            fullEnglish: "This is my favorite toy.",
+            blocks: [
+              { id: "b_u4", text: "This", role: "WHO" },
+              { id: "b_u5", text: "is", role: "BE_FEEL" },
+              { id: "b_u6", text: "my favorite toy", role: "STATE" }
+            ],
+            isVariation: true
+          }
+        ]
+      },
+      {
         id: "gset_1",
         form: "FORM_1",
         title: "The cute puppy runs in the park.",
@@ -3364,6 +3398,11 @@
                 }
               });
             });
+            // It's her car 문장 세트 누락 방지 (기존 목록에 없으면 최상단에 자동 병합)
+            if (!list.some(s => s.id === "gset_user_her_car" || /it'?s\s+her\s+car/i.test(s.title || ""))) {
+              list.unshift(JSON.parse(JSON.stringify(defaultGrammarSets[0])));
+              try { localStorage.setItem("kids_grammar_sets_v2", JSON.stringify(list)); } catch(e){}
+            }
             return list;
           }
         }
@@ -4761,6 +4800,19 @@
     // =========================================================================
     const initialPatterns = [
       {
+        id: "its",
+        title: "It's ~",
+        desc: "사물/상태 말하기",
+        completed: 0,
+        questions: [
+          { ko: "그것은 그녀의 자동차야.", en: "It's her car.", hint: "her car" },
+          { ko: "이것은 내가 제일 좋아하는 장난감이야.", en: "This is my favorite toy.", hint: "my favorite toy" },
+          { ko: "그것은 귀여운 강아지야.", en: "It is a cute puppy.", hint: "a cute puppy" },
+          { ko: "그것은 내 새 가방이야.", en: "It is my new bag.", hint: "my new bag" },
+          { ko: "그것은 재미있는 책이야.", en: "It is a fun book.", hint: "a fun book" }
+        ]
+      },
+      {
         id: "want",
         title: "I want ~",
         desc: "원하는 것/행동 말하기",
@@ -4804,8 +4856,18 @@
     function getStoredPatterns() {
       try {
         const d = localStorage.getItem("kids_patterns_list");
-        return d ? JSON.parse(d) : initialPatterns;
-      } catch(e) { return initialPatterns; }
+        let list = d ? JSON.parse(d) : [];
+        if (!Array.isArray(list) || list.length === 0) {
+          list = JSON.parse(JSON.stringify(initialPatterns));
+          try { localStorage.setItem("kids_patterns_list", JSON.stringify(list)); } catch(e){}
+        } else {
+          if (!list.some(p => p.id === "its" || /it'?s/i.test(p.title || ""))) {
+            list.unshift(JSON.parse(JSON.stringify(initialPatterns[0])));
+            try { localStorage.setItem("kids_patterns_list", JSON.stringify(list)); } catch(e){}
+          }
+        }
+        return list;
+      } catch(e) { return JSON.parse(JSON.stringify(initialPatterns)); }
     }
 
     function savePatternsToStorage() {
@@ -5912,7 +5974,17 @@
 
     // ================= 단어장 로직 =================
     const ONE_DAY = 24 * 60 * 60 * 1000;
-    const defaultVocabulary = []; // 실제 학습을 위해 빈 단어장으로 시작
+    const defaultVocabulary = [
+      { id: "v_u_1", english: "pen", korean: "펜, 필기도구", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439930, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v_u_2", english: "pillow", korean: "베개, 쿠션", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439931, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v_u_3", english: "ruler", korean: "자, 줄자", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439932, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v_u_4", english: "favorite", korean: "가장 좋아하는 것, 인기 있는 것", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439933, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v_u_5", english: "socks", korean: "양말", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439934, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v_u_6", english: "calendar", korean: "달력, 일정표", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439935, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v_u_7", english: "lunch", korean: "점심, 점심식사", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439936, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v_u_8", english: "notebook", korean: "공책, 연습장", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439937, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v_u_9", english: "melon", korean: "멜론, 참외", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439938, nextReviewDate: Date.now() + ONE_DAY }
+    ];
 
     const SAMPLE_VOCABULARY = [
       { id: "v1", english: "dinosaur", korean: "공룡, 거대한 동물", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
@@ -5938,8 +6010,23 @@
     function getStoredVocaList() {
       try {
         const d = localStorage.getItem("kids_voca_list");
-        if (!d) return defaultVocabulary;
-        const list = JSON.parse(d);
+        let list = d ? JSON.parse(d) : [];
+        if (!Array.isArray(list) || list.length === 0) {
+          list = JSON.parse(JSON.stringify(defaultVocabulary));
+          try { localStorage.setItem("kids_voca_list", JSON.stringify(list)); } catch(e){}
+        } else {
+          // 등록된 기본 단어 누락 방지 (기존 목록에 없으면 자동 추가)
+          let hasMerged = false;
+          defaultVocabulary.forEach(dv => {
+            if (!list.some(w => w.english && w.english.trim().toLowerCase() === dv.english.toLowerCase())) {
+              list.push(JSON.parse(JSON.stringify(dv)));
+              hasMerged = true;
+            }
+          });
+          if (hasMerged) {
+            try { localStorage.setItem("kids_voca_list", JSON.stringify(list)); } catch(e){}
+          }
+        }
         let hasChanges = false;
         // 기존 저장된 모든 단어를 소문자로 안전하게 변환 (데이터 보존 + 앞 스펠링 소문자 통일)
         list.forEach(w => {
@@ -5963,7 +6050,7 @@
           try { localStorage.setItem("kids_voca_list", JSON.stringify(list)); } catch(e){}
         }
         return list;
-      } catch(e) { return defaultVocabulary; }
+      } catch(e) { return JSON.parse(JSON.stringify(defaultVocabulary)); }
     }
     function saveVocaListToStorage() {
       try {

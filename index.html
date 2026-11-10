@@ -1039,6 +1039,7 @@
         <div class="nav-title"><span>🧩 문장퍼즐</span></div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
           <button class="nav-btn" onclick="openGrammarListModal()" style="font-weight: 800; background: #FEF3C7; border-color: #FCD34D; color: #92400E;">📋 문장 목록 & 선택 풀기 (<span id="grammarCompletedCountBadge">0/7 세트</span>)</button>
+          <button class="nav-btn" onclick="openCurrentGrammarEditModal()" style="font-weight: 700; background: white; border: 1.5px solid var(--border);" title="현재 풀고 있는 문장 수정">✏️ 현재 문장 수정</button>
           <button class="nav-btn primary" onclick="openAddGrammarModal()">+ 문장 등록</button>
         </div>
       </div>
@@ -1108,6 +1109,7 @@
       <div class="nav-bar">
         <div class="nav-title"><span>🗣️ 하루 5문장 회화패턴</span></div>
         <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="nav-btn" onclick="openCurrentPatternEditModal()" style="font-weight: 700; background: white; border: 1.5px solid var(--border);" title="현재 패턴/5문장 수정">✏️ 문장 관리</button>
           <button class="nav-btn primary" onclick="openAddPatternModal()">+ 새 패턴/문장 등록</button>
           <span id="currentPatternBadge" style="font-weight: 800; color: var(--primary);">I want ~</span>
         </div>
@@ -1117,9 +1119,13 @@
         <div class="pattern-list-col" id="patternsGridTablet"></div>
         <div class="pattern-quiz-col">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
               <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">영어로 말해보세요</span>
-              <span class="quiz-step-badge" id="tabletPatternStepBadge">문장 1 / 5</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <button type="button" class="small-btn" onclick="openCurrentPatternEditModal()" style="color: #4F46E5; border-color: #C7D2FE; background: #EEF2FF; font-weight: 700;" title="현재 패턴 및 5문장 수정">✏️ 5문장 수정</button>
+                <button type="button" class="small-btn" onclick="deletePattern(currentPatternId)" style="color: #EF4444; border-color: #FECACA; background: #FEF2F2; font-weight: 700;" title="현재 패턴 삭제">🗑️ 삭제</button>
+                <span class="quiz-step-badge" id="tabletPatternStepBadge">문장 1 / 5</span>
+              </div>
             </div>
             <div class="guide-prompt-ko" id="tabletKoreanPrompt" style="font-size: 2rem;">나는 사과를 원해.</div>
             <div style="margin-top: 8px; font-size: 0.95rem; color: var(--primary); font-weight: 700;" id="tabletHint">💡 힌트: apple</div>
@@ -1382,7 +1388,7 @@
       <div class="modal-card" style="max-width: 580px; max-height: 90vh; display: flex; flex-direction: column;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0;">
           <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-            <span>🗣️ 새 회화패턴 & 5문장 자동 생성</span>
+            <span id="addPatternModalTitle">🗣️ 새 회화패턴 & 5문장 자동 생성</span>
           </div>
           <button class="modal-close-btn" onclick="closeAddPatternModal()">✕</button>
         </div>
@@ -1468,7 +1474,7 @@
       <div class="modal-card" style="max-width: 530px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-            <span>🧩 새 문장퍼즐 추가</span>
+            <span id="addGrammarModalTitle">🧩 새 문장퍼즐 추가</span>
           </div>
           <button class="modal-close-btn" onclick="closeAddGrammarModal()">✕</button>
         </div>
@@ -1522,7 +1528,7 @@
 
         <div style="display: flex; gap: 10px;">
           <button class="btn btn-secondary" style="flex: 1;" onclick="closeAddGrammarModal()">취소</button>
-          <button class="btn btn-primary" style="flex: 2;" onclick="saveCustomGrammarSentence()">
+          <button class="btn btn-primary" id="saveGrammarBtn" style="flex: 2;" onclick="saveCustomGrammarSentence()">
             🚀 문장퍼즐에 등록하고 바로 풀기
           </button>
         </div>
@@ -2610,6 +2616,7 @@
           s.ko = refineChildKoreanTranslation(s.ko, s.en);
         }
       }
+
       const newPat = {
         id: "pat_os_" + Date.now(),
         title: genResult.patternTitle,
@@ -4186,6 +4193,7 @@
           <!-- 우측 액션 버튼들 -->
           <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
             <button class="small-btn primary" onclick="selectGrammarFromModal('${s.id}')" title="이 세트 바로 풀기">풀기 ➔</button>
+            <button class="small-btn" onclick="openEditGrammarModal('${s.id}')" style="color: #4F46E5; border-color: #C7D2FE; background: #EEF2FF;" title="문장 및 바구니 블록 수정">✏️ 수정</button>
             <button class="small-btn" onclick="deleteGrammarSet('${s.id}')" style="color: #EF4444; border-color: #FECACA; background: #FEF2F2;" title="이 문장 삭제">🗑️ 삭제</button>
           </div>
         `;
@@ -4291,7 +4299,15 @@
       });
     }
 
+    let editingGrammarSetId = null;
+
     function openAddGrammarModal() {
+      editingGrammarSetId = null;
+      const titleEl = document.getElementById('addGrammarModalTitle');
+      if (titleEl) titleEl.textContent = "🧩 새 문장퍼즐 추가";
+      const saveBtn = document.getElementById('saveGrammarBtn');
+      if (saveBtn) saveBtn.textContent = "🚀 문장퍼즐에 등록하고 바로 풀기";
+
       document.getElementById('addGrammarModal').style.display = 'flex';
       document.getElementById('newGrammarEnInput').value = "";
       document.getElementById('newGrammarKoInput').value = "";
@@ -4300,8 +4316,45 @@
       setTimeout(() => document.getElementById('newGrammarEnInput').focus(), 200);
     }
 
+    function openEditGrammarModal(setId) {
+      const targetSet = grammarSets.find(s => s.id === setId);
+      if (!targetSet) return;
+      editingGrammarSetId = setId;
+
+      const titleEl = document.getElementById('addGrammarModalTitle');
+      if (titleEl) titleEl.textContent = "🧩 문장퍼즐 수정 & 바구니 블록 편집";
+      const saveBtn = document.getElementById('saveGrammarBtn');
+      if (saveBtn) saveBtn.textContent = "💾 수정 내용 저장하기";
+
+      document.getElementById('newGrammarEnInput').value = targetSet.title || "";
+      document.getElementById('newGrammarKoInput').value = targetSet.korean || "";
+      const fKey = targetSet.form || "FORM_3";
+      document.getElementById('grammarFormSelect').value = fKey;
+
+      const prefilled = {};
+      if (targetSet.questions && targetSet.questions[0] && targetSet.questions[0].blocks) {
+        targetSet.questions[0].blocks.forEach(b => {
+          prefilled[normalizeRole(b.role)] = b.text;
+        });
+      }
+      renderDynamicGrammarSlotInputs(fKey, prefilled);
+
+      document.getElementById('addGrammarModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('newGrammarEnInput').focus(), 200);
+    }
+
+    function openCurrentGrammarEditModal() {
+      const cur = getCurrentGrammarSet();
+      if (!cur) {
+        alert("현재 선택된 문장퍼즐이 없습니다!");
+        return;
+      }
+      openEditGrammarModal(cur.id);
+    }
+
     function closeAddGrammarModal() {
       document.getElementById('addGrammarModal').style.display = 'none';
+      editingGrammarSetId = null;
     }
 
     // 7가지 문장 구조 자동 분석기
@@ -4506,6 +4559,43 @@
         finalForm = d ? d.form : "FORM_3";
       }
 
+      // 수정 모드인 경우 기존 문장 세트 업데이트
+      if (editingGrammarSetId) {
+        const targetSet = grammarSets.find(s => s.id === editingGrammarSetId);
+        if (targetSet) {
+          targetSet.title = fullEn;
+          targetSet.korean = koVal;
+          targetSet.form = finalForm;
+          if (!targetSet.questions || targetSet.questions.length === 0) {
+            targetSet.questions = [{}, {}];
+          }
+          targetSet.questions[0] = {
+            id: targetSet.questions[0].id || ("g_" + Date.now()),
+            form: finalForm,
+            korean: koVal,
+            fullEnglish: fullEn,
+            blocks: blocks,
+            isVariation: false
+          };
+          const similarG = generateSimilarGrammarSentence(targetSet.questions[0]);
+          similarG.id = "g_user_sim_" + Date.now();
+          similarG.isVariation = true;
+          targetSet.questions[1] = similarG;
+
+          saveGrammarSetsToStorage();
+          updateGrammarAchievementUI();
+          closeAddGrammarModal();
+          renderGrammarListModal(currentGrammarListFilter);
+          if (currentGrammarSetId === editingGrammarSetId) {
+            loadTabletGrammarQuestion();
+          }
+          editingGrammarSetId = null;
+          playSuccessSound();
+          alert(`🎉 "${fullEn}" 문장 수정이 성공적으로 저장되었습니다!`);
+          return;
+        }
+      }
+
       const newG = {
         id: "g_user_" + Date.now(),
         form: finalForm,
@@ -4650,18 +4740,89 @@
             ${isActive ? '<span style="font-size:0.75rem; font-weight:800; color:var(--primary); background:var(--primary-light); padding:2px 8px; border-radius:9999px;">학습 중</span>' : ''}
           </div>
           <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">${p.desc}</div>
-          <div style="margin-top:8px; font-size:0.8rem; font-weight:700; color:#059669;">🔥 ${p.completed || 0}세트 완료</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+            <span style="font-size:0.8rem; font-weight:700; color:#059669;">🔥 ${p.completed || 0}세트 완료</span>
+            <div style="display:flex; gap:5px;" onclick="event.stopPropagation()">
+              <button type="button" class="small-btn" onclick="openEditPatternModal('${p.id}')" style="color: #4F46E5; border-color: #C7D2FE; background: #EEF2FF; padding: 3px 8px; font-size: 0.78rem;" title="패턴 및 문장 수정">✏️ 수정</button>
+              <button type="button" class="small-btn" onclick="deletePattern('${p.id}')" style="color: #EF4444; border-color: #FECACA; background: #FEF2F2; padding: 3px 8px; font-size: 0.78rem;" title="이 패턴 삭제">🗑️ 삭제</button>
+            </div>
+          </div>
         `;
         item.onclick = () => selectTabletPattern(p.id);
         col.appendChild(item);
       });
+
+      const btmRow = document.createElement('div');
+      btmRow.style.cssText = "padding: 10px 4px; text-align: center;";
+      btmRow.innerHTML = `
+        <button type="button" class="btn btn-secondary" onclick="restoreDefaultPatterns()" style="font-size: 0.8rem; padding: 7px 12px; width: 100%; border-radius: 10px;" title="삭제한 기본 회화패턴들을 다시 복원합니다">
+          ↺ 기본 회화패턴 복원하기
+        </button>
+      `;
+      col.appendChild(btmRow);
+
       const badge = document.getElementById('currentPatternBadge');
       const cur = getCurrentPattern();
       if (badge && cur) badge.textContent = cur.title;
     }
 
+    function deletePattern(patternId) {
+      const p = patternsList.find(x => x.id === patternId);
+      const title = p ? p.title : "이 회화패턴";
+      if (!confirm(`"${title}" 회화패턴과 수록된 문장들을 삭제하시겠습니까?\n\n(※ 삭제 후에도 필요 시 하단의 [기본 회화패턴 복원하기]로 언제든 다시 복원할 수 있습니다)`)) return;
+
+      patternsList = patternsList.filter(x => x.id !== patternId);
+      savePatternsToStorage();
+
+      if (currentPatternId === patternId) {
+        if (patternsList.length > 0) {
+          currentPatternId = patternsList[0].id;
+        } else {
+          currentPatternId = null;
+        }
+        patternIdx = 0;
+      }
+
+      renderTabletPatterns();
+      loadPatternQuestionTablet();
+      playSuccessSound();
+      alert(`"${title}" 회화패턴이 삭제되었습니다.`);
+    }
+
+    function restoreDefaultPatterns() {
+      if (!confirm("기본 회화패턴들을 다시 복원하시겠습니까?")) return;
+      const existingIds = new Set(patternsList.map(p => p.id));
+      initialPatterns.forEach(d => {
+        if (!existingIds.has(d.id)) {
+          patternsList.push(JSON.parse(JSON.stringify(d)));
+        }
+      });
+      savePatternsToStorage();
+      if (!currentPatternId && patternsList.length > 0) {
+        currentPatternId = patternsList[0].id;
+        patternIdx = 0;
+      }
+      renderTabletPatterns();
+      loadPatternQuestionTablet();
+      playSuccessSound();
+      alert("기본 회화패턴들이 복원되었습니다!");
+    }
+
     function loadPatternQuestionTablet() {
       const p = getCurrentPattern();
+      if (!p || !p.questions || p.questions.length === 0) {
+        const stepBadge = document.getElementById('tabletPatternStepBadge');
+        if (stepBadge) stepBadge.textContent = "0 / 0";
+        const promptEl = document.getElementById('tabletKoreanPrompt');
+        if (promptEl) promptEl.textContent = "등록된 회화패턴이 없습니다. 좌측 하단의 [기본 회화패턴 복원하기] 또는 [+ 새 패턴 등록]을 눌러보세요!";
+        const hintEl = document.getElementById('tabletHint');
+        if (hintEl) hintEl.textContent = "";
+        const fBox = document.getElementById('tabletFeedbackBox');
+        if (fBox) fBox.style.display = 'none';
+        const nextBtn = document.getElementById('tabletNextBtn');
+        if (nextBtn) nextBtn.disabled = true;
+        return;
+      }
       const total = p.questions ? p.questions.length : 5;
       const q = getCurrentPatternQuestion();
 
@@ -5227,7 +5388,15 @@
       };
     }
 
+    let editingPatternId = null;
+
     function openAddPatternModal() {
+      editingPatternId = null;
+      const titleEl = document.getElementById('addPatternModalTitle');
+      if (titleEl) titleEl.textContent = "🗣️ 새 회화패턴 & 5문장 자동 생성";
+      const saveBtn = document.getElementById('savePatternBtn');
+      if (saveBtn) saveBtn.textContent = "🚀 5문장 자동 생성 및 회화 학습 시작";
+
       document.getElementById('addPatternModal').style.display = 'flex';
       document.getElementById('patternSentenceInput').value = "";
       document.getElementById('patternGeneratedResultArea').style.display = 'none';
@@ -5239,8 +5408,49 @@
       setTimeout(() => document.getElementById('patternSentenceInput').focus(), 200);
     }
 
+    function openEditPatternModal(patternId) {
+      const p = patternsList.find(x => x.id === patternId);
+      if (!p) return;
+      editingPatternId = patternId;
+
+      const titleEl = document.getElementById('addPatternModalTitle');
+      if (titleEl) titleEl.textContent = `🗣️ 회화패턴 & 문장 수정 [ ${p.title} ]`;
+      const saveBtn = document.getElementById('savePatternBtn');
+      if (saveBtn) saveBtn.textContent = "💾 수정 내용 저장하기";
+
+      const titleInput = document.getElementById('genPatternTitleInput');
+      if (titleInput) titleInput.value = p.title || "";
+      const descInput = document.getElementById('genPatternDescInput');
+      if (descInput) descInput.value = p.desc || "";
+      const sentenceInput = document.getElementById('patternSentenceInput');
+      if (sentenceInput) sentenceInput.value = p.title || "";
+
+      tempGeneratedSentences = p.questions ? JSON.parse(JSON.stringify(p.questions)) : [];
+      renderPatternSentencesEditList(tempGeneratedSentences);
+      document.getElementById('patternGeneratedResultArea').style.display = 'block';
+
+      const statusBadge = document.getElementById('genPatternStatusBadge');
+      if (statusBadge) {
+        statusBadge.textContent = "✏️ 문장 및 패턴 수정 모드";
+        statusBadge.style.background = "#EFF6FF";
+        statusBadge.style.color = "#1D4ED8";
+      }
+
+      document.getElementById('addPatternModal').style.display = 'flex';
+    }
+
+    function openCurrentPatternEditModal() {
+      const cur = getCurrentPattern();
+      if (!cur) {
+        alert("현재 선택된 회화패턴이 없습니다!");
+        return;
+      }
+      openEditPatternModal(cur.id);
+    }
+
     function closeAddPatternModal() {
       document.getElementById('addPatternModal').style.display = 'none';
+      editingPatternId = null;
     }
 
     function setPatternInput(val) {
@@ -5261,16 +5471,75 @@
         item.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-size:0.8rem; font-weight:800; color:var(--primary);">문장 ${idx + 1}</span>
-            <button type="button" class="small-btn" onclick="speakEnglish(this.parentElement.nextElementSibling.value, 0.9)" title="발음 듣기">🔊 발음</button>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button type="button" class="small-btn" onclick="speakEnglish(this.closest('.pattern-sentence-item').querySelector('.pattern-edit-en').value, 0.9)" title="발음 듣기">🔊 발음</button>
+              <button type="button" class="small-btn" onclick="deletePatternSentenceItem(this)" style="color:#EF4444; border-color:#FECACA; background:#FEF2F2;" title="이 문장 삭제">🗑️ 삭제</button>
+            </div>
           </div>
           <input type="text" class="input-text pattern-edit-en" value="${s.en}" style="font-weight:700; padding:6px 10px; font-size:0.9rem;" placeholder="영어 문장" oninput="onPatternSentenceEnChanged(this, ${idx})">
           <div style="display:grid; grid-template-columns: 2fr 1fr; gap:6px;">
             <input type="text" class="input-text pattern-edit-ko" value="${s.ko}" style="padding:6px 10px; font-size:0.85rem;" placeholder="한국어 뜻">
-            <input type="text" class="input-text pattern-edit-hint" value="${s.hint}" style="padding:6px 10px; font-size:0.85rem;" placeholder="힌트 단어">
+            <input type="text" class="input-text pattern-edit-hint" value="${s.hint || ''}" style="padding:6px 10px; font-size:0.85rem;" placeholder="힌트 단어">
           </div>
         `;
         listEl.appendChild(item);
       });
+
+      const addRow = document.createElement('div');
+      addRow.className = "pattern-add-btn-row";
+      addRow.style.cssText = "display:flex; justify-content:center; margin-top:8px;";
+      addRow.innerHTML = `
+        <button type="button" class="small-btn" onclick="addNewPatternSentenceItem()" style="color:var(--primary); border-color:#C7D2FE; background:#EEF2FF; font-weight:800; padding:6px 14px;">
+          + 문장 직접 추가하기
+        </button>
+      `;
+      listEl.appendChild(addRow);
+    }
+
+    function deletePatternSentenceItem(btn) {
+      const item = btn.closest('.pattern-sentence-item');
+      if (!item) return;
+      const allItems = document.querySelectorAll('.pattern-sentence-item');
+      if (allItems.length <= 1) {
+        alert("회화 학습을 위해 최소 1개 이상의 문장이 남아있어야 합니다!");
+        return;
+      }
+      item.remove();
+      document.querySelectorAll('.pattern-sentence-item').forEach((it, i) => {
+        const badge = it.querySelector('span');
+        if (badge) badge.textContent = `문장 ${i + 1}`;
+      });
+    }
+
+    function addNewPatternSentenceItem() {
+      const listEl = document.getElementById('patternSentencesEditList');
+      if (!listEl) return;
+      const items = listEl.querySelectorAll('.pattern-sentence-item');
+      const count = items.length + 1;
+      const item = document.createElement('div');
+      item.className = "pattern-sentence-item";
+      item.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.8rem; font-weight:800; color:var(--primary);">문장 ${count}</span>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button type="button" class="small-btn" onclick="speakEnglish(this.closest('.pattern-sentence-item').querySelector('.pattern-edit-en').value, 0.9)" title="발음 듣기">🔊 발음</button>
+            <button type="button" class="small-btn" onclick="deletePatternSentenceItem(this)" style="color:#EF4444; border-color:#FECACA; background:#FEF2F2;" title="이 문장 삭제">🗑️ 삭제</button>
+          </div>
+        </div>
+        <input type="text" class="input-text pattern-edit-en" value="" style="font-weight:700; padding:6px 10px; font-size:0.9rem;" placeholder="새 영어 문장 입력" oninput="onPatternSentenceEnChanged(this, ${count - 1})">
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:6px;">
+          <input type="text" class="input-text pattern-edit-ko" value="" style="padding:6px 10px; font-size:0.85rem;" placeholder="한국어 뜻">
+          <input type="text" class="input-text pattern-edit-hint" value="" style="padding:6px 10px; font-size:0.85rem;" placeholder="힌트 단어">
+        </div>
+      `;
+      const addRow = listEl.querySelector('.pattern-add-btn-row');
+      if (addRow) {
+        listEl.insertBefore(item, addRow);
+      } else {
+        listEl.appendChild(item);
+      }
+      const inp = item.querySelector('.pattern-edit-en');
+      if (inp) inp.focus();
     }
 
     async function onPatternSentenceEnChanged(inputEl, idx) {
@@ -5415,6 +5684,27 @@
       const descInput = document.getElementById('genPatternDescInput');
       const pTitle = (titleInput ? titleInput.value.trim() : "") || (inputVal + " ~");
       const pDesc = (descInput ? descInput.value.trim() : "") || "문장 회화 패턴";
+
+      // 수정 모드인 경우 기존 패턴 업데이트
+      if (editingPatternId) {
+        const target = patternsList.find(x => x.id === editingPatternId);
+        if (target) {
+          target.title = pTitle;
+          target.desc = pDesc;
+          target.questions = sentences;
+          savePatternsToStorage();
+          renderTabletPatterns();
+          if (currentPatternId === editingPatternId) {
+            patternIdx = 0;
+            loadPatternQuestionTablet();
+          }
+          closeAddPatternModal();
+          editingPatternId = null;
+          playSuccessSound();
+          alert(`🎉 [ ${pTitle} ] 회화패턴 및 문장이 성공적으로 수정되었습니다!`);
+          return;
+        }
+      }
 
       const newPat = {
         id: "pat_user_" + Date.now(),

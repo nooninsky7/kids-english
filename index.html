@@ -957,8 +957,7 @@
         <div class="nav-title"><span>🧩 문장퍼즐</span></div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
           <button class="nav-btn" onclick="openGrammarListModal()" style="font-weight: 800; background: #FEF3C7; border-color: #FCD34D; color: #92400E;">📋 퍼즐 목록 & 달성표 (<span id="grammarCompletedCountBadge">0/7</span>)</button>
-          <button class="voice-input-btn" onclick="quickAddGrammarByVoice()" title="음성으로 퍼즐 문장 등록">🎙️ 음성 문장 등록</button>
-          <button class="nav-btn" style="background: #ECFDF5; border-color: #A7F3D0; color: #065F46; font-weight: 700;" onclick="openAddGrammarModal()">+ 문장 직접 등록</button>
+          <button class="nav-btn primary" onclick="openAddGrammarModal()">+ 문장 등록</button>
           <button class="nav-btn" onclick="resetCurrentGrammarBlocks()">다시 놓기 ↺</button>
           <button class="nav-btn primary" id="grammarNextBtn" onclick="nextGrammarQuestion()" disabled>다음 문장 ➔</button>
         </div>
@@ -1018,8 +1017,7 @@
       <div class="nav-bar">
         <div class="nav-title"><span>🗣️ 하루 5문장 회화패턴</span></div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button class="voice-input-btn" onclick="quickAddPatternByVoice()" title="음성으로 회화 패턴 말하기">🎙️ 음성 패턴 등록</button>
-          <button class="nav-btn primary" onclick="openAddPatternModal()">+ 새 패턴/문장 추가</button>
+          <button class="nav-btn primary" onclick="openAddPatternModal()">+ 새 패턴/문장 등록</button>
           <span id="currentPatternBadge" style="font-weight: 800; color: var(--primary);">I want ~</span>
         </div>
       </div>
@@ -1078,7 +1076,6 @@
       <div class="nav-bar">
         <div class="nav-title"><span>📖 스마트단어장</span></div>
         <div style="display: flex; gap: 8px;">
-          <button class="voice-input-btn" onclick="quickAddVocaByVoice()" title="음성으로 단어 말하기">🎙️ 음성 단어 등록</button>
           <button class="nav-btn primary" onclick="openAddVocaModal()">+ 단어 등록</button>
         </div>
       </div>
@@ -1499,6 +1496,9 @@
               <input type="text" id="newVocaEnInput" class="input-text" style="flex: 1;" placeholder="예: treasure 또는 run" oninput="autoLookupVocaKo()" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
               <button class="voice-input-btn" id="voiceMicBtn_voca" onclick="startVoiceInputForTarget('newVocaEnInput', () => autoLookupVocaKo())" title="음성으로 단어 말하기">
                 🎙️ 말하기
+              </button>
+              <button class="voice-finish-btn" id="voiceFinishBtn_voca" onclick="stopCurrentVoiceInput(true)" style="display: none; background: #059669; color: white; font-weight: 800; border-radius: 12px; padding: 9px 16px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(5,150,105,0.4);" title="말하기 완료">
+                ✨ 녹음 완료
               </button>
             </div>
           </div>
@@ -3687,7 +3687,7 @@
         renderDynamicGrammarSlotInputs(parsed.form, parsed.slots);
       }
       const koInput = document.getElementById('newGrammarKoInput');
-      if (koInput && !koInput.value) {
+      if (koInput) {
         koInput.value = autoTranslateKorean(en);
         const trans = await fetchNaturalKoreanSentence(en);
         if (trans && trans !== en) koInput.value = trans;
@@ -3696,11 +3696,11 @@
 
     function saveCustomGrammarSentence() {
       const enVal = (document.getElementById('newGrammarEnInput').value || "").trim();
-      const koVal = (document.getElementById('newGrammarKoInput').value || "").trim() || enVal;
-      const formKey = document.getElementById('grammarFormSelect').value;
+      let koVal = (document.getElementById('newGrammarKoInput').value || "").trim();
+      let formKey = document.getElementById('grammarFormSelect').value;
 
-      const inputs = document.querySelectorAll('.custom-grammar-slot-input');
-      const blocks = [];
+      let inputs = document.querySelectorAll('.custom-grammar-slot-input');
+      let blocks = [];
 
       inputs.forEach((inp, idx) => {
         const text = inp.value.trim();
@@ -3714,9 +3714,38 @@
         }
       });
 
+      // 음성 입력이나 직접 타이핑 후 바구니가 아직 안 채워졌다면 자동 파싱
+      if (blocks.length < 2 && enVal) {
+        const parsed = detectAndParseSentence(enVal) || {
+          form: "FORM_3",
+          slots: { WHO: "I", DO: "like", WHAT: enVal }
+        };
+        formKey = parsed.form;
+        document.getElementById('grammarFormSelect').value = formKey;
+        renderDynamicGrammarSlotInputs(parsed.form, parsed.slots);
+
+        inputs = document.querySelectorAll('.custom-grammar-slot-input');
+        blocks = [];
+        inputs.forEach((inp, idx) => {
+          const text = inp.value.trim();
+          const role = inp.getAttribute('data-role');
+          if (text) {
+            blocks.push({
+              id: `b_custom_${Date.now()}_${idx}`,
+              text: text,
+              role: role
+            });
+          }
+        });
+      }
+
       if (blocks.length < 2) {
-        alert("최소 2개 이상의 바구니에 단어를 입력해 주세요!");
+        alert("영어 문장을 입력하거나 마이크로 말씀해 주세요!");
         return;
+      }
+
+      if (!koVal && enVal) {
+        koVal = autoTranslateKorean(enVal);
       }
 
       const fullEn = enVal ? (enVal.endsWith('.') || enVal.endsWith('?') ? enVal : enVal + '.') : blocks.map(b => b.text).join(' ') + '.';
@@ -5091,15 +5120,21 @@
     function startVoiceInputForTarget(targetInputId, callback) {
       playClickSound();
 
+      // [토글 기능] 이미 해당 입력창을 향해 녹음 중인 상태에서 마이크 버튼을 다시 누르면 즉시 완료
+      if (voiceRecordingSessionActive && activeVoiceTargetId === targetInputId) {
+        stopCurrentVoiceInput(true);
+        return;
+      }
+
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         alert("현재 사용 중인 브라우저에서 마이크 음성 인식을 지원하지 않습니다.\n\n구글 크롬(Chrome), 마이크로소프트 엣지(Edge), 또는 아이패드 사파리(Safari) 브라우저를 이용하시면 마이크 음성 인식을 편리하게 이용하실 수 있습니다!");
         return;
       }
 
-      // 이전 실행 중인 인식기 종료
+      // 이전 실행 중인 인식기 정리
       if (activeSpeechRecognizer) {
-        try { activeSpeechRecognizer.stop(); } catch(e){}
+        try { activeSpeechRecognizer.abort(); } catch(e){}
         activeSpeechRecognizer = null;
       }
 
@@ -5132,7 +5167,7 @@
         if (overlay) {
           overlay.style.display = 'flex';
           if (isSentenceVoiceMode) {
-            statusText.textContent = "문장을 편안하게 말씀하세요 🎙️ (다 말씀하신 뒤 [녹음 완료]를 누르세요!)";
+            statusText.textContent = "문장을 편안하게 말씀하세요 🎙️ (다 말씀하신 뒤 [녹음 완료]나 마이크를 누르세요)";
             interimText.textContent = "말씀을 잠시 멈추셔도 녹음이 끊기지 않습니다...";
           } else {
             statusText.textContent = "단어를 말씀하세요 🎙️ (말씀하시면 자동 완성됩니다)";
@@ -5147,42 +5182,46 @@
         const btn = document.querySelector(`button[onclick*="'${targetInputId}'"]`);
         if (btn) btn.classList.add('recording');
 
-        // 문장 입력인 경우 해당 입력창 바로 옆에 녹음 완료 버튼 노출!
-        if (isSentenceVoiceMode) {
-          if (targetInputId === 'onestopSentenceInput') {
-            const fb = document.getElementById('voiceFinishBtn_onestop');
-            if (fb) fb.style.display = 'inline-flex';
-          } else if (targetInputId === 'patternSentenceInput') {
-            const fb = document.getElementById('voiceFinishBtn_pattern');
-            if (fb) fb.style.display = 'inline-flex';
-          } else if (targetInputId === 'newGrammarEnInput') {
-            const fb = document.getElementById('voiceFinishBtn_grammar');
-            if (fb) fb.style.display = 'inline-flex';
-          }
+        // 입력창 바로 옆에 녹음 완료 버튼 노출
+        if (targetInputId === 'onestopSentenceInput') {
+          const fb = document.getElementById('voiceFinishBtn_onestop');
+          if (fb) fb.style.display = 'inline-flex';
+        } else if (targetInputId === 'patternSentenceInput') {
+          const fb = document.getElementById('voiceFinishBtn_pattern');
+          if (fb) fb.style.display = 'inline-flex';
+        } else if (targetInputId === 'newGrammarEnInput') {
+          const fb = document.getElementById('voiceFinishBtn_grammar');
+          if (fb) fb.style.display = 'inline-flex';
+        } else if (targetInputId === 'newVocaEnInput') {
+          const fb = document.getElementById('voiceFinishBtn_voca');
+          if (fb) fb.style.display = 'inline-flex';
         }
 
-        let accumulatedFinal = (targetEl.value || "").trim();
+        let basePrefix = "";
 
         recognition.onstart = function() {};
 
         recognition.onresult = function(event) {
-          let currentInterim = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              const piece = event.results[i][0].transcript.trim();
-              if (piece) {
-                accumulatedFinal += (accumulatedFinal ? " " : "") + piece;
-              }
+          let sessionFinal = "";
+          let sessionInterim = "";
+
+          for (let i = 0; i < event.results.length; ++i) {
+            const res = event.results[i];
+            if (res.isFinal) {
+              sessionFinal += (sessionFinal ? " " : "") + res[0].transcript.trim();
             } else {
-              currentInterim += event.results[i][0].transcript;
+              sessionInterim += (sessionInterim ? " " : "") + res[0].transcript.trim();
             }
           }
 
-          let textToShow = (accumulatedFinal + " " + currentInterim).trim();
-          if (textToShow) {
-            textToShow = textToShow.charAt(0).toUpperCase() + textToShow.slice(1);
-            targetEl.value = textToShow;
-            if (interimText) interimText.textContent = `🗣️ "${textToShow}"`;
+          let full = (basePrefix ? basePrefix + " " : "") + (sessionFinal ? sessionFinal + " " : "") + sessionInterim;
+          full = full.trim().replace(/\s+/g, ' ');
+
+          if (full) {
+            full = full.charAt(0).toUpperCase() + full.slice(1);
+            targetEl.value = full;
+            targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+            if (interimText) interimText.textContent = `🗣️ "${full}"`;
           }
         };
 
@@ -5204,17 +5243,16 @@
             return;
           }
 
-          // [문장 모드 핵심] 사용자가 '✨ 녹음 완료' 버튼을 누를 때까지 절대로 자동 중단하지 않고 연속 청취
+          // [문장 모드 핵심] 사용자가 완료를 누를 때까지 끊김 없이 연속 청취
           if (isSentenceVoiceMode && (Date.now() - voiceStartTime < 90000)) {
+            basePrefix = (targetEl.value || "").trim();
             setTimeout(() => {
               if (voiceRecordingSessionActive && !userExplicitlyFinished) {
                 try {
                   recognition.start();
-                } catch(e) {
-                  // 이미 시작되었거나 상태 전이 중인 경우 안전하게 무시
-                }
+                } catch(e) {}
               }
-            }, 120);
+            }, 100);
             return;
           }
 
@@ -5232,28 +5270,37 @@
     }
 
     function stopCurrentVoiceInput(isFinished = true) {
+      if (!voiceRecordingSessionActive && !activeVoiceTargetId) return;
       voiceRecordingSessionActive = false;
       userExplicitlyFinished = true;
 
-      if (activeSpeechRecognizer) {
-        try { activeSpeechRecognizer.stop(); } catch(e){}
-        activeSpeechRecognizer = null;
-      }
+      const targetId = activeVoiceTargetId;
+      const callback = activeVoiceCallback;
 
+      // UI 즉시 정리
       const overlay = document.getElementById('voiceListeningOverlay');
       if (overlay) overlay.style.display = 'none';
 
       document.querySelectorAll('.voice-input-btn').forEach(b => b.classList.remove('recording'));
       document.querySelectorAll('.voice-finish-btn').forEach(b => b.style.display = 'none');
 
-      if (isFinished && activeVoiceTargetId) {
-        const targetEl = document.getElementById(activeVoiceTargetId);
-        if (targetEl && targetEl.value) {
-          playSuccessSound(); // 딩동댕 소리로 입력 완료 알림!
-          if (typeof activeVoiceCallback === 'function') {
-            activeVoiceCallback(targetEl.value);
+      if (activeSpeechRecognizer) {
+        try { activeSpeechRecognizer.stop(); } catch(e){}
+        activeSpeechRecognizer = null;
+      }
+
+      if (isFinished && targetId) {
+        // 브라우저 음성 버퍼의 마지막 단어가 input에 완전히 기록되도록 160ms 대기 후 콜백 실행
+        setTimeout(() => {
+          const targetEl = document.getElementById(targetId);
+          if (targetEl && targetEl.value) {
+            targetEl.dispatchEvent(new Event('input', { bubbles: true }));
+            playSuccessSound(); // 딩동댕 소리로 입력 완료 알림!
+            if (typeof callback === 'function') {
+              callback(targetEl.value);
+            }
           }
-        }
+        }, 160);
       }
 
       activeVoiceTargetId = null;

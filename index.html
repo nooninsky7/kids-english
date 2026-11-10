@@ -1599,7 +1599,7 @@
           <div>
             <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">영어 단어</label>
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="newVocaEnInput" class="input-text" style="flex: 1;" placeholder="예: treasure 또는 run" oninput="autoLookupVocaKo()" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
+              <input type="text" id="newVocaEnInput" class="input-text" style="flex: 1; text-transform: lowercase;" placeholder="예: treasure 또는 run" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value = this.value.toLowerCase(); autoLookupVocaKo()" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
               <button class="voice-input-btn" id="voiceMicBtn_voca" onclick="startVoiceInputForTarget('newVocaEnInput', () => autoLookupVocaKo())" title="음성으로 단어 말하기">
                 🎙️ 말하기
               </button>
@@ -1644,7 +1644,7 @@
           <div>
             <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">영어 단어</label>
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="editVocaEnInput" class="input-text" style="flex: 1; font-weight: 700;" placeholder="영어 단어">
+              <input type="text" id="editVocaEnInput" class="input-text" style="flex: 1; font-weight: 700; text-transform: lowercase;" placeholder="영어 단어" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value = this.value.toLowerCase()">
               <button type="button" class="small-btn" onclick="speakEnglish(document.getElementById('editVocaEnInput').value)" title="발음 듣기" style="padding: 0 12px;">
                 🔊 발음
               </button>
@@ -5317,16 +5317,28 @@
         const d = localStorage.getItem("kids_voca_list");
         if (!d) return defaultVocabulary;
         const list = JSON.parse(d);
-        // 만약 기존 저장된 단어가 단일 뜻만 있다면 2개 풍부한 뜻으로 자동 보강
+        let hasChanges = false;
+        // 기존 저장된 모든 단어를 소문자로 안전하게 변환 (데이터 보존 + 앞 스펠링 소문자 통일)
         list.forEach(w => {
+          if (w.english) {
+            const lower = w.english.trim().toLowerCase();
+            if (w.english !== lower) {
+              w.english = lower;
+              hasChanges = true;
+            }
+          }
           if (w.english && (!w.korean || !w.korean.includes(','))) {
             const enriched = CHILD_DICTIONARY[w.english.toLowerCase()];
             if (enriched) {
               const parts = enriched.split(',').map(s => s.trim());
               w.korean = parts.slice(0, 2).join(', ');
+              hasChanges = true;
             }
           }
         });
+        if (hasChanges) {
+          try { localStorage.setItem("kids_voca_list", JSON.stringify(list)); } catch(e){}
+        }
         return list;
       } catch(e) { return defaultVocabulary; }
     }
@@ -5870,7 +5882,11 @@
           full = full.trim().replace(/\s+/g, ' ');
 
           if (full) {
-            full = full.charAt(0).toUpperCase() + full.slice(1);
+            if (targetInputId === 'newVocaEnInput' || targetInputId === 'editVocaEnInput') {
+              full = full.toLowerCase();
+            } else {
+              full = full.charAt(0).toUpperCase() + full.slice(1);
+            }
             targetEl.value = full;
             targetEl.dispatchEvent(new Event('input', { bubbles: true }));
             if (interimText) interimText.textContent = `🗣️ "${full}"`;
@@ -6098,7 +6114,7 @@
     }
 
     async function saveCustomVocaWord() {
-      const en = (document.getElementById('newVocaEnInput').value || "").trim();
+      const en = (document.getElementById('newVocaEnInput').value || "").trim().toLowerCase();
       let ko = (document.getElementById('newVocaKoInput').value || "").trim();
       if (!en) {
         alert("영어 단어를 입력하거나 마이크로 말씀해 주세요!");
@@ -6211,7 +6227,7 @@
 
     async function saveEditedVocaWord() {
       const id = document.getElementById('editVocaId').value;
-      const en = (document.getElementById('editVocaEnInput').value || "").trim();
+      const en = (document.getElementById('editVocaEnInput').value || "").trim().toLowerCase();
       let ko = (document.getElementById('editVocaKoInput').value || "").trim();
 
       if (!en) {
@@ -6305,6 +6321,21 @@
       localStorage.removeItem("kids_family_auth_date");
       localStorage.removeItem("kids_family_pin");
     } catch(e){}
+
+    // 기존 단어장 데이터의 앞글자 대문자 ➔ 소문자 자동 정제 (데이터 안전 보존)
+    if (vocaList && vocaList.length > 0) {
+      let vocaModified = false;
+      vocaList.forEach(w => {
+        if (w.english && w.english !== w.english.trim().toLowerCase()) {
+          w.english = w.english.trim().toLowerCase();
+          vocaModified = true;
+        }
+      });
+      if (vocaModified) {
+        saveVocaListToStorage();
+      }
+    }
+
     initTabletGrammar();
     renderVocaList();
     document.getElementById('streakCountText').textContent = `${getStoredStreak()}일 연속`;

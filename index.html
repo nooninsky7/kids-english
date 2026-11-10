@@ -374,8 +374,8 @@
       border-radius: 8px;
       display: inline-flex;
       align-items: center;
-      width: 200px;
-      min-width: 170px;
+      width: 260px;
+      min-width: 200px;
       flex-shrink: 0;
       white-space: nowrap;
       overflow: hidden;
@@ -1234,9 +1234,10 @@
       </div>
 
       <div class="voca-toolbar">
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; align-items: center;">
           <button class="small-btn" onclick="toggleSelectAll()">전체 선택/해제</button>
           <button class="small-btn" onclick="selectWrongOnly()">🚨 오답만 선택</button>
+          <button class="small-btn" style="color: #DC2626; border-color: #FECACA; background: #FEF2F2; font-weight: 700;" onclick="deleteSelectedVocaWords()" title="체크된 단어 일괄 삭제">🗑️ 선택 삭제</button>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
           <select class="sort-select" id="vocaSortSelect" onchange="changeVocaSort(this.value)">
@@ -1257,11 +1258,12 @@
           <div style="width: 40px; flex-shrink: 0;"></div>
           <div class="voca-header-row">
             <span style="width: 200px; min-width: 170px; flex-shrink: 0;">영단어 (English)</span>
-            <span style="width: 200px; min-width: 170px; flex-shrink: 0;">한국어 뜻 (Meaning)</span>
+            <span style="width: 260px; min-width: 200px; flex-shrink: 0;">한국어 뜻 (Meaning 2~3개)</span>
             <span style="flex: 1; min-width: 130px;">마스터 성취도</span>
           </div>
         </div>
-        <div style="min-width: 64px; text-align: center; flex-shrink: 0;">오답 횟수</div>
+        <div style="min-width: 64px; text-align: center; flex-shrink: 0; margin-right: 6px;">오답 횟수</div>
+        <div style="min-width: 110px; text-align: center; flex-shrink: 0;">수정 / 삭제</div>
       </div>
 
       <div class="voca-list" id="vocaListContainer"></div>
@@ -1608,14 +1610,14 @@
         </div>
 
         <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px;">
-          마이크 <strong>[🎙️ 말하기]</strong> 버튼을 누르고 단어를 말씀해 보세요! 한국어 뜻이 자동으로 채워집니다.
+          마이크 <strong>[🎙️ 말하기]</strong> 버튼을 누르거나 단어를 적어보세요! 한국어 뜻 <strong>2~3가지</strong>가 자동으로 채워집니다.
         </p>
 
         <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
           <div>
             <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">영어 단어</label>
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="newVocaEnInput" class="input-text" style="flex: 1;" placeholder="예: butterfly" oninput="autoLookupVocaKo()" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
+              <input type="text" id="newVocaEnInput" class="input-text" style="flex: 1;" placeholder="예: treasure 또는 run" oninput="autoLookupVocaKo()" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
               <button class="voice-input-btn" id="voiceMicBtn_voca" onclick="startVoiceInputForTarget('newVocaEnInput', () => autoLookupVocaKo())" title="음성으로 단어 말하기">
                 🎙️ 말하기
               </button>
@@ -1623,8 +1625,12 @@
           </div>
 
           <div>
-            <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">한국어 뜻</label>
-            <input type="text" id="newVocaKoInput" class="input-text" placeholder="예: 나비" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">한국어 뜻 (자동 2~3개 추천)</label>
+              <button type="button" class="small-btn" onclick="autoLookupVocaKo(true)" style="padding: 2px 8px; font-size: 0.75rem; background: #EEF2FF; border-color: #C7D2FE; color: #4338CA;">🔍 뜻 다시 찾기</button>
+            </div>
+            <input type="text" id="newVocaKoInput" class="input-text" placeholder="예: 보물, 소중한 것, 간직하다" onkeydown="if(event.key==='Enter') saveCustomVocaWord()">
+            <div style="font-size: 0.75rem; color: #64748B; margin-top: 4px;" id="newVocaKoStatus">💡 영어 단어를 적거나 말하면 2~3개의 자연스러운 뜻이 자동으로 들어갑니다.</div>
           </div>
         </div>
 
@@ -1632,6 +1638,55 @@
           <button class="btn btn-secondary" style="flex: 1;" onclick="closeAddVocaModal()">취소</button>
           <button class="btn btn-primary" style="flex: 2;" onclick="saveCustomVocaWord()">
             ✨ 단어장에 추가하기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: 단어 내용 수정 ================= -->
+    <div class="modal-overlay" id="editVocaModal">
+      <div class="modal-card" style="max-width: 480px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <span>✏️ 단어 내용 수정</span>
+          </div>
+          <button class="modal-close-btn" onclick="closeEditVocaModal()">✕</button>
+        </div>
+
+        <input type="hidden" id="editVocaId">
+
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
+          <div>
+            <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px;">영어 단어</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="editVocaEnInput" class="input-text" style="flex: 1; font-weight: 700;" placeholder="영어 단어">
+              <button type="button" class="small-btn" onclick="speakEnglish(document.getElementById('editVocaEnInput').value)" title="발음 듣기" style="padding: 0 12px;">
+                🔊 발음
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">한국어 뜻 (2~3개 추천)</label>
+              <button type="button" class="small-btn" onclick="autoLookupEditVocaKo()" style="padding: 2px 8px; font-size: 0.75rem; background: #EEF2FF; border-color: #C7D2FE; color: #4338CA;">🔍 뜻 자동 완성</button>
+            </div>
+            <input type="text" id="editVocaKoInput" class="input-text" placeholder="예: 책, 도서, 예약하다" onkeydown="if(event.key==='Enter') saveEditedVocaWord()">
+            <div style="font-size: 0.75rem; color: #64748B; margin-top: 4px;" id="editVocaKoStatus">쉼표(,)로 구분하여 2~3개의 뜻을 넣으실 수 있습니다.</div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; padding: 10px 14px; border-radius: 10px; border: 1px solid #E2E8F0;">
+            <div style="font-size: 0.82rem; color: var(--text-muted);">
+              틀린 횟수: <strong id="editVocaWrongCountText" style="color: var(--danger);">0회</strong>
+            </div>
+            <button type="button" class="small-btn" onclick="resetEditVocaWrongCount()" style="font-size: 0.75rem; padding: 3px 8px;">오답 횟수 초기화 ↺</button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" style="flex: 1;" onclick="closeEditVocaModal()">취소</button>
+          <button class="btn btn-primary" style="flex: 2;" onclick="saveEditedVocaWord()">
+            💾 수정 완료
           </button>
         </div>
       </div>
@@ -1940,42 +1995,92 @@
       }
     }
 
-    // 9살 교재 기본 어휘 한-영 간이 사전 (초등/동화책 핵심 200+ 단어)
+    function getPrimaryKo(val) {
+      if (!val) return "";
+      return val.split(/[,/·]/)[0].trim();
+    }
+
+    // 9살 교재 기본 어휘 한-영 간이 사전 (초등/동화책 핵심 200+ 단어, 각 단어별 2~3가지 풍부한 의미)
     const CHILD_DICTIONARY = {
-      monkey: "원숭이", banana: "바나나", bananas: "바나나", apple: "사과", apples: "사과",
-      puppy: "강아지", dog: "개", dogs: "개", cat: "고양이", cats: "고양이",
-      rabbit: "토끼", bear: "곰", frog: "개구리", bird: "새", birds: "새",
-      tiger: "호랑이", lion: "사자", elephant: "코끼리", fish: "물고기",
-      butterfly: "나비", dinosaur: "공룡", duck: "오리", pig: "돼지",
-      cow: "소", horse: "말", sheep: "양", chicken: "닭", mouse: "생쥐",
-      whale: "고래", shark: "상어", dolphin: "돌고래", turtle: "거북이",
-      spider: "거미", bee: "벌", ant: "개미", fox: "여우", wolf: "늑대",
-      deer: "사슴", zebra: "얼룩말", giraffe: "기린", penguin: "펭귄", owl: "올빼미",
-      book: "책", books: "책", story: "이야기", stories: "이야기", toy: "장난감", toys: "장난감",
-      car: "자동차", ball: "공", pizza: "피자", milk: "우유", water: "물", bread: "빵",
-      cookie: "쿠키", cookies: "쿠키", cake: "케이크", park: "공원", school: "학교",
-      home: "집", room: "방", friend: "친구", friends: "친구", tree: "나무", trees: "나무",
-      sun: "태양/해", moon: "달", star: "별", stars: "별", rainbow: "무지개", flower: "꽃", flowers: "꽃",
-      sky: "하늘", rain: "비", snow: "눈", sea: "바다", river: "강", cloud: "구름", wind: "바람",
-      leaf: "나뭇잎", grass: "풀밭", mountain: "산", lake: "호수", beach: "해변", forest: "숲",
-      mom: "엄마", dad: "아빠", baby: "아기", sister: "자매/언니/여동생", brother: "형제/오빠/남동생", family: "가족",
-      teacher: "선생님", boy: "소년", girl: "소녀", doctor: "의사", king: "왕", queen: "여왕",
-      pencil: "연필", bag: "가방", shoes: "신발", hat: "모자", desk: "책상", chair: "의자",
-      bed: "침대", door: "문", window: "창문", table: "탁자", box: "상자", clock: "시계",
-      computer: "컴퓨터", bus: "버스", train: "기차", plane: "비행기", boat: "보트", bike: "자전거",
-      sweet: "달콤한", cute: "귀여운", funny: "재미있는", happy: "행복한", pretty: "예쁜",
-      fast: "빠른", big: "큰", small: "작은", sunny: "맑은", yellow: "노란색", red: "빨간색",
-      blue: "파란색", green: "초록색", white: "하얀색", black: "검은색", orange: "주황색/오렌지",
-      pink: "분홍색", purple: "보라색", brown: "갈색", warm: "따뜻한", cold: "차가운", clean: "깨끗한",
-      tall: "키가 큰", short: "작은/짧은", strong: "힘센", kind: "친절한/다정한", nice: "멋진/착한",
-      sad: "슬픈", angry: "화난", tired: "피곤한", hungry: "배고픈", delicious: "맛있는", favorite: "가장 좋아하는",
-      love: "좋아하다", loves: "좋아하다", like: "좋아하다", likes: "좋아하다",
-      want: "원하다", wants: "원하다", eat: "먹다", eats: "먹다", drink: "마시다", drinks: "마시다",
-      run: "달리다", runs: "달리다", jump: "점프하다", jumps: "점프하다", play: "놀다", plays: "놀다",
-      read: "읽다", reads: "읽다", see: "보다", sees: "보다", swim: "수영하다", fly: "날다",
-      walk: "걷다", sleep: "잠자다", sing: "노래하다", dance: "춤추다", help: "돕다", make: "만들다",
-      look: "바라보다", listen: "듣다", watch: "보다", write: "쓰다", draw: "그리다",
-      open: "열다", close: "닫다", wash: "씻다", buy: "사다", give: "주다", come: "오다", go: "가다"
+      // 동물
+      monkey: "원숭이, 잔나비", banana: "바나나", bananas: "바나나", apple: "사과, 사과나무", apples: "사과, 사과나무",
+      puppy: "강아지, 아기 개", dog: "개, 강아지", dogs: "개, 강아지", cat: "고양이, 야옹이", cats: "고양이, 야옹이",
+      rabbit: "토끼, 산토끼", bear: "곰, 견디다, 낳다", frog: "개구리", bird: "새, 조류", birds: "새, 조류",
+      tiger: "호랑이, 범", lion: "사자, 백수의 왕", elephant: "코끼리", fish: "물고기, 생선, 낚시하다",
+      butterfly: "나비, 아름다운 곤충", dinosaur: "공룡, 거대한 동물", duck: "오리, 피하다", pig: "돼지",
+      cow: "소, 암소", horse: "말, 경마", sheep: "양, 순한 사람", chicken: "닭, 닭고기, 치킨", mouse: "생쥐, 마우스",
+      whale: "고래", shark: "상어", dolphin: "돌고래", turtle: "거북이, 자라",
+      spider: "거미", bee: "벌, 꿀벌", ant: "개미", fox: "여우, 약삭빠른 사람", wolf: "늑대, 이리",
+      deer: "사슴", zebra: "얼룩말", giraffe: "기린", penguin: "펭귄", owl: "올빼미, 부엉이",
+
+      // 사물, 음식, 자연, 장소
+      book: "책, 도서, 예약하다", books: "책, 도서", story: "이야기, 동화, 사연", stories: "이야기, 동화",
+      toy: "장난감, 완구", toys: "장난감, 완구", car: "자동차, 승용차, 차량", ball: "공, 무도회, 구",
+      pizza: "피자", milk: "우유, 젖", water: "물, 물을 주다", bread: "빵, 생계",
+      cookie: "쿠키, 과자", cookies: "쿠키, 과자", cake: "케이크", park: "공원, 유원지, 주차하다",
+      school: "학교, 학파", home: "집, 가정, 고향", room: "방, 공간, 자리",
+      friend: "친구, 벗, 동무", friends: "친구, 벗들", tree: "나무, 수목", trees: "나무, 수목",
+      sun: "태양, 해, 햇살", moon: "달, 위성", star: "별, 인기 스타, 주연을 맡다", stars: "별, 스타",
+      rainbow: "무지개, 아름다운 빛", flower: "꽃, 화초, 피어나다", flowers: "꽃, 화초",
+      sky: "하늘, 상공", rain: "비, 비가 내리다", snow: "눈, 눈이 내리다",
+      sea: "바다, 해양", river: "강, 하천", cloud: "구름", wind: "바람, 숨",
+      leaf: "나뭇잎, 잎사귀, 넘기다", grass: "풀밭, 잔디, 풀", mountain: "산, 산악", lake: "호수", beach: "해변, 바닷가", forest: "숲, 삼림",
+
+      // 가족, 사람
+      mom: "엄마, 어머니", dad: "아빠, 아버지", baby: "아기, 갓난아이",
+      sister: "자매, 언니, 여동생", brother: "형제, 오빠, 남동생", family: "가족, 가문",
+      teacher: "선생님, 교사, 스승", boy: "소년, 남자아이", girl: "소녀, 여자아이",
+      doctor: "의사, 박사", king: "왕, 국왕", queen: "여왕, 왕비",
+
+      // 학용품, 생활
+      pencil: "연필", bag: "가방, 자루, 포장하다", shoes: "신발, 구두", hat: "모자",
+      desk: "책상", chair: "의자, 직위", bed: "침대, 바닥", door: "문, 출입구",
+      window: "창문, 창", table: "탁자, 식탁, 표", box: "상자, 갑, 권투하다",
+      clock: "시계, 벽시계", computer: "컴퓨터, 전자계산기", bus: "버스",
+      train: "기차, 열차, 훈련하다", plane: "비행기, 평면", boat: "보트, 배", bike: "자전거, 오토바이",
+
+      // 기본 스마트 단어장 핵심 어휘
+      treasure: "보물, 소중한 것, 간직하다",
+      adventure: "모험, 신나는 경험, 탐험",
+      whisper: "속삭이다, 귓속말하다, 소곤거리다",
+      library: "도서관, 서재, 책방",
+      breakfast: "아침밥, 아침 식사, 조식",
+      umbrella: "우산, 양산, 비가림막",
+      delicious: "맛있는, 달콤한, 별미의",
+      favorite: "가장 좋아하는 것, 인기 있는, 애착의",
+
+      // 상태, 형용사
+      sweet: "달콤한, 향기로운, 친절한", cute: "귀여운, 사랑스러운",
+      funny: "재미있는, 웃긴, 기묘한", happy: "행복한, 기쁜, 즐거운", pretty: "예쁜, 귀여운, 꽤",
+      fast: "빠른, 신속한, 빨리", big: "큰, 커다란, 중요한", small: "작은, 적은, 어린",
+      sunny: "맑은, 화창한, 햇볕 드는", yellow: "노란색, 노란", red: "빨간색, 붉은",
+      blue: "파란색, 푸른, 우울한", green: "초록색, 푸른, 친환경의", white: "하얀색, 흰색의", black: "검은색, 흑색의",
+      orange: "주황색, 오렌지", pink: "분홍색, 핑크", purple: "보라색, 자주색", brown: "갈색, 갈색의",
+      warm: "따뜻한, 온화한, 데우다", cold: "차가운, 추운, 감기", clean: "깨끗한, 청결한, 청소하다",
+      tall: "키가 큰, 높은", short: "작은, 짧은, 부족한", strong: "힘센, 강한, 튼튼한",
+      kind: "친절한, 다정한, 종류", nice: "멋진, 착한, 좋은",
+      sad: "슬픈, 아쉬운", angry: "화난, 성난", tired: "피곤한, 지친", hungry: "배고픈, 굶주린",
+
+      // 동작 동사 (2~3개 뜻)
+      love: "사랑하다, 몹시 좋아하다, 애정", loves: "사랑하다, 몹시 좋아하다",
+      like: "좋아하다, 마음에 들다, ~처럼", likes: "좋아하다, 마음에 들다",
+      want: "원하다, 바라다, 필요로 하다", wants: "원하다, 바라다",
+      eat: "먹다, 식사하다, 삼키다", eats: "먹다, 식사하다",
+      drink: "마시다, 음료, 축배를 들다", drinks: "마시다, 음료",
+      run: "달리다, 뛰다, 운영하다", runs: "달리다, 뛰다, 운영하다",
+      jump: "점프하다, 뛰다, 뛰어오르다", jumps: "점프하다, 뛰다",
+      play: "놀다, 경기하다, 연주하다", plays: "놀다, 경기하다, 연주하다",
+      read: "읽다, 독서하다, 이해하다", reads: "읽다, 독서하다",
+      see: "보다, 바라보다, 알다", sees: "보다, 바라보다",
+      swim: "수영하다, 헤엄치다", fly: "날다, 비행하다, 파리",
+      walk: "걷다, 산책하다, 걸어가다", sleep: "잠자다, 수면, 휴식하다",
+      sing: "노래하다, 지저귀다", dance: "춤추다, 춤, 무용하다",
+      help: "돕다, 도와주다, 도움", make: "만들다, 이루다, 시키다",
+      look: "바라보다, 보다, ~처럼 보이다", listen: "듣다, 귀 기울이다, 경청하다",
+      watch: "보다, 지켜보다, 손목시계", write: "쓰다, 작성하다, 편지를 쓰다",
+      draw: "그리다, 끌다, 끌어당기다", open: "열다, 펼치다, 개방된",
+      close: "닫다, 가까운, 끝내다", wash: "씻다, 세탁하다, 빨다",
+      buy: "사다, 구입하다", give: "주다, 건네다, 베풀다", come: "오다, 다가오다", go: "가다, 진행되다"
     };
 
     // [핵심] 영단어 및 영어 문장 자동 한국어 번역기
@@ -1995,20 +2100,20 @@
       if (singleWord.endsWith('ing') && CHILD_DICTIONARY[singleWord.slice(0, -3)]) return CHILD_DICTIONARY[singleWord.slice(0, -3)];
       if (singleWord.endsWith('ed') && CHILD_DICTIONARY[singleWord.slice(0, -2)]) return CHILD_DICTIONARY[singleWord.slice(0, -2)];
 
-      // 2. 주요 어린이 회화 문장 패턴 한글 번역
+      // 2. 주요 어린이 회화 문장 패턴 한글 번역 (대표 의미 활용)
       if (/^i want to\s+(.+)/i.test(clean)) {
         const action = clean.replace(/^i want to\s+/i, '');
         const words = action.split(/\s+/);
         const v = words[0];
         const rest = words.slice(1).join(' ').replace(/^(a|an|the|some)\s+/, '');
-        const vKo = (CHILD_DICTIONARY[v] || v).replace(/다$/, '');
-        const restKo = CHILD_DICTIONARY[rest] || rest;
+        const vKo = getPrimaryKo(CHILD_DICTIONARY[v] || v).replace(/다$/, '');
+        const restKo = getPrimaryKo(CHILD_DICTIONARY[rest] || rest);
         return `나는 ${restKo ? restKo + ' ' : ''}${vKo}고 싶어.`;
       }
 
       if (/^i want\s+(.+)/i.test(clean)) {
         const item = clean.replace(/^i want\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
-        const itemKo = CHILD_DICTIONARY[item] || item;
+        const itemKo = getPrimaryKo(CHILD_DICTIONARY[item] || item);
         return `나는 ${itemKo}을(를) 원해.`;
       }
 
@@ -2017,44 +2122,44 @@
         const words = action.split(/\s+/);
         const v = words[0];
         const rest = words.slice(1).join(' ').replace(/^(a|an|the|some)\s+/, '');
-        const vKo = (CHILD_DICTIONARY[v] || v).replace(/다$/, '');
-        const restKo = CHILD_DICTIONARY[rest] || rest;
+        const vKo = getPrimaryKo(CHILD_DICTIONARY[v] || v).replace(/다$/, '');
+        const restKo = getPrimaryKo(CHILD_DICTIONARY[rest] || rest);
         return `${restKo ? restKo + ' ' : ''}${vKo}해도 돼요?`;
       }
 
       if (/^i like\s+(.+)/i.test(clean)) {
         const item = clean.replace(/^i like\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
-        const itemKo = CHILD_DICTIONARY[item] || item;
+        const itemKo = getPrimaryKo(CHILD_DICTIONARY[item] || item);
         return `나는 ${itemKo}을(를) 좋아해.`;
       }
 
       if (/^i have\s+(.+)/i.test(clean)) {
         const item = clean.replace(/^i have\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
-        const itemKo = CHILD_DICTIONARY[item] || item;
+        const itemKo = getPrimaryKo(CHILD_DICTIONARY[item] || item);
         return `나는 ${itemKo}을(를) 가지고 있어.`;
       }
 
       if (/^i can\s+(.+)/i.test(clean)) {
         const action = clean.replace(/^i can\s+/i, '');
-        const vKo = (CHILD_DICTIONARY[action] || action).replace(/다$/, '');
+        const vKo = getPrimaryKo(CHILD_DICTIONARY[action] || action).replace(/다$/, '');
         return `나는 ${vKo}할 수 있어.`;
       }
 
       if (/^i see\s+(.+)/i.test(clean)) {
         const item = clean.replace(/^i see\s+/i, '').replace(/^(a|an|the|some)\s+/, '');
-        const itemKo = CHILD_DICTIONARY[item] || item;
+        const itemKo = getPrimaryKo(CHILD_DICTIONARY[item] || item);
         return `내 눈에 ${itemKo}이(가) 보여.`;
       }
 
       if (/^let'?s\s+(.+)/i.test(clean)) {
         const action = clean.replace(/^let'?s\s+/i, '');
-        const vKo = (CHILD_DICTIONARY[action] || action).replace(/다$/, '');
+        const vKo = getPrimaryKo(CHILD_DICTIONARY[action] || action).replace(/다$/, '');
         return `우리 함께 ${vKo}하자!`;
       }
 
       if (/^it is\s+(.+)/i.test(clean)) {
         const state = clean.replace(/^it is\s+/i, '');
-        const stateKo = CHILD_DICTIONARY[state] || state;
+        const stateKo = getPrimaryKo(CHILD_DICTIONARY[state] || state);
         return `날씨나 상태가 ${stateKo}해.`;
       }
 
@@ -2068,10 +2173,13 @@
       if (words.length <= 4) {
         const translatedParts = words.map(w => {
           const stripped = w.replace(/^(a|an|the)\s*/, '');
-          return CHILD_DICTIONARY[stripped] || w;
+          return getPrimaryKo(CHILD_DICTIONARY[stripped] || w);
         });
         return translatedParts.join(' ');
       }
+
+      return raw;
+    }
 
       return raw;
     }
@@ -4175,22 +4283,33 @@
     // ================= 단어장 로직 =================
     const ONE_DAY = 24 * 60 * 60 * 1000;
     const defaultVocabulary = [
-      { id: "v1", english: "dinosaur", korean: "공룡", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v2", english: "rainbow", korean: "무지개", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (3 * ONE_DAY) },
-      { id: "v3", english: "treasure", korean: "보물", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v4", english: "library", korean: "도서관", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v5", english: "adventure", korean: "모험", wrongCount: 2, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - (2 * ONE_DAY) },
-      { id: "v6", english: "umbrella", korean: "우산", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (7 * ONE_DAY) },
-      { id: "v7", english: "breakfast", korean: "아침 식사", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + (2 * ONE_DAY) },
-      { id: "v8", english: "whisper", korean: "속삭이다", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v9", english: "delicious", korean: "아주 맛있는", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v10", english: "favorite", korean: "가장 좋아하는", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY }
+      { id: "v1", english: "dinosaur", korean: "공룡, 거대한 동물", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
+      { id: "v2", english: "rainbow", korean: "무지개, 아름다운 빛", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (3 * ONE_DAY) },
+      { id: "v3", english: "treasure", korean: "보물, 소중한 것, 간직하다", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
+      { id: "v4", english: "library", korean: "도서관, 서재, 책방", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v5", english: "adventure", korean: "모험, 신나는 경험, 탐험", wrongCount: 2, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - (2 * ONE_DAY) },
+      { id: "v6", english: "umbrella", korean: "우산, 양산, 비가림막", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (7 * ONE_DAY) },
+      { id: "v7", english: "breakfast", korean: "아침밥, 아침 식사, 조식", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + (2 * ONE_DAY) },
+      { id: "v8", english: "whisper", korean: "속삭이다, 귓속말하다, 소곤거리다", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
+      { id: "v9", english: "delicious", korean: "맛있는, 달콤한, 별미의", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
+      { id: "v10", english: "favorite", korean: "가장 좋아하는 것, 인기 있는, 애착의", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY }
     ];
 
     function getStoredVocaList() {
       try {
         const d = localStorage.getItem("kids_voca_list");
-        return d ? JSON.parse(d) : defaultVocabulary;
+        if (!d) return defaultVocabulary;
+        const list = JSON.parse(d);
+        // 만약 기존 저장된 단어가 단일 뜻만 있다면 2~3개 풍부한 뜻으로 자동 보강
+        list.forEach(w => {
+          if (w.english && (!w.korean || !w.korean.includes(','))) {
+            const enriched = CHILD_DICTIONARY[w.english.toLowerCase()];
+            if (enriched && enriched.includes(',')) {
+              w.korean = enriched;
+            }
+          }
+        });
+        return list;
       } catch(e) { return defaultVocabulary; }
     }
     function saveVocaListToStorage() {
@@ -4277,7 +4396,7 @@
         card.innerHTML = `
           <input type="checkbox" class="voca-checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleWordSelection('${item.id}')">
           <div class="voca-main-info" onclick="speakEnglish('${item.english}')">
-            <button class="voca-speaker-btn" onclick="event.stopPropagation(); speakEnglish('${item.english}')">
+            <button class="voca-speaker-btn" onclick="event.stopPropagation(); speakEnglish('${item.english}')" title="발음 듣기">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
             </button>
             <div class="voca-word-row">
@@ -4286,9 +4405,17 @@
               <div class="voca-badge-col">${streakBadge}</div>
             </div>
           </div>
-          <div class="voca-wrong-badge ${item.wrongCount > 0 ? 'wrong-alert' : ''}">
+          <div class="voca-wrong-badge ${item.wrongCount > 0 ? 'wrong-alert' : ''}" style="margin-right: 6px;">
             <span class="wrong-num">${item.wrongCount || 0}회</span>
             <span class="wrong-label">틀린 횟수</span>
+          </div>
+          <div class="voca-action-btns" style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;" onclick="event.stopPropagation()">
+            <button class="small-btn" onclick="openEditVocaModal('${item.id}')" title="단어 수정" style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #EEF2FF; border-color: #C7D2FE; color: #4338CA;">
+              ✏️ 수정
+            </button>
+            <button class="small-btn" onclick="deleteSingleVocaWord('${item.id}')" title="단어 삭제" style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #FEF2F2; border-color: #FECACA; color: #DC2626;">
+              🗑️ 삭제
+            </button>
           </div>
         `;
         container.appendChild(card);
@@ -4726,10 +4853,71 @@
     // =========================================================
     // 스마트 단어장 등록 모달 및 자동 번역 연동
     // =========================================================
+    // =========================================================
+    // 스마트 단어장 등록, 수정, 삭제 및 다중 의미(2~3개) 자동 번역 엔진
+    // =========================================================
+    async function fetchMultiMeaningsOnline(word) {
+      const clean = (word || "").trim().toLowerCase().replace(/[^a-z]/g, '');
+      if (!clean) return "";
+
+      // 1. 로컬 사전 확인 (2~3개 뜻 즉시 반환)
+      if (CHILD_DICTIONARY[clean]) return CHILD_DICTIONARY[clean];
+
+      // 단수/원형 검색
+      if (clean.endsWith('s') && CHILD_DICTIONARY[clean.slice(0, -1)]) return CHILD_DICTIONARY[clean.slice(0, -1)];
+      if (clean.endsWith('es') && CHILD_DICTIONARY[clean.slice(0, -2)]) return CHILD_DICTIONARY[clean.slice(0, -2)];
+      if (clean.endsWith('ing') && CHILD_DICTIONARY[clean.slice(0, -3)]) return CHILD_DICTIONARY[clean.slice(0, -3)];
+      if (clean.endsWith('ed') && CHILD_DICTIONARY[clean.slice(0, -2)]) return CHILD_DICTIONARY[clean.slice(0, -2)];
+
+      // 2. MyMemory 무료 사전 API 호출 (온라인 2~3개 다중 뜻 추출)
+      try {
+        const resp = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(clean)}&langpair=en|ko`);
+        if (resp.ok) {
+          const data = await resp.json();
+          const list = [];
+          const seen = new Set();
+
+          const addMeaning = (rawText) => {
+            if (!rawText || rawText.includes("MYMEMORY WARNING")) return;
+            const parts = rawText.split(/[,/·\n]/);
+            for (let p of parts) {
+              const m = p.trim().replace(/[.?!]+$/, '');
+              if (m && /[가-힣]/.test(m) && m.length <= 12 && !seen.has(m) && m.toLowerCase() !== clean) {
+                seen.add(m);
+                list.push(m);
+                if (list.length >= 3) break;
+              }
+            }
+          };
+
+          if (data.responseData && data.responseData.translatedText) {
+            addMeaning(data.responseData.translatedText);
+          }
+          if (Array.isArray(data.matches)) {
+            for (let match of data.matches) {
+              if (list.length >= 3) break;
+              if (match.translation) addMeaning(match.translation);
+            }
+          }
+
+          if (list.length > 0) {
+            return list.join(', ');
+          }
+        }
+      } catch (e) {
+        console.warn("온라인 번역 API 호출 실패:", e);
+      }
+
+      // 3. Fallback
+      return autoTranslateKorean(clean);
+    }
+
     function openAddVocaModal() {
       document.getElementById('addVocaModal').style.display = 'flex';
       document.getElementById('newVocaEnInput').value = "";
       document.getElementById('newVocaKoInput').value = "";
+      const statusEl = document.getElementById('newVocaKoStatus');
+      if (statusEl) statusEl.innerHTML = "💡 영어 단어를 적거나 말하면 2~3개의 자연스러운 뜻이 자동으로 들어갑니다.";
       setTimeout(() => document.getElementById('newVocaEnInput').focus(), 150);
     }
 
@@ -4738,28 +4926,57 @@
       document.getElementById('addVocaModal').style.display = 'none';
     }
 
-    function autoLookupVocaKo() {
-      const en = (document.getElementById('newVocaEnInput').value || "").trim();
+    async function autoLookupVocaKo(force = false) {
+      const enInput = document.getElementById('newVocaEnInput');
       const koInput = document.getElementById('newVocaKoInput');
-      if (en) {
-        const trans = autoTranslateKorean(en);
-        if (trans && trans.toLowerCase() !== en.toLowerCase()) {
-          koInput.value = trans;
-        } else if (!koInput.value) {
-          koInput.value = trans || "";
-        }
+      const statusEl = document.getElementById('newVocaKoStatus');
+      if (!enInput || !koInput) return;
+
+      const en = (enInput.value || "").trim().toLowerCase();
+      if (!en) {
+        if (statusEl) statusEl.innerHTML = "💡 영어 단어를 적거나 말하면 2~3개의 자연스러운 뜻이 자동으로 들어갑니다.";
+        return;
+      }
+
+      const cleanWord = en.replace(/[^a-z]/g, '');
+
+      // 1. 로컬 사전에 있으면 지연 없이 0ms 즉시 채움!
+      let localMeaning = CHILD_DICTIONARY[cleanWord];
+      if (!localMeaning) {
+        if (cleanWord.endsWith('s') && CHILD_DICTIONARY[cleanWord.slice(0, -1)]) localMeaning = CHILD_DICTIONARY[cleanWord.slice(0, -1)];
+        else if (cleanWord.endsWith('es') && CHILD_DICTIONARY[cleanWord.slice(0, -2)]) localMeaning = CHILD_DICTIONARY[cleanWord.slice(0, -2)];
+        else if (cleanWord.endsWith('ing') && CHILD_DICTIONARY[cleanWord.slice(0, -3)]) localMeaning = CHILD_DICTIONARY[cleanWord.slice(0, -3)];
+        else if (cleanWord.endsWith('ed') && CHILD_DICTIONARY[cleanWord.slice(0, -2)]) localMeaning = CHILD_DICTIONARY[cleanWord.slice(0, -2)];
+      }
+
+      if (localMeaning) {
+        koInput.value = localMeaning;
+        const count = localMeaning.includes(',') ? localMeaning.split(',').length : 1;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 추천 뜻 ${count}개가 자동으로 채워졌습니다! (직접 수정 가능)</span>`;
+        return;
+      }
+
+      // 2. 로컬에 없는 경우 온라인 사전 검색
+      if (statusEl) statusEl.innerHTML = `<span style="color:#4F46E5;">⏳ 뜻 자동 검색 중...</span>`;
+      const multi = await fetchMultiMeaningsOnline(cleanWord);
+      if (multi && multi.toLowerCase() !== cleanWord) {
+        koInput.value = multi;
+        const count = multi.includes(',') ? multi.split(',').length : 1;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 뜻 ${count}개가 자동으로 채워졌습니다!</span>`;
+      } else {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#E11D48;">💡 뜻을 직접 입력해 주세요.</span>`;
       }
     }
 
-    function saveCustomVocaWord() {
+    async function saveCustomVocaWord() {
       const en = (document.getElementById('newVocaEnInput').value || "").trim();
       let ko = (document.getElementById('newVocaKoInput').value || "").trim();
       if (!en) {
-        alert("영어 단어나 문장을 입력하거나 마이크로 말씀해 주세요!");
+        alert("영어 단어를 입력하거나 마이크로 말씀해 주세요!");
         return;
       }
       if (!ko) {
-        ko = autoTranslateKorean(en);
+        ko = await fetchMultiMeaningsOnline(en) || autoTranslateKorean(en);
       }
 
       vocaList.unshift({
@@ -4775,6 +4992,116 @@
       renderVocaList();
       closeAddVocaModal();
       playSuccessSound();
+      alert(`🎉 단어장에 "${en} (${ko})"이(가) 등록되었습니다!`);
+    }
+
+    // 단어 삭제
+    function deleteSingleVocaWord(id) {
+      playClickSound();
+      const target = vocaList.find(w => w.id === id);
+      if (!target) return;
+
+      if (!confirm(`정말 "${target.english}" 단어를 단어장에서 삭제하시겠습니까?`)) {
+        return;
+      }
+
+      vocaList = vocaList.filter(w => w.id !== id);
+      selectedWordIds.delete(id);
+      saveVocaListToStorage();
+      renderVocaList();
+      playSuccessSound();
+    }
+
+    function deleteSelectedVocaWords() {
+      playClickSound();
+      if (selectedWordIds.size === 0) {
+        alert("삭제할 단어를 먼저 체크박스로 선택해 주세요!");
+        return;
+      }
+
+      if (!confirm(`선택한 ${selectedWordIds.size}개의 단어를 정말 단어장에서 모두 삭제하시겠습니까?`)) {
+        return;
+      }
+
+      vocaList = vocaList.filter(w => !selectedWordIds.has(w.id));
+      selectedWordIds.clear();
+      saveVocaListToStorage();
+      renderVocaList();
+      playSuccessSound();
+    }
+
+    // 단어 내용 수정 모달
+    function openEditVocaModal(id) {
+      playClickSound();
+      const item = vocaList.find(w => w.id === id);
+      if (!item) return;
+
+      document.getElementById('editVocaId').value = item.id;
+      document.getElementById('editVocaEnInput').value = item.english;
+      document.getElementById('editVocaKoInput').value = item.korean;
+      document.getElementById('editVocaWrongCountText').textContent = `${item.wrongCount || 0}회`;
+      document.getElementById('editVocaKoStatus').innerHTML = `쉼표(,)로 구분하여 2~3개의 뜻을 넣으실 수 있습니다.`;
+
+      document.getElementById('editVocaModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('editVocaKoInput').focus(), 150);
+    }
+
+    function closeEditVocaModal() {
+      document.getElementById('editVocaModal').style.display = 'none';
+    }
+
+    async function autoLookupEditVocaKo() {
+      const en = (document.getElementById('editVocaEnInput').value || "").trim();
+      const koInput = document.getElementById('editVocaKoInput');
+      const statusEl = document.getElementById('editVocaKoStatus');
+      if (!en) {
+        alert("영어 단어를 입력해 주세요!");
+        return;
+      }
+      if (statusEl) statusEl.innerHTML = `<span style="color:#4F46E5;">⏳ 뜻 자동 검색 중...</span>`;
+      const meanings = await fetchMultiMeaningsOnline(en);
+      if (meanings) {
+        koInput.value = meanings;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 추천 뜻이 자동으로 채워졌습니다!</span>`;
+        playSuccessSound();
+      } else {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#E11D48;">직접 뜻을 입력해 주세요.</span>`;
+      }
+    }
+
+    function resetEditVocaWrongCount() {
+      const id = document.getElementById('editVocaId').value;
+      const item = vocaList.find(w => w.id === id);
+      if (item) {
+        item.wrongCount = 0;
+        document.getElementById('editVocaWrongCountText').textContent = "0회";
+        playSuccessSound();
+      }
+    }
+
+    async function saveEditedVocaWord() {
+      const id = document.getElementById('editVocaId').value;
+      const en = (document.getElementById('editVocaEnInput').value || "").trim();
+      let ko = (document.getElementById('editVocaKoInput').value || "").trim();
+
+      if (!en) {
+        alert("영어 단어를 입력해 주세요!");
+        return;
+      }
+      if (!ko) {
+        ko = await fetchMultiMeaningsOnline(en);
+      }
+
+      const item = vocaList.find(w => w.id === id);
+      if (item) {
+        item.english = en;
+        item.korean = ko;
+        saveVocaListToStorage();
+        renderVocaList();
+        closeEditVocaModal();
+        playSuccessSound();
+        alert(`💾 단어 "${en}"의 수정 내용이 저장되었습니다!`);
+      }
     }
 
     // 태블릿 QR 모달

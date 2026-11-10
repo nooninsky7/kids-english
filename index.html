@@ -1006,12 +1006,17 @@
       <!-- [보완 2] 출석 스트릭 뱃지 -->
       <div class="streak-badge" onclick="openStreakCalendarModal()" title="연속 공부 기록 보기">
         <span>🔥</span>
-        <span id="streakCountText">1일 연속</span>
+        <span id="streakCountText">0일 연속</span>
       </div>
 
       <!-- [보완 1] 사운드 토글 -->
       <button class="sound-toggle-btn" id="soundToggleBtn" onclick="toggleSoundFx()" title="효과음 켜기/끄기">
         🔊
+      </button>
+
+      <!-- 데이터 초기화 퀵 버튼 -->
+      <button class="nav-btn" style="flex: none; font-size: 0.8rem; font-weight: 700; padding: 6px 10px; background: #F8FAFC; border: 1.5px solid #CBD5E1; color: #64748B;" onclick="resetAllAppDataForFreshStart()" title="단어와 문장 기록을 처음 상태로 깨끗하게 초기화">
+        ↺ 초기화
       </button>
 
       <!-- 태블릿 연결 퀵 버튼 -->
@@ -1902,8 +1907,8 @@
     function getStoredStreak() {
       try {
         const s = localStorage.getItem("english_streak_days");
-        return s ? parseInt(s) : 3;
-      } catch(e) { return 3; }
+        return s ? parseInt(s) : 0;
+      } catch(e) { return 0; }
     }
 
     function recordTodayCompletionStamp() {
@@ -4336,7 +4341,7 @@
         id: "want",
         title: "I want ~",
         desc: "원하는 것/행동 말하기",
-        completed: 2,
+        completed: 0,
         questions: [
           { ko: "나는 사과를 원해.", en: "I want an apple.", hint: "an apple" },
           { ko: "나는 물을 마시고 싶어.", en: "I want to drink water.", hint: "drink water" },
@@ -4362,7 +4367,7 @@
         id: "like",
         title: "I like ~",
         desc: "좋아하는 것 말하기",
-        completed: 1,
+        completed: 0,
         questions: [
           { ko: "나는 축구하는 것을 좋아해.", en: "I like playing soccer.", hint: "playing soccer" },
           { ko: "나는 맛있는 사과를 좋아해.", en: "I like delicious apples.", hint: "delicious apples" },
@@ -5284,18 +5289,28 @@
 
     // ================= 단어장 로직 =================
     const ONE_DAY = 24 * 60 * 60 * 1000;
-    const defaultVocabulary = [
-      { id: "v1", english: "dinosaur", korean: "공룡, 거대한 동물", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v2", english: "rainbow", korean: "무지개, 아름다운 빛", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (3 * ONE_DAY) },
-      { id: "v3", english: "treasure", korean: "보물, 소중한 것", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v4", english: "library", korean: "도서관, 서재", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v5", english: "adventure", korean: "모험, 탐험", wrongCount: 2, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - (2 * ONE_DAY) },
-      { id: "v6", english: "umbrella", korean: "우산, 양산", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (7 * ONE_DAY) },
-      { id: "v7", english: "breakfast", korean: "아침밥, 아침 식사", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + (2 * ONE_DAY) },
-      { id: "v8", english: "whisper", korean: "속삭이다, 귓속말하다", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v9", english: "delicious", korean: "맛있는, 달콤한", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v10", english: "favorite", korean: "가장 좋아하는 것, 인기 있는", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY }
+    const defaultVocabulary = []; // 실제 학습을 위해 빈 단어장으로 시작
+
+    const SAMPLE_VOCABULARY = [
+      { id: "v1", english: "dinosaur", korean: "공룡, 거대한 동물", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v2", english: "rainbow", korean: "무지개, 아름다운 빛", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v3", english: "treasure", korean: "보물, 소중한 것", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v4", english: "library", korean: "도서관, 서재", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v5", english: "adventure", korean: "모험, 탐험", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() + ONE_DAY }
     ];
+
+    function loadSampleVocabulary() {
+      if (vocaList.length > 0 && !confirm("예시 단어 5개를 단어장에 추가하시겠습니까?")) return;
+      SAMPLE_VOCABULARY.forEach(sample => {
+        if (!vocaList.some(v => v.english.toLowerCase() === sample.english.toLowerCase())) {
+          vocaList.push({ ...sample, id: "v_sample_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4) });
+        }
+      });
+      saveVocaListToStorage();
+      renderVocaList();
+      playSuccessSound();
+      alert("💡 예시 단어가 단어장에 추가되었습니다!");
+    }
 
     function getStoredVocaList() {
       try {
@@ -5386,6 +5401,31 @@
       const count = selectedWordIds.size;
       const quizBtn = document.getElementById('quizSelectedBtn');
       quizBtn.textContent = count > 0 ? `🎯 선택(${count}) 퀴즈 풀기` : `🎯 전체 퀴즈 풀기`;
+
+      if (displayed.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 48px 16px; background: #F8FAFC; border: 2px dashed #CBD5E1; border-radius: 18px; margin: 10px 0;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">📖✨</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">
+              아직 등록된 단어가 없습니다!
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 18px;">
+              오늘 읽은 책의 영어 단어를 <strong>[+ 단어 등록]</strong> 버튼으로 추가해 보세요!
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+              <button class="nav-btn primary" onclick="openAddVocaModal()" style="padding: 10px 20px; font-weight: 800;">
+                + 첫 단어 등록하기
+              </button>
+              <button class="nav-btn" onclick="loadSampleVocabulary()" style="padding: 10px 18px; font-weight: 700; background: white; border: 1.5px solid #CBD5E1; color: #475569;" title="필요할 때 기본 예시 단어 5개 불러오기">
+                💡 예시 단어 불러오기
+              </button>
+            </div>
+          </div>
+        `;
+        quizBtn.disabled = true;
+        return;
+      }
+
       quizBtn.disabled = false;
 
       displayed.forEach(item => {
@@ -6208,12 +6248,65 @@
       window.location.href = url.toString();
     }
 
+    // =========================================================================
+    // [실제 학습 시작을 위한 테스트 데이터 완전 리셋 & 마이그레이션]
+    // =========================================================================
+    const CLEAN_PRODUCTION_KEY = "kids_clean_prod_20261110_v2";
+    function executeFreshStartReset() {
+      // 1. 단어장 테스트 데이터 비우기 (깨끗한 0개로 시작)
+      localStorage.setItem("kids_voca_list", JSON.stringify([]));
+
+      // 2. 회화패턴 테스트 데이터 초기화 (기본 패턴만 남기고 완료 카운트 0으로 리셋)
+      const resetPatterns = initialPatterns.map(p => ({
+        ...p,
+        completed: 0
+      }));
+      localStorage.setItem("kids_patterns_list", JSON.stringify(resetPatterns));
+
+      // 3. 문장퍼즐 테스트 데이터 초기화 (기본 7세트만 남기고 사용자 테스트 문장 삭제 및 완료 0으로 리셋)
+      const resetGrammar = defaultGrammarSets.map(s => ({
+        ...s,
+        completed: 0,
+        solvedSub: [false, false]
+      }));
+      localStorage.setItem("kids_grammar_sets_v2", JSON.stringify(resetGrammar));
+
+      // 4. 연속 학습 일수 & 원스톱 상태 리셋
+      localStorage.setItem("english_streak_days", "0");
+      localStorage.removeItem("kids_onestop_state");
+      localStorage.removeItem("kids_onestop_sentence");
+
+      // 초기화 플래그 기록
+      localStorage.setItem(CLEAN_PRODUCTION_KEY, "true");
+    }
+
+    try {
+      if (localStorage.getItem(CLEAN_PRODUCTION_KEY) !== "true") {
+        executeFreshStartReset();
+        console.log("✨ 테스트 데이터 리셋 완료: 실제 학습을 위한 클린 상태로 초기화되었습니다.");
+      }
+    } catch(e) {
+      console.warn("데이터 초기화 중 오류:", e);
+    }
+
+    function resetAllAppDataForFreshStart() {
+      if (!confirm("⚠️ 주의: 지금까지 등록된 테스트 단어와 문장 기록을 모두 지우고, 실제 학습을 위해 처음 상태로 깨끗하게 리셋하시겠습니까?\n\n(※ 앱의 모든 운영 기능은 그대로 유지되며 단어/문장 데이터만 초기화됩니다)")) return;
+      try {
+        executeFreshStartReset();
+        alert("✨ 모든 단어와 문장 데이터가 처음 상태로 깨끗하게 리셋되었습니다! 페이지를 새로고침합니다.");
+        location.reload();
+      } catch(e) {
+        alert("초기화 중 오류가 발생했습니다: " + e.message);
+      }
+    }
+
     // 앱 시작 초기화 (비밀번호 없는 즉시 전체 학습 진입)
     try {
       localStorage.removeItem("kids_family_auth_date");
       localStorage.removeItem("kids_family_pin");
     } catch(e){}
     initTabletGrammar();
+    renderVocaList();
     document.getElementById('streakCountText').textContent = `${getStoredStreak()}일 연속`;
 
     // 바탕 클릭 시 문장 퍼즐 선택 해제

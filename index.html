@@ -315,7 +315,7 @@
 
     .voca-list { padding: 14px 24px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
     .voca-item-card {
-      background: white; border: 1.5px solid var(--border); border-radius: 16px; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; gap: 14px; transition: all 0.15s;
+      background: white; border: 1.5px solid var(--border); border-radius: 16px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: all 0.15s; flex-wrap: wrap;
     }
     .voca-item-card:hover { border-color: var(--primary); }
     .voca-item-card.has-wrong { border-color: #FECACA; background: #FFFBFB; }
@@ -323,7 +323,7 @@
     .voca-item-card.is-mastered-card { border-color: #A7F3D0; background: #FCFDFD; }
 
     .voca-checkbox { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; accent-color: var(--primary); flex-shrink: 0; }
-    .voca-main-info { display: flex; align-items: center; gap: 14px; flex: 1; cursor: pointer; }
+    .voca-main-info { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 260px; cursor: pointer; }
     .voca-speaker-btn {
       width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary);
       border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
@@ -342,50 +342,42 @@
     .voca-header-row {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 16px;
       flex: 1;
     }
 
     .voca-word-row {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 16px;
       flex: 1;
+      min-width: 0;
+      flex-wrap: wrap;
     }
     .voca-en {
       font-size: 1.25rem;
       font-weight: 800;
       color: var(--text-main);
       letter-spacing: -0.2px;
-      width: 200px;
-      min-width: 170px;
-      flex-shrink: 0;
+      min-width: 130px;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     .voca-ko {
-      font-size: 1.05rem;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: 700;
       color: #334155;
       background: #F8FAFC;
-      border: 1px solid #E2E8F0;
-      padding: 4px 14px;
+      border: 1.5px solid #CBD5E1;
+      padding: 4px 12px;
       border-radius: 8px;
       display: inline-flex;
       align-items: center;
-      width: 260px;
-      min-width: 200px;
-      flex-shrink: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      min-width: 160px;
+      word-break: keep-all;
     }
     .voca-badge-col {
       display: flex;
       align-items: center;
-      flex: 1;
-      min-width: 130px;
     }
     .mastery-indicator {
       font-size: 0.8rem;
@@ -400,13 +392,22 @@
 
     .voca-wrong-badge {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-width: 64px; padding: 5px 8px; border-radius: 12px; background: #F1F5F9; border: 1.5px solid var(--border);
+      min-width: 58px; padding: 4px 8px; border-radius: 12px; background: #F1F5F9; border: 1.5px solid var(--border);
       flex-shrink: 0;
     }
     .voca-wrong-badge.wrong-alert { background: var(--danger-light); border-color: #FCA5A5; }
     .wrong-num { font-size: 0.95rem; font-weight: 800; color: var(--text-muted); line-height: 1.1; }
     .voca-wrong-badge.wrong-alert .wrong-num { color: var(--danger); }
     .wrong-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-top: 1px; }
+
+    .btn-voca-edit {
+      padding: 6px 12px; font-size: 0.85rem; font-weight: 800; border-radius: 8px; background: #EEF2FF; border: 1.5px solid #C7D2FE; color: #4338CA; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: background 0.15s;
+    }
+    .btn-voca-edit:hover { background: #E0E7FF; }
+    .btn-voca-del {
+      padding: 6px 12px; font-size: 0.85rem; font-weight: 800; border-radius: 8px; background: #FEF2F2; border: 1.5px solid #FECACA; color: #DC2626; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: background 0.15s;
+    }
+    .btn-voca-del:hover { background: #FEE2E2; }
 
     /* ================= 3. 문장퍼즐 탭 ================= */
     .tablet-grammar-container {
@@ -997,43 +998,6 @@
     </div>
   </div>
 
-  <!-- ================= 비밀번호 잠금 화면 ================= -->
-  <div class="pin-lock-overlay" id="pinLockOverlay" style="display: none;">
-    <div class="pin-card" id="pinCard">
-      <div class="pin-lock-icon">🔒</div>
-      <h2 class="pin-title">우리 가족 전용 영어 학습실</h2>
-      <p class="pin-desc">
-        비밀번호 4자리를 입력하시면 잠금이 해제됩니다.<br>
-        <span style="font-size: 0.8rem; color: #94A3B8;">(초기 기본 비밀번호: <strong>1234</strong>)</span>
-      </p>
-
-      <form onsubmit="handlePinSubmit(event)">
-        <div class="pin-input-container">
-          <input 
-            type="password" 
-            inputmode="numeric" 
-            pattern="[0-9]*" 
-            maxlength="4" 
-            class="pin-input-box" 
-            id="pinInput" 
-            placeholder="····" 
-            autocomplete="off"
-            oninput="handlePinAutoInput(this.value)"
-          >
-        </div>
-
-        <div class="pin-error-msg" id="pinErrorMsg"></div>
-
-        <label class="pin-remember-row">
-          <input type="checkbox" id="pinRememberToday" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
-          <span>오늘 하루는 비밀번호 기억하기 (추천)</span>
-        </label>
-
-        <button type="submit" class="pin-submit-btn">잠금 해제 ➔</button>
-      </form>
-    </div>
-  </div>
-
   <div class="app-container">
 
     <!-- 폭죽 효과 캔버스 -->
@@ -1070,11 +1034,6 @@
       <!-- 태블릿 연결 퀵 버튼 -->
       <button class="nav-btn" style="flex: none; font-size: 0.85rem; padding: 7px 11px; background: #EEF2FF; border-color: #C7D2FE; color: #4338CA;" onclick="openTabletConnectModal()">
         📱 QR 연결
-      </button>
-
-      <!-- 암호 변경 버튼 -->
-      <button class="nav-btn" style="flex: none; font-size: 0.85rem; padding: 7px 11px;" onclick="changeFamilyPin()" title="가족 비밀번호 변경">
-        🔑 암호 변경
       </button>
     </div>
 
@@ -2305,13 +2264,44 @@
       }
     }
 
+    // 모바일/태블릿 TTS 첫 터치 잠금 해제
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        try { window.speechSynthesis.getVoices(); } catch(e){}
+      };
+      const unlockAudioTouch = () => {
+        try {
+          if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        } catch(e){}
+      };
+      document.addEventListener('click', unlockAudioTouch, { once: true });
+      document.addEventListener('touchstart', unlockAudioTouch, { once: true });
+    }
+
     function speakEnglish(text, rate = 0.9) {
-      if ('speechSynthesis' in window) {
+      if (!text) return;
+      if (!('speechSynthesis' in window)) return;
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
         window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-US';
-        u.rate = rate;
-        window.speechSynthesis.speak(u);
+        
+        setTimeout(() => {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'en-US';
+          u.rate = rate;
+          
+          const voices = window.speechSynthesis.getVoices();
+          if (voices && voices.length > 0) {
+            const enVoice = voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en')) || voices[0];
+            if (enVoice) u.voice = enVoice;
+          }
+          
+          window.speechSynthesis.speak(u);
+        }, 50);
+      } catch(e) {
+        console.warn("TTS Error:", e);
       }
     }
 
@@ -4285,14 +4275,14 @@
     const defaultVocabulary = [
       { id: "v1", english: "dinosaur", korean: "공룡, 거대한 동물", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
       { id: "v2", english: "rainbow", korean: "무지개, 아름다운 빛", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (3 * ONE_DAY) },
-      { id: "v3", english: "treasure", korean: "보물, 소중한 것, 간직하다", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v4", english: "library", korean: "도서관, 서재, 책방", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v5", english: "adventure", korean: "모험, 신나는 경험, 탐험", wrongCount: 2, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - (2 * ONE_DAY) },
-      { id: "v6", english: "umbrella", korean: "우산, 양산, 비가림막", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (7 * ONE_DAY) },
-      { id: "v7", english: "breakfast", korean: "아침밥, 아침 식사, 조식", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + (2 * ONE_DAY) },
-      { id: "v8", english: "whisper", korean: "속삭이다, 귓속말하다, 소곤거리다", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v9", english: "delicious", korean: "맛있는, 달콤한, 별미의", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
-      { id: "v10", english: "favorite", korean: "가장 좋아하는 것, 인기 있는, 애착의", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY }
+      { id: "v3", english: "treasure", korean: "보물, 소중한 것", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
+      { id: "v4", english: "library", korean: "도서관, 서재", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },
+      { id: "v5", english: "adventure", korean: "모험, 탐험", wrongCount: 2, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - (2 * ONE_DAY) },
+      { id: "v6", english: "umbrella", korean: "우산, 양산", wrongCount: 0, consecutiveCorrect: 3, isMastered: true, nextReviewDate: Date.now() + (7 * ONE_DAY) },
+      { id: "v7", english: "breakfast", korean: "아침밥, 아침 식사", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + (2 * ONE_DAY) },
+      { id: "v8", english: "whisper", korean: "속삭이다, 귓속말하다", wrongCount: 1, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
+      { id: "v9", english: "delicious", korean: "맛있는, 달콤한", wrongCount: 0, consecutiveCorrect: 2, isMastered: false, nextReviewDate: Date.now() - ONE_DAY },
+      { id: "v10", english: "favorite", korean: "가장 좋아하는 것, 인기 있는", wrongCount: 0, consecutiveCorrect: 1, isMastered: false, nextReviewDate: Date.now() + ONE_DAY }
     ];
 
     function getStoredVocaList() {
@@ -4300,12 +4290,13 @@
         const d = localStorage.getItem("kids_voca_list");
         if (!d) return defaultVocabulary;
         const list = JSON.parse(d);
-        // 만약 기존 저장된 단어가 단일 뜻만 있다면 2~3개 풍부한 뜻으로 자동 보강
+        // 만약 기존 저장된 단어가 단일 뜻만 있다면 2개 풍부한 뜻으로 자동 보강
         list.forEach(w => {
           if (w.english && (!w.korean || !w.korean.includes(','))) {
             const enriched = CHILD_DICTIONARY[w.english.toLowerCase()];
-            if (enriched && enriched.includes(',')) {
-              w.korean = enriched;
+            if (enriched) {
+              const parts = enriched.split(',').map(s => s.trim());
+              w.korean = parts.slice(0, 2).join(', ');
             }
           }
         });
@@ -4394,9 +4385,9 @@
           : `<span class="mastery-indicator">⭐ 연속 ${item.consecutiveCorrect || 0}/3회</span>`;
 
         card.innerHTML = `
-          <input type="checkbox" class="voca-checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleWordSelection('${item.id}')">
-          <div class="voca-main-info" onclick="speakEnglish('${item.english}')">
-            <button class="voca-speaker-btn" onclick="event.stopPropagation(); speakEnglish('${item.english}')" title="발음 듣기">
+          <input type="checkbox" class="voca-checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleWordSelection('${item.id}')" title="선택">
+          <div class="voca-main-info" onclick="speakEnglish('${item.english.replace(/'/g, "\\'")}')">
+            <button class="voca-speaker-btn" onclick="event.stopPropagation(); speakEnglish('${item.english.replace(/'/g, "\\'")}')" title="발음 듣기">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
             </button>
             <div class="voca-word-row">
@@ -4405,15 +4396,15 @@
               <div class="voca-badge-col">${streakBadge}</div>
             </div>
           </div>
-          <div class="voca-wrong-badge ${item.wrongCount > 0 ? 'wrong-alert' : ''}" style="margin-right: 6px;">
-            <span class="wrong-num">${item.wrongCount || 0}회</span>
-            <span class="wrong-label">틀린 횟수</span>
-          </div>
-          <div class="voca-action-btns" style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;" onclick="event.stopPropagation()">
-            <button class="small-btn" onclick="openEditVocaModal('${item.id}')" title="단어 수정" style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #EEF2FF; border-color: #C7D2FE; color: #4338CA;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;" onclick="event.stopPropagation()">
+            <div class="voca-wrong-badge ${item.wrongCount > 0 ? 'wrong-alert' : ''}">
+              <span class="wrong-num">${item.wrongCount || 0}회</span>
+              <span class="wrong-label">오답</span>
+            </div>
+            <button type="button" class="btn-voca-edit" onclick="openEditVocaModal('${item.id}')" title="단어 수정">
               ✏️ 수정
             </button>
-            <button class="small-btn" onclick="deleteSingleVocaWord('${item.id}')" title="단어 삭제" style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #FEF2F2; border-color: #FECACA; color: #DC2626;">
+            <button type="button" class="btn-voca-del" onclick="deleteSingleVocaWord('${item.id}')" title="단어 삭제">
               🗑️ 삭제
             </button>
           </div>
@@ -4885,7 +4876,7 @@
               if (m && /[가-힣]/.test(m) && m.length <= 12 && !seen.has(m) && m.toLowerCase() !== clean) {
                 seen.add(m);
                 list.push(m);
-                if (list.length >= 3) break;
+                if (list.length >= 2) break;
               }
             }
           };
@@ -4895,13 +4886,13 @@
           }
           if (Array.isArray(data.matches)) {
             for (let match of data.matches) {
-              if (list.length >= 3) break;
+              if (list.length >= 2) break;
               if (match.translation) addMeaning(match.translation);
             }
           }
 
           if (list.length > 0) {
-            return list.join(', ');
+            return list.slice(0, 2).join(', ');
           }
         }
       } catch (e) {
@@ -4909,7 +4900,8 @@
       }
 
       // 3. Fallback
-      return autoTranslateKorean(clean);
+      const fb = autoTranslateKorean(clean);
+      return fb ? fb.split(/[,/·]/).slice(0, 2).join(', ') : clean;
     }
 
     function openAddVocaModal() {
@@ -4917,7 +4909,7 @@
       document.getElementById('newVocaEnInput').value = "";
       document.getElementById('newVocaKoInput').value = "";
       const statusEl = document.getElementById('newVocaKoStatus');
-      if (statusEl) statusEl.innerHTML = "💡 영어 단어를 적거나 말하면 2~3개의 자연스러운 뜻이 자동으로 들어갑니다.";
+      if (statusEl) statusEl.innerHTML = "💡 영어 단어를 적거나 말하면 2개의 자연스러운 뜻이 자동으로 들어갑니다.";
       setTimeout(() => document.getElementById('newVocaEnInput').focus(), 150);
     }
 
@@ -4934,7 +4926,7 @@
 
       const en = (enInput.value || "").trim().toLowerCase();
       if (!en) {
-        if (statusEl) statusEl.innerHTML = "💡 영어 단어를 적거나 말하면 2~3개의 자연스러운 뜻이 자동으로 들어갑니다.";
+        if (statusEl) statusEl.innerHTML = "💡 영어 단어를 적거나 말하면 2개의 자연스러운 뜻이 자동으로 들어갑니다.";
         return;
       }
 
@@ -4950,14 +4942,26 @@
       }
 
       if (localMeaning) {
-        koInput.value = localMeaning;
-        const count = localMeaning.includes(',') ? localMeaning.split(',').length : 1;
-        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 추천 뜻 ${count}개가 자동으로 채워졌습니다! (직접 수정 가능)</span>`;
+        // 정확히 2개 뜻으로 포맷팅
+        const parts = localMeaning.split(',').map(s => s.trim());
+        const twoMeanings = parts.slice(0, 2).join(', ');
+        koInput.value = twoMeanings;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 추천 뜻 2개가 자동으로 채워졌습니다! (직접 수정 가능)</span>`;
         return;
       }
 
       // 2. 로컬에 없는 경우 온라인 사전 검색
       if (statusEl) statusEl.innerHTML = `<span style="color:#4F46E5;">⏳ 뜻 자동 검색 중...</span>`;
+      const multi = await fetchMultiMeaningsOnline(cleanWord);
+      if (multi && multi.toLowerCase() !== cleanWord) {
+        const parts = multi.split(',').map(s => s.trim());
+        const twoMeanings = parts.slice(0, 2).join(', ');
+        koInput.value = twoMeanings;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 뜻 2개가 자동으로 채워졌습니다!</span>`;
+      } else {
+        if (statusEl) statusEl.innerHTML = `<span style="color:#E11D48;">💡 뜻을 직접 입력해 주세요.</span>`;
+      }
+    }
       const multi = await fetchMultiMeaningsOnline(cleanWord);
       if (multi && multi.toLowerCase() !== cleanWord) {
         koInput.value = multi;
@@ -5061,8 +5065,9 @@
       if (statusEl) statusEl.innerHTML = `<span style="color:#4F46E5;">⏳ 뜻 자동 검색 중...</span>`;
       const meanings = await fetchMultiMeaningsOnline(en);
       if (meanings) {
-        koInput.value = meanings;
-        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 추천 뜻이 자동으로 채워졌습니다!</span>`;
+        const parts = meanings.split(',').map(s => s.trim());
+        koInput.value = parts.slice(0, 2).join(', ');
+        if (statusEl) statusEl.innerHTML = `<span style="color:#059669; font-weight:700;">✅ 추천 뜻 2개가 자동으로 채워졌습니다!</span>`;
         playSuccessSound();
       } else {
         if (statusEl) statusEl.innerHTML = `<span style="color:#E11D48;">직접 뜻을 입력해 주세요.</span>`;
@@ -5115,110 +5120,10 @@
     // =========================================================
     // 비밀번호 잠금 시스템 (AI 및 외부인 100% 차단)
     // =========================================================
-    function getStoredPin() {
-      try {
-        return localStorage.getItem("kids_family_pin") || "1234";
-      } catch(e) {
-        return "1234";
-      }
-    }
-
-    function checkInitialAuth() {
-      try {
-        const authDate = localStorage.getItem("kids_family_auth_date");
-        const todayStr = new Date().toISOString().slice(0, 10);
-        
-        // 오늘 이미 인증을 통과했다면 잠금 해제 상태 유지!
-        if (authDate === todayStr) {
-          unlockAppScreen(false);
-          return;
-        }
-      } catch(e) {}
-      
-      // 인증되지 않은 경우 잠금 화면 표시
-      const overlay = document.getElementById('pinLockOverlay');
-      if (overlay) {
-        overlay.style.display = 'flex';
-        setTimeout(() => {
-          const input = document.getElementById('pinInput');
-          if (input) input.focus();
-        }, 200);
-      }
-    }
-
-    function handlePinAutoInput(val) {
-      if (val && val.length === 4) {
-        validatePin(val);
-      }
-    }
-
-    function handlePinSubmit(e) {
-      if (e) e.preventDefault();
-      const val = document.getElementById('pinInput').value;
-      validatePin(val);
-    }
-
-    function validatePin(entered) {
-      const currentPin = getStoredPin();
-      const pinCard = document.getElementById('pinCard');
-      const errorMsg = document.getElementById('pinErrorMsg');
-
-      if (entered === currentPin) {
-        playSuccessSound();
-        const rememberToday = document.getElementById('pinRememberToday').checked;
-        if (rememberToday) {
-          const todayStr = new Date().toISOString().slice(0, 10);
-          try { localStorage.setItem("kids_family_auth_date", todayStr); } catch(e){}
-        }
-        unlockAppScreen(true);
-      } else {
-        playWrongSound();
-        pinCard.classList.remove('shake');
-        void pinCard.offsetWidth;
-        pinCard.classList.add('shake');
-        errorMsg.textContent = "❌ 비밀번호가 맞지 않아요! (초기 비밀번호: 1234)";
-        document.getElementById('pinInput').value = "";
-        document.getElementById('pinInput').focus();
-      }
-    }
-
-    function unlockAppScreen(animated) {
-      const overlay = document.getElementById('pinLockOverlay');
-      if (!overlay) return;
-      if (animated) {
-        overlay.style.transition = "opacity 0.25s ease";
-        overlay.style.opacity = "0";
-        setTimeout(() => {
-          overlay.style.display = "none";
-        }, 250);
-      } else {
-        overlay.style.display = "none";
-      }
-    }
-
-    function changeFamilyPin() {
-      const currentPin = getStoredPin();
-      const check = prompt("현재 비밀번호 4자리를 입력하세요:", "");
-      if (check === null) return;
-      if (check !== currentPin) {
-        alert("현재 비밀번호가 일치하지 않습니다.");
-        return;
-      }
-      const newPin = prompt("새로운 비밀번호 4자리를 입력하세요 (숫자 4자리):", "");
-      if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
-        alert("비밀번호는 숫자 4자리여야 합니다.");
-        return;
-      }
-      try {
-        localStorage.setItem("kids_family_pin", newPin);
-        alert(`비밀번호가 "${newPin}"으로 변경되었습니다!`);
-      } catch(e) {
-        alert("저장에 실패했습니다.");
-      }
-    }
-
-    // 앱 시작 초기화
-    checkInitialAuth();
+    // 앱 시작 초기화 (비밀번호 잠금 100% 해제: 즉시 진입)
+    try {
+      localStorage.removeItem("kids_family_auth_date");
+    } catch(e){}
     initTabletGrammar();
     document.getElementById('streakCountText').textContent = `${getStoredStreak()}일 연속`;
 

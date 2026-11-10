@@ -1484,7 +1484,7 @@
               <option value="AUTO">✨ 문장 자동 분석 (추천)</option>
               <option value="FORM_3">3형식: [누가] [뭐해] [무엇을] (예: I want an apple.)</option>
               <option value="FORM_1">1형식: [누가] [뭐해] [어디서] (예: The puppy runs fast.)</option>
-              <option value="FORM_2">2형식: [누가] [어때] [어떤 상태로] (예: My friend is happy.)</option>
+              <option value="FORM_2">2형식: [누가/무엇] [어때/~이야] [상태/누구의 것] (예: It's her car / My friend is happy)</option>
               <option value="FORM_4">4형식: [누가] [뭐해] [누구에게] [무엇을] (예: Mom gave me a gift.)</option>
               <option value="FORM_5">5형식: [누가] [뭐해] [무엇을] [어떤 상태로] (예: Music makes me smile.)</option>
               <option value="QUESTION_DO">Do의문문: [물어봐] [누가] [뭐해] [무엇을] (예: Do you like pizza?)</option>
@@ -2110,6 +2110,9 @@
       if (p === 'sweet strawberries' || p === 'strawberries') return '달콤한 딸기';
       if (p === 'cheese pizza') return '치즈 피자';
       if (p === 'toy airplane') return '장난감 비행기';
+      if (p === 'her car') return '그녀의 자동차';
+      if (p === 'my car') return '내 자동차';
+      if (p === 'his car') return '그의 자동차';
 
       // 복합 어구 분해 번역
       const parts = p.split(/\s+/).map(w => {
@@ -2158,7 +2161,7 @@
     function autoTranslateKorean(text) {
       if (!text) return "";
       const raw = text.trim();
-      const clean = raw.toLowerCase().replace(/[.?!]+$/, '').trim();
+      const clean = raw.toLowerCase().replace(/[`’‘]/g, "'").replace(/[.?!]+$/, '').trim();
 
       // 1. 단일 단어 사전 조회 (관사 제거 및 어미 변화 대응)
       const singleWord = clean.replace(/^(a|an|the)\s+/, '').trim();
@@ -2352,14 +2355,17 @@
         return `우리 함께 ${objKo ? objKo + ' ' : ''}하자!`;
       }
 
-      // 13. It is [state]
-      if (/^it is\s+(.+)/i.test(clean)) {
-        const state = clean.replace(/^it is\s+/i, '');
-        if (/sunny/i.test(state)) return '오늘은 날씨가 맑아.';
-        if (/raining/i.test(state)) return '밖에 비가 내리고 있어.';
-        if (/cold/i.test(state)) return '날씨가 아주 추워.';
-        const stateKo = translateKidPhrase(state);
-        return `날씨나 상태가 ${stateKo || '좋'}아.`;
+      // 13. It is / It's [state / noun]
+      if (/^it('s|\s+is)\s+(.+)/i.test(clean)) {
+        const rest = clean.replace(/^it('s|\s+is)\s+/i, '');
+        if (/sunny/i.test(rest)) return '오늘은 날씨가 맑아.';
+        if (/raining/i.test(rest)) return '밖에 비가 내리고 있어.';
+        if (/cold/i.test(rest)) return '날씨가 아주 추워.';
+        if (/her\s+car/i.test(rest)) return '그것은 그녀의 자동차야.';
+        if (/my\s+car/i.test(rest)) return '그것은 내 자동차야.';
+        const phraseKo = translateKidPhrase(rest);
+        if (phraseKo) return `그것은 ${phraseKo}야.`;
+        return `그것은 ${rest}야.`;
       }
 
       // 14. Do you like [noun]?
@@ -2751,11 +2757,140 @@
       return role || "WHO";
     }
 
-    function getRoleName(role) {
+    // [핵심] 지능형 스마트 바구니 분석 엔진 (Context-aware Smart Slot Labels)
+    // 2형식 문장(A=B 명사/소유 vs 상태/기분 형용사) 및 주어 특성(사물 vs 인물)에 맞춰 바구니 라벨과 아이콘 자동 최적화
+    function getSmartSlotMeta(role, sentenceOrData) {
       const norm = normalizeRole(role);
-      const icon = SLOT_META[norm] ? SLOT_META[norm].icon : "📦";
-      const label = SLOT_LABELS_KO[norm] || norm;
-      return `${icon} ${label}`;
+      const defaultDef = SLOT_META[norm] || { icon: "📦", desc: "단어 바구니", color: "#3B82F6", border: "#CBD5E1", bg: "#F8FAFC" };
+      const defaultLabel = SLOT_LABELS_KO[norm] || norm;
+
+      if (!sentenceOrData) {
+        return { ...defaultDef, label: defaultLabel };
+      }
+
+      let form = sentenceOrData.form || "";
+      let slots = sentenceOrData.slots ? { ...sentenceOrData.slots } : {};
+
+      if (sentenceOrData.blocks && Array.isArray(sentenceOrData.blocks)) {
+        sentenceOrData.blocks.forEach(b => {
+          const r = normalizeRole(b.role);
+          if (!slots[r] && b.text) slots[r] = b.text;
+        });
+      }
+
+      // FORM_2 스마트 바구니 분기
+      if (form === "FORM_2" || (!form && (slots.BE_FEEL || slots.STATE))) {
+        const whoText = (slots.WHO || "").trim().toLowerCase();
+        const beText = (slots.BE_FEEL || "").trim().toLowerCase();
+        const stateText = (slots.STATE || "").trim().toLowerCase();
+
+        // 1. 주어(WHO) 사물 vs 인물 판별
+        const inanimateWords = ['it', 'this', 'that', 'these', 'those', 'there'];
+        const isInanimate = inanimateWords.includes(whoText) ||
+          /\b(car|toy|book|box|apple|house|room|computer|phone|clock|table|desk|chair|tree|flower|weather|day|sky|sun|moon|star|game|robot|bag|hat|bed|pencil|bus|train|ball)\b/i.test(whoText);
+
+        // 2. 동사(BE_FEEL) be동사 vs 감각동사 판별
+        const isBeVerb = ['is', 'are', 'am', 'was', 'were', "'s", "'re", "'m", 'be', 'been'].includes(beText);
+
+        // 3. 보어(STATE) 명사/소유(A=B) vs 형용사(상태 설명) 판별
+        const possessiveWords = ['my', 'your', 'his', 'her', 'our', 'their', 'its', 'whose'];
+        const stateTokens = stateText.split(/\s+/).filter(Boolean);
+        const firstStateWord = stateTokens[0] || "";
+        const isPossessive = possessiveWords.includes(firstStateWord) || /'s\b/i.test(stateText);
+
+        const knownAdjectives = [
+          'happy', 'sad', 'glad', 'excited', 'angry', 'upset', 'tired', 'sleepy', 'hungry', 'thirsty',
+          'cute', 'pretty', 'beautiful', 'handsome', 'cool', 'nice', 'good', 'bad', 'great', 'fine', 'wonderful',
+          'big', 'small', 'little', 'tall', 'short', 'long', 'heavy', 'light', 'strong', 'weak',
+          'hot', 'cold', 'warm', 'cool', 'sunny', 'rainy', 'windy', 'cloudy', 'snowy',
+          'soft', 'hard', 'clean', 'dirty', 'fast', 'slow', 'quiet', 'loud', 'noisy',
+          'sweet', 'delicious', 'yummy', 'sour', 'bitter', 'spicy', 'fresh',
+          'red', 'blue', 'green', 'yellow', 'white', 'black', 'pink', 'orange', 'purple', 'brown',
+          'smart', 'kind', 'brave', 'funny', 'busy', 'ready', 'healthy', 'sick', 'safe', 'afraid', 'scared'
+        ];
+        const degreeAdverbs = ['very', 'so', 'really', 'quite', 'too', 'super', 'much'];
+
+        let isStateAdjective = false;
+        if (stateTokens.length > 0) {
+          if (degreeAdverbs.includes(firstStateWord) && stateTokens.length > 1 && knownAdjectives.includes(stateTokens[1])) {
+            isStateAdjective = true;
+          } else if (stateTokens.length === 1 && knownAdjectives.includes(firstStateWord)) {
+            isStateAdjective = true;
+          }
+        }
+
+        const isArticleOrDeterminer = ['a', 'an', 'the'].includes(firstStateWord);
+        const isNounComplement = isPossessive || isArticleOrDeterminer || (!isStateAdjective && isBeVerb && stateTokens.length > 0);
+
+        if (norm === "WHO") {
+          if (isInanimate) {
+            return {
+              ...defaultDef,
+              icon: "📦",
+              label: "무엇은",
+              desc: "주어 (사물/그것)"
+            };
+          } else {
+            return {
+              ...defaultDef,
+              icon: "👤",
+              label: isNounComplement ? "누구는" : "누가",
+              desc: "주어 (주인공)"
+            };
+          }
+        }
+
+        if (norm === "BE_FEEL") {
+          if (isBeVerb) {
+            return {
+              ...defaultDef,
+              icon: "✨",
+              label: "~이야",
+              desc: "be동사 (~이다/정체)"
+            };
+          } else {
+            return {
+              ...defaultDef,
+              icon: "💫",
+              label: "어때",
+              desc: "감각동사 (느낌/상태)"
+            };
+          }
+        }
+
+        if (norm === "STATE") {
+          if (isPossessive) {
+            return {
+              ...defaultDef,
+              icon: "🚗",
+              label: "누구의 것",
+              desc: "소유 / 대상 (보어)"
+            };
+          } else if (isNounComplement) {
+            return {
+              ...defaultDef,
+              icon: "🏷️",
+              label: "무엇/이름",
+              desc: "정체 / 이름 (보어)"
+            };
+          } else {
+            return {
+              ...defaultDef,
+              icon: "🎨",
+              label: "어떤 상태로",
+              desc: "상태 (행복해/귀여워)"
+            };
+          }
+        }
+      }
+
+      return { ...defaultDef, label: defaultLabel };
+    }
+
+    function getRoleName(role, sentence) {
+      const curSentence = sentence || (typeof getCurrentGrammarQuestion === 'function' ? getCurrentGrammarQuestion() : null);
+      const smart = getSmartSlotMeta(role, curSentence);
+      return `${smart.icon} ${smart.label}`;
     }
 
     const FORM_META = {
@@ -3082,6 +3217,30 @@
                 const q2 = (set.questions && set.questions[1]) || generateSimilarGrammarSentence(q1);
                 set.questions = [q1, q2];
               }
+              // 작은따옴표/백틱 정규화 및 it's her car 스마트 바구니 대응
+              if (set.title) set.title = set.title.replace(/[`’‘]/g, "'");
+              set.questions.forEach(q => {
+                if (q.fullEnglish) q.fullEnglish = q.fullEnglish.replace(/[`’‘]/g, "'");
+                if (q.blocks) {
+                  q.blocks.forEach(b => {
+                    if (b.text) b.text = b.text.replace(/[`’‘]/g, "'");
+                  });
+                }
+                if (/^it'?s\s+her\s+car/i.test(q.fullEnglish || "")) {
+                  q.form = "FORM_2";
+                  set.form = "FORM_2";
+                  q.fullEnglish = "It's her car.";
+                  if (!q.korean || /\[object/i.test(q.korean) || /car/i.test(q.korean)) {
+                    q.korean = "그것은 그녀의 자동차야.";
+                    set.korean = "그것은 그녀의 자동차야.";
+                  }
+                  q.blocks = [
+                    { id: "b_it", text: "It", role: "WHO" },
+                    { id: "b_is", text: "'s", role: "BE_FEEL" },
+                    { id: "b_car", text: "her car", role: "STATE" }
+                  ];
+                }
+              });
             });
             return list;
           }
@@ -3195,7 +3354,14 @@
       const meta = FORM_META[formKey] || { title: formKey, pattern: "문장 구조", color: "#3B82F6", bg: "#EFF6FF" };
       const badgeEl = document.getElementById('grammarFormBadge');
       if (badgeEl) {
-        badgeEl.textContent = `🏷️ ${meta.title}: ${meta.pattern}`;
+        let patternText = meta.pattern;
+        if (formKey === "FORM_2") {
+          const whoMeta = getSmartSlotMeta("WHO", sentence);
+          const beMeta = getSmartSlotMeta("BE_FEEL", sentence);
+          const stateMeta = getSmartSlotMeta("STATE", sentence);
+          patternText = `${whoMeta.label} + ${beMeta.label} + ${stateMeta.label}`;
+        }
+        badgeEl.textContent = `🏷️ ${meta.title}: ${patternText}`;
         badgeEl.style.color = meta.color;
         badgeEl.style.backgroundColor = meta.bg;
         badgeEl.style.borderColor = meta.color;
@@ -3211,8 +3377,9 @@
       }
 
       finalSlots.forEach(role => {
-        const def = SLOT_META[role] || { icon: "📦", desc: "단어 바구니", color: "#3B82F6", border: "#CBD5E1", bg: "#F8FAFC" };
-        const label = SLOT_LABELS_KO[role] || role;
+        const smart = getSmartSlotMeta(role, sentence);
+        const def = smart;
+        const label = smart.label;
 
         const basket = document.createElement('div');
         basket.className = `tablet-basket-card basket-${role.toLowerCase()}`;
@@ -3811,7 +3978,43 @@
         ]
       };
 
-      const candidates = bank[formKey] || bank["FORM_3"];
+      const form2NounBank = [
+        {
+          korean: "저것은 내가 가장 좋아하는 장난감이야.",
+          fullEnglish: "That is my favorite toy.",
+          blocks: [
+            { text: "That", role: "WHO" },
+            { text: "is", role: "BE_FEEL" },
+            { text: "my favorite toy", role: "STATE" }
+          ]
+        },
+        {
+          korean: "이것은 아주 재미있는 그림책이야.",
+          fullEnglish: "This is a fun picture book.",
+          blocks: [
+            { text: "This", role: "WHO" },
+            { text: "is", role: "BE_FEEL" },
+            { text: "a fun picture book", role: "STATE" }
+          ]
+        },
+        {
+          korean: "그것은 우리 아빠의 멋진 가방이야.",
+          fullEnglish: "It's our dad's cool bag.",
+          blocks: [
+            { text: "It", role: "WHO" },
+            { text: "'s", role: "BE_FEEL" },
+            { text: "our dad's cool bag", role: "STATE" }
+          ]
+        }
+      ];
+
+      let candidates = bank[formKey] || bank["FORM_3"];
+      if (formKey === "FORM_2" && originalItem) {
+        const smartState = getSmartSlotMeta("STATE", originalItem);
+        if (smartState.label === "누구의 것" || smartState.label === "무엇/이름") {
+          candidates = form2NounBank;
+        }
+      }
       const chosen = candidates[Math.floor(Math.random() * candidates.length)];
       return {
         id: "g_sim_" + Date.now(),
@@ -4072,8 +4275,9 @@
 
       const slots = SENTENCE_TYPES[formKey] || SENTENCE_TYPES.FORM_3;
       slots.forEach(slotKey => {
-        const def = SLOT_META[slotKey] || { icon: "📦", desc: "단어", color: "#3B82F6" };
-        const label = SLOT_LABELS_KO[slotKey] || slotKey;
+        const smart = getSmartSlotMeta(slotKey, { form: formKey, slots: prefilled });
+        const def = smart;
+        const label = smart.label;
         const val = prefilled[slotKey] || "";
 
         const box = document.createElement('div');
@@ -4102,8 +4306,16 @@
 
     // 7가지 문장 구조 자동 분석기
     function detectAndParseSentence(sentence) {
-      const clean = (sentence || "").trim().replace(/[.?!]+$/, '');
-      const words = clean.split(/\s+/);
+      if (!sentence) return null;
+
+      // 1. 작은따옴표, 백틱(`), 둥근따옴표(’‘) 정규화
+      let clean = (sentence || "").trim().replace(/[.?!]+$/, '');
+      clean = clean.replace(/[`’‘]/g, "'");
+
+      // 2. 축약형(contractions) 분리: it's -> it 's, that's -> that 's, i'm -> i 'm, you're -> you 're 등
+      clean = clean.replace(/\b([A-Za-z]+)'(s|re|m)\b/gi, "$1 '$2");
+
+      const words = clean.split(/\s+/).filter(Boolean);
       if (words.length === 0) return null;
 
       const firstLower = words[0].toLowerCase();
@@ -4137,7 +4349,7 @@
       }
 
       // 3. 서술문 분석
-      const beFeelVerbs = ['is', 'are', 'am', 'was', 'were', 'look', 'looks', 'looked', 'feel', 'feels', 'felt', 'sound', 'sounds', 'seem', 'seems'];
+      const beFeelVerbs = ['is', 'are', 'am', 'was', 'were', "'s", "'re", "'m", 'look', 'looks', 'looked', 'feel', 'feels', 'felt', 'sound', 'sounds', 'seem', 'seems'];
       const giveVerbs = ['give', 'gives', 'gave', 'send', 'sends', 'sent', 'show', 'shows', 'showed', 'tell', 'tells', 'told', 'buy', 'buys', 'bought'];
       const makeVerbs = ['make', 'makes', 'made', 'keep', 'keeps', 'kept', 'find', 'finds', 'found'];
       const prepositions = ['in', 'at', 'on', 'under', 'by', 'to', 'from', 'with'];
@@ -4167,7 +4379,10 @@
 
       if (vIdx === -1) vIdx = Math.min(1, words.length - 1);
 
-      const subject = words.slice(0, vIdx).join(' ') || words[0];
+      let subject = words.slice(0, vIdx).join(' ') || words[0];
+      if (subject.length > 0) {
+        subject = subject.charAt(0).toUpperCase() + subject.slice(1);
+      }
       const verb = words[vIdx];
       const remaining = words.slice(vIdx + 1);
 

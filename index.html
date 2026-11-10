@@ -423,6 +423,16 @@
       gap: 14px;
     }
 
+    @keyframes pulseReadyBtn {
+      0% { transform: scale(1); box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35); }
+      50% { transform: scale(1.03); box-shadow: 0 6px 22px rgba(79, 70, 229, 0.6); }
+      100% { transform: scale(1); box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35); }
+    }
+    .pulse-ready-btn {
+      animation: pulseReadyBtn 1.5s infinite ease-in-out;
+      cursor: pointer !important;
+    }
+
     .tablet-guide-banner {
       background: #F8FAFC;
       border: 1.5px solid var(--border);
@@ -1025,8 +1035,6 @@
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
           <button class="nav-btn" onclick="openGrammarListModal()" style="font-weight: 800; background: #FEF3C7; border-color: #FCD34D; color: #92400E;">📋 문장 목록 & 선택 풀기 (<span id="grammarCompletedCountBadge">0/7 세트</span>)</button>
           <button class="nav-btn primary" onclick="openAddGrammarModal()">+ 문장 등록</button>
-          <button class="nav-btn" onclick="resetCurrentGrammarBlocks()">다시 놓기 ↺</button>
-          <button class="nav-btn primary" id="grammarNextBtn" onclick="nextGrammarQuestion()" disabled>다음 문제 ➔</button>
         </div>
       </div>
 
@@ -1074,6 +1082,16 @@
         <div class="tablet-baskets-row" id="grammarBasketsArea"></div>
 
         <div class="grammar-feedback-msg" id="grammarFeedbackBox">단어 블록을 끌거나 클릭해서 알맞은 바구니에 넣어보세요!</div>
+
+        <!-- 4. 문제 풀이 하단 액션 바 (아이 손이 바로 닿는 접근성 최적화 위치) -->
+        <div class="grammar-action-bar" style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 10px; margin-bottom: 6px; flex-shrink: 0;">
+          <button class="btn btn-secondary" onclick="resetCurrentGrammarBlocks()" style="padding: 12px 20px; font-size: 0.95rem; font-weight: 700; border-radius: 14px; background: #F1F5F9; border: 1.5px solid #CBD5E1; color: #475569;" title="단어 블록을 처음 위치로 다시 놓기">
+            다시 놓기 ↺
+          </button>
+          <button class="btn btn-primary" id="grammarNextBtn" onclick="nextGrammarQuestion()" disabled style="padding: 13px 32px; font-size: 1.08rem; font-weight: 900; border-radius: 14px; min-width: 250px; opacity: 0.5; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35); transition: all 0.2s;" title="다음 문제로 넘어가기">
+            다음 문제 ➔
+          </button>
+        </div>
       </div>
     </div>
 
@@ -3299,6 +3317,8 @@
       const nextBtn = document.getElementById('grammarNextBtn');
       if (nextBtn) {
         nextBtn.disabled = true;
+        nextBtn.style.opacity = "0.5";
+        nextBtn.classList.remove('pulse-ready-btn');
         nextBtn.textContent = currentGrammarSubIdx === 0 ? "다음 문제 (응용 문장) ➔" : "다음 세트 풀기 ➔";
       }
 
@@ -3471,12 +3491,25 @@
         const nextBtn = document.getElementById('grammarNextBtn');
         const curBadge = document.getElementById('grammarCurrentCompletedBadge');
 
+        // 완성된 영어 문장 및 🔊 발음 다시 듣기 카드
+        const completedSentenceCardHtml = `
+          <div style="margin-top: 10px; padding: 10px 16px; background: #EEF2FF; border: 1.5px solid #C7D2FE; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; max-width: 100%;">
+            <span style="font-size: 1.15rem; font-weight: 800; color: #312E81;">"${current.fullEnglish}"</span>
+            <button class="speaker-btn" onclick="playCurrentGrammarTTS()" style="width: 34px; height: 34px; flex-shrink: 0; background: #4F46E5; color: white; border-radius: 50%;" title="영어 문장 다시 듣기">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+            </button>
+          </div>
+        `;
+
         if (currentGrammarSubIdx === 0) {
           // 1번 기본 문장 정답 완료!
           playSuccessSound();
           if (feedback) {
-            feedback.innerHTML = `👏 <strong>1번 기본 문장 정답!</strong> 다음 <strong>비슷한 응용 문제</strong>에 도전해 보세요! (1/2 완료)`;
-            feedback.style.color = "#059669";
+            feedback.innerHTML = `
+              <div style="font-size: 1.05rem; font-weight: 800; color: #059669;">👏 <strong>1번 기본 문장 정답!</strong> 멋져요! (1/2 완료)</div>
+              ${completedSentenceCardHtml}
+              <div style="font-size: 0.88rem; color: #4F46E5; font-weight: 700; margin-top: 8px;">👉 아래의 <strong>[다음 문제 (응용 문장) ➔]</strong> 버튼을 눌러 응용 문제에 도전해 보세요!</div>
+            `;
           }
           if (curBadge) {
             curBadge.textContent = "✅ 1/2 완료 (응용 도전!)";
@@ -3484,8 +3517,10 @@
             curBadge.style.color = "#B45309";
           }
           if (nextBtn) {
-            nextBtn.textContent = "다음 문제 (응용 문장) ➔";
+            nextBtn.textContent = "🚀 다음 문제 (응용 문장) ➔";
             nextBtn.disabled = false;
+            nextBtn.style.opacity = "1";
+            nextBtn.classList.add('pulse-ready-btn');
           }
         } else {
           // 2번 응용 문장까지 2/2 모두 완료 -> 1세트 완료!
@@ -3496,8 +3531,11 @@
           recordTodayCompletionStamp();
 
           if (feedback) {
-            feedback.innerHTML = `🎉 <strong>축하합니다! 2문제를 모두 풀어 1세트를 완료했어요! (2/2 완료 🏆)</strong>`;
-            feedback.style.color = "#059669";
+            feedback.innerHTML = `
+              <div style="font-size: 1.1rem; font-weight: 800; color: #059669;">🎉 <strong>축하합니다! 2문제를 모두 풀어 1세트를 마스터했어요! (2/2 완료 🏆)</strong></div>
+              ${completedSentenceCardHtml}
+              <div style="font-size: 0.88rem; color: #059669; font-weight: 700; margin-top: 8px;">👉 아래의 <strong>[다음 세트 풀기 ➔]</strong> 버튼을 눌러 다음 문장을 계속해서 풀어보세요!</div>
+            `;
           }
           if (curBadge) {
             curBadge.textContent = `🎉 2/2 완료 (🔥 ${set.completed}세트 완료)`;
@@ -3505,8 +3543,10 @@
             curBadge.style.color = "#059669";
           }
           if (nextBtn) {
-            nextBtn.textContent = "다음 세트 풀기 ➔";
+            nextBtn.textContent = "🎉 다음 세트 풀기 ➔";
             nextBtn.disabled = false;
+            nextBtn.style.opacity = "1";
+            nextBtn.classList.add('pulse-ready-btn');
           }
         }
 
@@ -3514,7 +3554,13 @@
         renderGrammarSetsList();
         updateGrammarAchievementUI();
 
-        setTimeout(() => { speakEnglish(current.fullEnglish, 0.9); }, 400);
+        // [음성 타이밍 최적화]:
+        // 1번 문제는 짧은 정답음 후 0.45초 뒤,
+        // 2번 세트 완료 문제는 팡파레 축하음(약 0.8초) 및 폭죽 효과음이 완전히 끝난 1.1초 뒤에 문장을 원어민 음성으로 읽어줌!
+        const ttsDelay = currentGrammarSubIdx === 0 ? 450 : 1100;
+        setTimeout(() => {
+          speakEnglish(current.fullEnglish, 0.9);
+        }, ttsDelay);
       }
     }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -2191,7 +2191,7 @@
     function getStoredStreak() {
       try {
         const s = localStorage.getItem("english_streak_days");
-        return s ? parseInt(s) : 0;
+        return s ? parseInt(s) : 4;
       } catch(e) { return 0; }
     }
 
@@ -3249,288 +3249,726 @@
     };
 
     // 7가지 형식 기본 2문제 1세트 데이터
-    const defaultGrammarSets = [
-      {
-        id: "gset_user_her_car",
-        form: "FORM_2",
-        title: "It's her car.",
-        korean: "그것은 그녀의 자동차야.",
-        completed: 0,
-        solvedSub: [false, false],
-        questions: [
-          {
-            id: "g_user_q1",
-            form: "FORM_2",
-            korean: "그것은 그녀의 자동차야.",
-            fullEnglish: "It's her car.",
-            blocks: [
-              { id: "b_u1", text: "It", role: "WHO" },
-              { id: "b_u2", text: "'s", role: "BE_FEEL" },
-              { id: "b_u3", text: "her car", role: "STATE" }
-            ],
-            isVariation: false
-          },
-          {
-            id: "g_user_q2",
-            form: "FORM_2",
-            korean: "이건 내가 제일 좋아하는 장난감이야.",
-            fullEnglish: "This is my favorite toy.",
-            blocks: [
-              { id: "b_u4", text: "This", role: "WHO" },
-              { id: "b_u5", text: "is", role: "BE_FEEL" },
-              { id: "b_u6", text: "my favorite toy", role: "STATE" }
-            ],
-            isVariation: true
-          }
-        ]
-      },
-      {
-        id: "gset_1",
-        form: "FORM_1",
-        title: "The cute puppy runs in the park.",
-        korean: "그 귀여운 강아지는 공원에서 달려.",
-        completed: 0,
-        solvedSub: [false, false],
-        questions: [
-          {
-            id: "g1_q1",
-            form: "FORM_1",
-            korean: "그 귀여운 강아지는 공원에서 달려.",
-            fullEnglish: "The cute puppy runs in the park.",
-            blocks: [
-              { id: "b1", text: "The cute puppy", role: "WHO" },
-              { id: "b2", text: "runs", role: "DO" },
-              { id: "b3", text: "in the park", role: "WHERE" }
-            ],
-            isVariation: false
-          },
-          {
-            id: "g1_q2",
-            form: "FORM_1",
-            korean: "그 작은 고양이는 정원에서 뛰어놀아.",
-            fullEnglish: "The little cat plays in the garden.",
-            blocks: [
-              { id: "b1_v", text: "The little cat", role: "WHO" },
-              { id: "b2_v", text: "plays", role: "DO" },
-              { id: "b3_v", text: "in the garden", role: "WHERE" }
-            ],
-            isVariation: true
-          }
-        ]
-      },
-      {
-        id: "gset_2",
-        form: "FORM_2",
-        title: "My best friend looks very happy.",
-        korean: "내 제일 친한 친구는 아주 행복해 보여.",
-        completed: 0,
-        solvedSub: [false, false],
-        questions: [
-          {
-            id: "g2_q1",
-            form: "FORM_2",
-            korean: "내 제일 친한 친구는 아주 행복해 보여.",
-            fullEnglish: "My best friend looks very happy.",
-            blocks: [
-              { id: "b4", text: "My best friend", role: "WHO" },
-              { id: "b5", text: "looks", role: "BE_FEEL" },
-              { id: "b6", text: "very happy", role: "STATE" }
-            ],
-            isVariation: false
-          },
-          {
-            id: "g2_q2",
-            form: "FORM_2",
-            korean: "그 친절한 선생님은 정말 따뜻해 보여.",
-            fullEnglish: "The kind teacher looks so warm.",
-            blocks: [
-              { id: "b4_v", text: "The kind teacher", role: "WHO" },
-              { id: "b5_v", text: "looks", role: "BE_FEEL" },
-              { id: "b6_v", text: "so warm", role: "STATE" }
-            ],
-            isVariation: true
-          }
-        ]
-      },
-      {
-        id: "gset_3",
-        form: "FORM_3",
-        title: "I want a sweet apple.",
-        korean: "나는 달콤한 사과를 원해.",
-        completed: 0,
-        solvedSub: [false, false],
-        questions: [
-          {
-            id: "g3_q1",
-            form: "FORM_3",
-            korean: "나는 달콤한 사과를 원해.",
-            fullEnglish: "I want a sweet apple.",
-            blocks: [
-              { id: "b7", text: "I", role: "WHO" },
-              { id: "b8", text: "want", role: "DO" },
-              { id: "b9", text: "a sweet apple", role: "WHAT" }
-            ],
-            isVariation: false
-          },
-          {
-            id: "g3_q2",
-            form: "FORM_3",
-            korean: "우리는 시원한 우유를 마셔.",
-            fullEnglish: "We drink fresh milk.",
-            blocks: [
-              { id: "b7_v", text: "We", role: "WHO" },
-              { id: "b8_v", text: "drink", role: "DO" },
-              { id: "b9_v", text: "fresh milk", role: "WHAT" }
-            ],
-            isVariation: true
-          }
-        ]
-      },
-      {
-        id: "gset_4",
-        form: "FORM_4",
-        title: "Mom gave me sweet candies.",
-        korean: "엄마는 나에게 달콤한 사탕을 주셨어.",
-        completed: 0,
-        solvedSub: [false, false],
-        questions: [
-          {
-            id: "g4_q1",
-            form: "FORM_4",
-            korean: "엄마는 나에게 달콤한 사탕을 주셨어.",
-            fullEnglish: "Mom gave me sweet candies.",
-            blocks: [
-              { id: "b10", text: "Mom", role: "WHO" },
-              { id: "b11", text: "gave", role: "DO" },
-              { id: "b12", text: "me", role: "TO_WHOM" },
-              { id: "b13", text: "sweet candies", role: "WHAT" }
-            ],
-            isVariation: false
-          },
-          {
-            id: "g4_q2",
-            form: "FORM_4",
-            korean: "아빠는 우리에게 재미있는 책을 사주셨어.",
-            fullEnglish: "Dad bought us a fun book.",
-            blocks: [
-              { id: "b10_v", text: "Dad", role: "WHO" },
-              { id: "b11_v", text: "bought", role: "DO" },
-              { id: "b12_v", text: "us", role: "TO_WHOM" },
-              { id: "b13_v", text: "a fun book", role: "WHAT" }
-            ],
-            isVariation: true
-          }
-        ]
-      },
-      {
-        id: "gset_5",
-        form: "FORM_5",
-        title: "This music makes me smile.",
-        korean: "이 신나는 음악은 나를 미소 짓게 만들어.",
-        completed: 0,
-        solvedSub: [false, false],
-        questions: [
-          {
-            id: "g5_q1",
-            form: "FORM_5",
-            korean: "이 신나는 음악은 나를 미소 짓게 만들어.",
-            fullEnglish: "This music makes me smile.",
-            blocks: [
-              { id: "b14", text: "This music", role: "WHO" },
-              { id: "b15", text: "makes", role: "DO" },
-              { id: "b16", text: "me", role: "WHAT" },
-              { id: "b17", text: "smile", role: "STATE" }
-            ],
-            isVariation: false
-          },
-          {
-            id: "g5_q2",
-            form: "FORM_5",
-            korean: "이 귀여운 강아지는 나를 정말 행복하게 해.",
-            fullEnglish: "The puppy makes me so happy.",
-            blocks: [
-              { id: "b14_v", text: "The puppy", role: "WHO" },
-              { id: "b15_v", text: "makes", role: "DO" },
-              { id: "b16_v", text: "me", role: "WHAT" },
-              { id: "b17_v", text: "so happy", role: "STATE" }
-            ],
-            isVariation: true
-          }
-        ]
-      },
-      {
-        id: "gset_6",
-        form: "QUESTION_DO",
-        title: "Do you like delicious pizza?",
-        korean: "너는 맛있는 피자를 좋아하니?",
-        completed: 0,
-        solvedSub: [false, false],
-        questions: [
-          {
-            id: "g6_q1",
-            form: "QUESTION_DO",
-            korean: "너는 맛있는 피자를 좋아하니?",
-            fullEnglish: "Do you like delicious pizza?",
-            blocks: [
-              { id: "b18", text: "Do", role: "DO_HELPER" },
-              { id: "b19", text: "you", role: "WHO" },
-              { id: "b20", text: "like", role: "DO" },
-              { id: "b21", text: "delicious pizza?", role: "WHAT" }
-            ],
-            isVariation: false
-          },
-          {
-            id: "g6_q2",
-            form: "QUESTION_DO",
-            korean: "너는 귀여운 강아지를 좋아하니?",
-            fullEnglish: "Do you like cute puppies?",
-            blocks: [
-              { id: "b18_v", text: "Do", role: "DO_HELPER" },
-              { id: "b19_v", text: "you", role: "WHO" },
-              { id: "b20_v", text: "like", role: "DO" },
-              { id: "b21_v", text: "cute puppies?", role: "WHAT" }
-            ],
-            isVariation: true
-          }
-        ]
-      },
-      {
-        id: "gset_7",
-        form: "QUESTION_WH",
-        title: "What do you want to eat?",
-        korean: "너는 무엇을 먹고 싶니?",
-        completed: 0,
-        solvedSub: [false, false],
-        questions: [
-          {
-            id: "g7_q1",
-            form: "QUESTION_WH",
-            korean: "너는 무엇을 먹고 싶니?",
-            fullEnglish: "What do you want to eat?",
-            blocks: [
-              { id: "b22", text: "What", role: "QUESTION_WORD" },
-              { id: "b23", text: "do", role: "DO_HELPER" },
-              { id: "b24", text: "you", role: "WHO" },
-              { id: "b25", text: "want to eat?", role: "DO" }
-            ],
-            isVariation: false
-          },
-          {
-            id: "g7_q2",
-            form: "QUESTION_WH",
-            korean: "너는 어디에서 놀고 싶니?",
-            fullEnglish: "Where do you want to play?",
-            blocks: [
-              { id: "b22_v", text: "Where", role: "QUESTION_WORD" },
-              { id: "b23_v", text: "do", role: "DO_HELPER" },
-              { id: "b24_v", text: "you", role: "WHO" },
-              { id: "b25_v", text: "want to play?", role: "DO" }
-            ],
-            isVariation: true
-          }
-        ]
-      }
-    ];
+        const defaultGrammarSets = [
+    {
+        "id":  "gset_pat_1794379730997",
+        "form":  "FORM_2",
+        "title":  "It is mine.",
+        "korean":  "그것은 내 것이다.",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g_pat_sync_1794379730997",
+                              "form":  "FORM_2",
+                              "korean":  "그것은 내 것이다.",
+                              "fullEnglish":  "It is mine.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b_pat_sync_0_1794379730997",
+                                                 "text":  "It",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b_pat_sync_1_1794379730997",
+                                                 "text":  "is",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b_pat_sync_2_1794379730997",
+                                                 "text":  "mine",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isCompleted":  false
+                          },
+                          {
+                              "id":  "g_pat_sim_1794379730997",
+                              "form":  "FORM_2",
+                              "korean":  "저것은 내가 가장 좋아하는 장난감이야. (응용 복습)",
+                              "fullEnglish":  "That is my favorite toy.",
+                              "isCompleted":  false,
+                              "isBonusVariation":  true,
+                              "blocks":  [
+                                             {
+                                                 "id":  "b_sim_1794379730997_0",
+                                                 "text":  "That",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b_sim_1794379730997_1",
+                                                 "text":  "is",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b_sim_1794379730997_2",
+                                                 "text":  "my favorite toy",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_pat_1794379235450",
+        "form":  "FORM_2",
+        "title":  "Whose pencil case is this.",
+        "korean":  "이것은 누구의 필통인가요?",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g_pat_sync_1794379235449",
+                              "form":  "FORM_2",
+                              "korean":  "이것은 누구의 필통인가요?",
+                              "fullEnglish":  "Whose pencil case is this.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b_pat_sync_0_1794379235449",
+                                                 "text":  "Whose pencil case",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b_pat_sync_1_1794379235449",
+                                                 "text":  "is",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b_pat_sync_2_1794379235449",
+                                                 "text":  "this",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isCompleted":  false
+                          },
+                          {
+                              "id":  "g_pat_sim_1794379235450",
+                              "form":  "FORM_2",
+                              "korean":  "그것은 우리 아빠의 멋진 가방이야. (응용 복습)",
+                              "fullEnglish":  "It\u0027s our dad\u0027s cool bag.",
+                              "isCompleted":  false,
+                              "isBonusVariation":  true,
+                              "blocks":  [
+                                             {
+                                                 "id":  "b_sim_1794379235450_0",
+                                                 "text":  "It",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b_sim_1794379235450_1",
+                                                 "text":  "\u0027s",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b_sim_1794379235450_2",
+                                                 "text":  "our dad\u0027s cool bag",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_user_her_car",
+        "form":  "FORM_2",
+        "title":  "It\u0027s her car.",
+        "korean":  "그것은 그녀의 자동차야.",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g_user_q1",
+                              "form":  "FORM_2",
+                              "korean":  "그것은 그녀의 자동차야.",
+                              "fullEnglish":  "It\u0027s her car.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b_it",
+                                                 "text":  "It",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b_is",
+                                                 "text":  "\u0027s",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b_car",
+                                                 "text":  "her car",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g_user_q2",
+                              "form":  "FORM_2",
+                              "korean":  "이건 내가 제일 좋아하는 장난감이야.",
+                              "fullEnglish":  "This is my favorite toy.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b_u4",
+                                                 "text":  "This",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b_u5",
+                                                 "text":  "is",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b_u6",
+                                                 "text":  "my favorite toy",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_pat_1794299777100",
+        "form":  "FORM_2",
+        "title":  "It is her car.",
+        "korean":  "그것은 그녀의 차입니다.",
+        "completed":  4,
+        "solvedSub":  [
+                          true,
+                          true
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g_pat_sync_1794299777100",
+                              "form":  "FORM_2",
+                              "korean":  "그것은 그녀의 차입니다.",
+                              "fullEnglish":  "It is her car.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b_custom_1794302391211_0",
+                                                 "text":  "It",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b_custom_1794302391211_1",
+                                                 "text":  "is",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b_custom_1794302391211_2",
+                                                 "text":  "her car",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g_user_sim_1794302391211",
+                              "form":  "FORM_2",
+                              "korean":  "저것은 내가 가장 좋아하는 장난감이야. (응용 복습)",
+                              "fullEnglish":  "That is my favorite toy.",
+                              "isCompleted":  false,
+                              "isBonusVariation":  true,
+                              "blocks":  [
+                                             {
+                                                 "id":  "b_sim_1794302391211_0",
+                                                 "text":  "That",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b_sim_1794302391211_1",
+                                                 "text":  "is",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b_sim_1794302391211_2",
+                                                 "text":  "my favorite toy",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ],
+        "isCompleted":  true
+    },
+    {
+        "id":  "gset_1",
+        "form":  "FORM_1",
+        "title":  "The cute puppy runs in the park.",
+        "korean":  "그 귀여운 강아지는 공원에서 달려.",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g1_q1",
+                              "form":  "FORM_1",
+                              "korean":  "그 귀여운 강아지는 공원에서 달려.",
+                              "fullEnglish":  "The cute puppy runs in the park.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b1",
+                                                 "text":  "The cute puppy",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b2",
+                                                 "text":  "runs",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b3",
+                                                 "text":  "in the park",
+                                                 "role":  "WHERE"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g1_q2",
+                              "form":  "FORM_1",
+                              "korean":  "그 작은 고양이는 정원에서 뛰어놀아.",
+                              "fullEnglish":  "The little cat plays in the garden.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b1_v",
+                                                 "text":  "The little cat",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b2_v",
+                                                 "text":  "plays",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b3_v",
+                                                 "text":  "in the garden",
+                                                 "role":  "WHERE"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_2",
+        "form":  "FORM_2",
+        "title":  "My best friend looks very happy.",
+        "korean":  "내 제일 친한 친구는 아주 행복해 보여.",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g2_q1",
+                              "form":  "FORM_2",
+                              "korean":  "내 제일 친한 친구는 아주 행복해 보여.",
+                              "fullEnglish":  "My best friend looks very happy.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b4",
+                                                 "text":  "My best friend",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b5",
+                                                 "text":  "looks",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b6",
+                                                 "text":  "very happy",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g2_q2",
+                              "form":  "FORM_2",
+                              "korean":  "그 친절한 선생님은 정말 따뜻해 보여.",
+                              "fullEnglish":  "The kind teacher looks so warm.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b4_v",
+                                                 "text":  "The kind teacher",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b5_v",
+                                                 "text":  "looks",
+                                                 "role":  "BE_FEEL"
+                                             },
+                                             {
+                                                 "id":  "b6_v",
+                                                 "text":  "so warm",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_3",
+        "form":  "FORM_3",
+        "title":  "I want a sweet apple.",
+        "korean":  "나는 달콤한 사과를 원해.",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g3_q1",
+                              "form":  "FORM_3",
+                              "korean":  "나는 달콤한 사과를 원해.",
+                              "fullEnglish":  "I want a sweet apple.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b7",
+                                                 "text":  "I",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b8",
+                                                 "text":  "want",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b9",
+                                                 "text":  "a sweet apple",
+                                                 "role":  "WHAT"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g3_q2",
+                              "form":  "FORM_3",
+                              "korean":  "우리는 시원한 우유를 마셔.",
+                              "fullEnglish":  "We drink fresh milk.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b7_v",
+                                                 "text":  "We",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b8_v",
+                                                 "text":  "drink",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b9_v",
+                                                 "text":  "fresh milk",
+                                                 "role":  "WHAT"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_4",
+        "form":  "FORM_4",
+        "title":  "Mom gave me sweet candies.",
+        "korean":  "엄마는 나에게 달콤한 사탕을 주셨어.",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g4_q1",
+                              "form":  "FORM_4",
+                              "korean":  "엄마는 나에게 달콤한 사탕을 주셨어.",
+                              "fullEnglish":  "Mom gave me sweet candies.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b10",
+                                                 "text":  "Mom",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b11",
+                                                 "text":  "gave",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b12",
+                                                 "text":  "me",
+                                                 "role":  "TO_WHOM"
+                                             },
+                                             {
+                                                 "id":  "b13",
+                                                 "text":  "sweet candies",
+                                                 "role":  "WHAT"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g4_q2",
+                              "form":  "FORM_4",
+                              "korean":  "아빠는 우리에게 재미있는 책을 사주셨어.",
+                              "fullEnglish":  "Dad bought us a fun book.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b10_v",
+                                                 "text":  "Dad",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b11_v",
+                                                 "text":  "bought",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b12_v",
+                                                 "text":  "us",
+                                                 "role":  "TO_WHOM"
+                                             },
+                                             {
+                                                 "id":  "b13_v",
+                                                 "text":  "a fun book",
+                                                 "role":  "WHAT"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_5",
+        "form":  "FORM_5",
+        "title":  "This music makes me smile.",
+        "korean":  "이 신나는 음악은 나를 미소 짓게 만들어.",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g5_q1",
+                              "form":  "FORM_5",
+                              "korean":  "이 신나는 음악은 나를 미소 짓게 만들어.",
+                              "fullEnglish":  "This music makes me smile.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b14",
+                                                 "text":  "This music",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b15",
+                                                 "text":  "makes",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b16",
+                                                 "text":  "me",
+                                                 "role":  "WHAT"
+                                             },
+                                             {
+                                                 "id":  "b17",
+                                                 "text":  "smile",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g5_q2",
+                              "form":  "FORM_5",
+                              "korean":  "이 귀여운 강아지는 나를 정말 행복하게 해.",
+                              "fullEnglish":  "The puppy makes me so happy.",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b14_v",
+                                                 "text":  "The puppy",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b15_v",
+                                                 "text":  "makes",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b16_v",
+                                                 "text":  "me",
+                                                 "role":  "WHAT"
+                                             },
+                                             {
+                                                 "id":  "b17_v",
+                                                 "text":  "so happy",
+                                                 "role":  "STATE"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_6",
+        "form":  "QUESTION_DO",
+        "title":  "Do you like delicious pizza?",
+        "korean":  "너는 맛있는 피자를 좋아하니?",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g6_q1",
+                              "form":  "QUESTION_DO",
+                              "korean":  "너는 맛있는 피자를 좋아하니?",
+                              "fullEnglish":  "Do you like delicious pizza?",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b18",
+                                                 "text":  "Do",
+                                                 "role":  "DO_HELPER"
+                                             },
+                                             {
+                                                 "id":  "b19",
+                                                 "text":  "you",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b20",
+                                                 "text":  "like",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b21",
+                                                 "text":  "delicious pizza?",
+                                                 "role":  "WHAT"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g6_q2",
+                              "form":  "QUESTION_DO",
+                              "korean":  "너는 귀여운 강아지를 좋아하니?",
+                              "fullEnglish":  "Do you like cute puppies?",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b18_v",
+                                                 "text":  "Do",
+                                                 "role":  "DO_HELPER"
+                                             },
+                                             {
+                                                 "id":  "b19_v",
+                                                 "text":  "you",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b20_v",
+                                                 "text":  "like",
+                                                 "role":  "DO"
+                                             },
+                                             {
+                                                 "id":  "b21_v",
+                                                 "text":  "cute puppies?",
+                                                 "role":  "WHAT"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    },
+    {
+        "id":  "gset_7",
+        "form":  "QUESTION_WH",
+        "title":  "What do you want to eat?",
+        "korean":  "너는 무엇을 먹고 싶니?",
+        "completed":  0,
+        "solvedSub":  [
+                          false,
+                          false
+                      ],
+        "questions":  [
+                          {
+                              "id":  "g7_q1",
+                              "form":  "QUESTION_WH",
+                              "korean":  "너는 무엇을 먹고 싶니?",
+                              "fullEnglish":  "What do you want to eat?",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b22",
+                                                 "text":  "What",
+                                                 "role":  "QUESTION_WORD"
+                                             },
+                                             {
+                                                 "id":  "b23",
+                                                 "text":  "do",
+                                                 "role":  "DO_HELPER"
+                                             },
+                                             {
+                                                 "id":  "b24",
+                                                 "text":  "you",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b25",
+                                                 "text":  "want to eat?",
+                                                 "role":  "DO"
+                                             }
+                                         ],
+                              "isVariation":  false
+                          },
+                          {
+                              "id":  "g7_q2",
+                              "form":  "QUESTION_WH",
+                              "korean":  "너는 어디에서 놀고 싶니?",
+                              "fullEnglish":  "Where do you want to play?",
+                              "blocks":  [
+                                             {
+                                                 "id":  "b22_v",
+                                                 "text":  "Where",
+                                                 "role":  "QUESTION_WORD"
+                                             },
+                                             {
+                                                 "id":  "b23_v",
+                                                 "text":  "do",
+                                                 "role":  "DO_HELPER"
+                                             },
+                                             {
+                                                 "id":  "b24_v",
+                                                 "text":  "you",
+                                                 "role":  "WHO"
+                                             },
+                                             {
+                                                 "id":  "b25_v",
+                                                 "text":  "want to play?",
+                                                 "role":  "DO"
+                                             }
+                                         ],
+                              "isVariation":  true
+                          }
+                      ]
+    }
+];
 
     const defaultGrammarList = defaultGrammarSets.flatMap(s => s.questions);
 
@@ -3572,10 +4010,17 @@
                 }
               });
             });
-            // It's her car 문장 세트 누락 방지 (기존 목록에 없으면 최상단에 자동 병합)
-            if (!list.some(s => s.id === "gset_user_her_car" || /it'?s\s+her\s+car/i.test(s.title || ""))) {
-              list.unshift(JSON.parse(JSON.stringify(defaultGrammarSets[0])));
+            // 기본/맞춤 문장 세트 누락 방지 (기존 목록에 없는 defaultGrammarSets 자동 병합)
+            let hasGrammarMerged = false;
+            defaultGrammarSets.forEach(dg => {
+              if (!list.some(s => s.id === dg.id || (s.title && dg.title && s.title.trim().toLowerCase() === dg.title.trim().toLowerCase()))) {
+                list.push(JSON.parse(JSON.stringify(dg)));
+                hasGrammarMerged = true;
+              }
+            });
+            if (hasGrammarMerged) {
               try { localStorage.setItem("kids_grammar_sets_v2", JSON.stringify(list)); } catch(e){}
+            } catch(e){}
             }
             return list;
           }
@@ -4987,60 +5432,239 @@
     // =========================================================================
     // [TAB 1] 🗣️ 회화패턴 & 5문장 자동 생성 엔진 & 영속성
     // =========================================================================
-    const initialPatterns = [
-      {
-        id: "its",
-        title: "It's ~",
-        desc: "사물/상태 말하기",
-        completed: 0,
-        questions: [
-          { ko: "그것은 그녀의 자동차야.", en: "It's her car.", hint: "her car" },
-          { ko: "이것은 내가 제일 좋아하는 장난감이야.", en: "This is my favorite toy.", hint: "my favorite toy" },
-          { ko: "그것은 귀여운 강아지야.", en: "It is a cute puppy.", hint: "a cute puppy" },
-          { ko: "그것은 내 새 가방이야.", en: "It is my new bag.", hint: "my new bag" },
-          { ko: "그것은 재미있는 책이야.", en: "It is a fun book.", hint: "a fun book" }
-        ]
-      },
-      {
-        id: "want",
-        title: "I want ~",
-        desc: "원하는 것/행동 말하기",
-        completed: 0,
-        questions: [
-          { ko: "나는 사과를 원해.", en: "I want an apple.", hint: "an apple" },
-          { ko: "나는 물을 마시고 싶어.", en: "I want to drink water.", hint: "drink water" },
-          { ko: "나는 새 장난감을 원해.", en: "I want a new toy.", hint: "a new toy" },
-          { ko: "나는 피자를 먹고 싶어.", en: "I want to eat pizza.", hint: "eat pizza" },
-          { ko: "나는 지금 자고 싶어.", en: "I want to sleep now.", hint: "sleep now" }
-        ]
-      },
-      {
-        id: "can_i",
-        title: "Can I ~?",
-        desc: "허락 구하기/요청하기",
-        completed: 0,
-        questions: [
-          { ko: "TV 봐도 돼요?", en: "Can I watch TV?", hint: "watch TV" },
-          { ko: "컴퓨터 게임 해도 돼요?", en: "Can I play computer games?", hint: "play games" },
-          { ko: "쿠키 좀 먹어도 돼요?", en: "Can I have some cookies?", hint: "cookies" },
-          { ko: "화장실 가도 돼요?", en: "Can I go to the bathroom?", hint: "bathroom" },
-          { ko: "친구를 초대해도 돼요?", en: "Can I invite my friend?", hint: "invite my friend" }
-        ]
-      },
-      {
-        id: "like",
-        title: "I like ~",
-        desc: "좋아하는 것 말하기",
-        completed: 0,
-        questions: [
-          { ko: "나는 축구하는 것을 좋아해.", en: "I like playing soccer.", hint: "playing soccer" },
-          { ko: "나는 맛있는 사과를 좋아해.", en: "I like delicious apples.", hint: "delicious apples" },
-          { ko: "나는 그림 그리는 것을 좋아해.", en: "I like drawing pictures.", hint: "drawing" },
-          { ko: "나는 귀여운 강아지를 좋아해.", en: "I like cute puppies.", hint: "cute puppies" },
-          { ko: "나는 음악 듣는 것을 좋아해.", en: "I like listening to music.", hint: "listening to music" }
-        ]
-      }
-    ];
+        const initialPatterns = [
+    {
+        "id":  "pat_user_1794379730996",
+        "title":  "It is ~",
+        "desc":  "날씨, 기분, 상태 말하기",
+        "completed":  0,
+        "questions":  [
+                          {
+                              "en":  "It is mine.",
+                              "ko":  "그것은 내 것이다.",
+                              "hint":  "is mine"
+                          },
+                          {
+                              "en":  "It is yous",
+                              "ko":  "그것은 당신 것입니다",
+                              "hint":  "is yous"
+                          },
+                          {
+                              "en":  "It is yena`s",
+                              "ko":  "예나의 것입니다",
+                              "hint":  "is yena`s"
+                          },
+                          {
+                              "en":  "It is my mom`s",
+                              "ko":  "우리 엄마꺼야",
+                              "hint":  "my mom`s"
+                          },
+                          {
+                              "en":  "It is my friend`s",
+                              "ko":  "내 친구꺼야",
+                              "hint":  "my friend`s"
+                          }
+                      ]
+    },
+    {
+        "id":  "pat_user_1794379235448",
+        "title":  "Whose ~",
+        "desc":  "자주 쓰는 핵심 문장 패턴 익히기",
+        "completed":  0,
+        "questions":  [
+                          {
+                              "en":  "Whose pencil case is this.",
+                              "ko":  "이것은 누구의 필통인가요?",
+                              "hint":  "pencil"
+                          },
+                          {
+                              "en":  "Whose book is this.",
+                              "ko":  "이것은 누구의 책입니까?",
+                              "hint":  "book"
+                          },
+                          {
+                              "en":  "Whose bag is this.",
+                              "ko":  "이것은 누구의 가방인가요?",
+                              "hint":  "bag"
+                          },
+                          {
+                              "en":  "Whose umbrella is this.",
+                              "ko":  "이것은 누구의 우산입니까?",
+                              "hint":  "umbrella"
+                          },
+                          {
+                              "en":  "Whose water bottle is this.",
+                              "ko":  "이것은 누구의 물병인가요?",
+                              "hint":  "water"
+                          }
+                      ]
+    },
+    {
+        "id":  "its",
+        "title":  "It\u0027s ~",
+        "desc":  "사물/상태 말하기",
+        "completed":  0,
+        "questions":  [
+                          {
+                              "ko":  "그것은 그녀의 자동차야.",
+                              "en":  "It\u0027s her car.",
+                              "hint":  "her car"
+                          },
+                          {
+                              "ko":  "이것은 내가 제일 좋아하는 장난감이야.",
+                              "en":  "This is my favorite toy.",
+                              "hint":  "my favorite toy"
+                          },
+                          {
+                              "ko":  "그것은 귀여운 강아지야.",
+                              "en":  "It is a cute puppy.",
+                              "hint":  "a cute puppy"
+                          },
+                          {
+                              "ko":  "그것은 내 새 가방이야.",
+                              "en":  "It is my new bag.",
+                              "hint":  "my new bag"
+                          },
+                          {
+                              "ko":  "그것은 재미있는 책이야.",
+                              "en":  "It is a fun book.",
+                              "hint":  "a fun book"
+                          }
+                      ]
+    },
+    {
+        "id":  "pat_user_1794299777099",
+        "title":  "It is her ~",
+        "desc":  "상태나 기분 설명하기",
+        "completed":  0,
+        "questions":  [
+                          {
+                              "en":  "It is her her ~.",
+                              "ko":  "바로 그녀 그녀~.",
+                              "hint":  "her ~"
+                          },
+                          {
+                              "en":  "It is her very happy today.",
+                              "ko":  "그녀는 오늘 매우 행복합니다.",
+                              "hint":  "happy"
+                          },
+                          {
+                              "en":  "It is her so cute and smart.",
+                              "ko":  "그녀는 너무 귀엽고 똑똑합니다.",
+                              "hint":  "cute"
+                          },
+                          {
+                              "en":  "It is her kind to all friends.",
+                              "ko":  "그녀는 모든 친구들에게 친절합니다.",
+                              "hint":  "kind"
+                          },
+                          {
+                              "en":  "It is her warm and sunny.",
+                              "ko":  "그녀의 따뜻하고 햇살입니다.",
+                              "hint":  "sunny"
+                          }
+                      ]
+    },
+    {
+        "id":  "want",
+        "title":  "I want ~",
+        "desc":  "원하는 것/행동 말하기",
+        "completed":  0,
+        "questions":  [
+                          {
+                              "ko":  "나는 사과를 원해.",
+                              "en":  "I want an apple.",
+                              "hint":  "an apple"
+                          },
+                          {
+                              "ko":  "나는 물을 마시고 싶어.",
+                              "en":  "I want to drink water.",
+                              "hint":  "drink water"
+                          },
+                          {
+                              "ko":  "나는 새 장난감을 원해.",
+                              "en":  "I want a new toy.",
+                              "hint":  "a new toy"
+                          },
+                          {
+                              "ko":  "나는 피자를 먹고 싶어.",
+                              "en":  "I want to eat pizza.",
+                              "hint":  "eat pizza"
+                          },
+                          {
+                              "ko":  "나는 지금 자고 싶어.",
+                              "en":  "I want to sleep now.",
+                              "hint":  "sleep now"
+                          }
+                      ]
+    },
+    {
+        "id":  "can_i",
+        "title":  "Can I ~?",
+        "desc":  "허락 구하기/요청하기",
+        "completed":  0,
+        "questions":  [
+                          {
+                              "ko":  "TV 봐도 돼요?",
+                              "en":  "Can I watch TV?",
+                              "hint":  "watch TV"
+                          },
+                          {
+                              "ko":  "컴퓨터 게임 해도 돼요?",
+                              "en":  "Can I play computer games?",
+                              "hint":  "play games"
+                          },
+                          {
+                              "ko":  "쿠키 좀 먹어도 돼요?",
+                              "en":  "Can I have some cookies?",
+                              "hint":  "cookies"
+                          },
+                          {
+                              "ko":  "화장실 가도 돼요?",
+                              "en":  "Can I go to the bathroom?",
+                              "hint":  "bathroom"
+                          },
+                          {
+                              "ko":  "친구를 초대해도 돼요?",
+                              "en":  "Can I invite my friend?",
+                              "hint":  "invite my friend"
+                          }
+                      ]
+    },
+    {
+        "id":  "like",
+        "title":  "I like ~",
+        "desc":  "좋아하는 것 말하기",
+        "completed":  0,
+        "questions":  [
+                          {
+                              "ko":  "나는 축구하는 것을 좋아해.",
+                              "en":  "I like playing soccer.",
+                              "hint":  "playing soccer"
+                          },
+                          {
+                              "ko":  "나는 맛있는 사과를 좋아해.",
+                              "en":  "I like delicious apples.",
+                              "hint":  "delicious apples"
+                          },
+                          {
+                              "ko":  "나는 그림 그리는 것을 좋아해.",
+                              "en":  "I like drawing pictures.",
+                              "hint":  "drawing"
+                          },
+                          {
+                              "ko":  "나는 귀여운 강아지를 좋아해.",
+                              "en":  "I like cute puppies.",
+                              "hint":  "cute puppies"
+                          },
+                          {
+                              "ko":  "나는 음악 듣는 것을 좋아해.",
+                              "en":  "I like listening to music.",
+                              "hint":  "listening to music"
+                          }
+                      ]
+    }
+];
 
     function getStoredPatterns() {
       try {
@@ -5050,9 +5674,16 @@
           list = JSON.parse(JSON.stringify(initialPatterns));
           try { localStorage.setItem("kids_patterns_list", JSON.stringify(list)); } catch(e){}
         } else {
-          if (!list.some(p => p.id === "its" || /it'?s/i.test(p.title || ""))) {
-            list.unshift(JSON.parse(JSON.stringify(initialPatterns[0])));
+          let hasPatMerged = false;
+          initialPatterns.forEach(ip => {
+            if (!list.some(p => p.id === ip.id || (p.title && ip.title && p.title.trim().toLowerCase() === ip.title.trim().toLowerCase()))) {
+              list.push(JSON.parse(JSON.stringify(ip)));
+              hasPatMerged = true;
+            }
+          });
+          if (hasPatMerged) {
             try { localStorage.setItem("kids_patterns_list", JSON.stringify(list)); } catch(e){}
+          } catch(e){}
           }
         }
         return list;
@@ -6164,25 +6795,255 @@
 
     // ================= 단어장 로직 =================
     const ONE_DAY = 24 * 60 * 60 * 1000;
-    const defaultVocabulary = [
-      { id: "v_u_1", english: "pen", korean: "펜, 필기도구", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439930, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_2", english: "pillow", korean: "베개, 쿠션", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439931, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_3", english: "ruler", korean: "자, 줄자", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439932, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_4", english: "favorite", korean: "가장 좋아하는 것, 인기 있는 것", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439933, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_5", english: "socks", korean: "양말", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439934, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_6", english: "calendar", korean: "달력, 일정표", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439935, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_7", english: "lunch", korean: "점심, 점심식사", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439936, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_8", english: "notebook", korean: "공책, 연습장", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439937, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_9", english: "melon", korean: "멜론, 참외", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439938, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_10", english: "bedroom", korean: "침실, 방", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439939, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_11", english: "inside", korean: "안에, 안쪽", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439940, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_12", english: "stuck", korean: "갇힌, 꼼짝 못하는", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439941, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_13", english: "secret", korean: "비밀, 비밀의", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439942, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_14", english: "asleep", korean: "잠든, 자고 있는", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439943, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_15", english: "climb", korean: "오르다, 기어오르다", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439944, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_16", english: "wall", korean: "벽, 담장", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439945, nextReviewDate: Date.now() + ONE_DAY },
-      { id: "v_u_17", english: "tree", korean: "나무, 큰 나무", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, dateAdded: 1794292439946, nextReviewDate: Date.now() + ONE_DAY }
-    ];
+        const defaultVocabulary = [
+    {
+        "id":  "v_u_1794299576737",
+        "english":  "rubber",
+        "korean":  "고무",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794385976737
+    },
+    {
+        "id":  "v_u_1794292439930",
+        "english":  "pen",
+        "korean":  "펜",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378839930
+    },
+    {
+        "id":  "v_u_1794292360940",
+        "english":  "glue",
+        "korean":  "풀,접착제",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378760940
+    },
+    {
+        "id":  "v_u_1794292270412",
+        "english":  "pillow",
+        "korean":  "베개",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378670412
+    },
+    {
+        "id":  "v_u_1794292247748",
+        "english":  "ruler",
+        "korean":  "자",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378647748
+    },
+    {
+        "id":  "v_u_1794292205396",
+        "english":  "favorite",
+        "korean":  "가장 좋아하는 것, 인기 있는",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378605396
+    },
+    {
+        "id":  "v_u_1794292183956",
+        "english":  "socks",
+        "korean":  "양말",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378583956
+    },
+    {
+        "id":  "v_u_1794292065180",
+        "english":  "tear",
+        "korean":  "찢다, 눈물",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378465180
+    },
+    {
+        "id":  "v_u_1794291979753",
+        "english":  "luck",
+        "korean":  "행운",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378379753
+    },
+    {
+        "id":  "v_u_1794291949572",
+        "english":  "near",
+        "korean":  "근처, 가까운",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378349572,
+        "currentQType":  "en_to_ko"
+    },
+    {
+        "id":  "v_u_1794291927913",
+        "english":  "drop",
+        "korean":  "방울, 버리기",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378327913
+    },
+    {
+        "id":  "v_u_1794291884042",
+        "english":  "stone",
+        "korean":  "돌, 암석",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378284042
+    },
+    {
+        "id":  "v_u_1794291817386",
+        "english":  "bread",
+        "korean":  "빵, 생계",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378217386
+    },
+    {
+        "id":  "v_u_1794291731245",
+        "english":  "meat",
+        "korean":  "고기, 고기류",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "nextReviewDate":  1794378131245
+    },
+    {
+        "id":  "v_u_6",
+        "english":  "calendar",
+        "korean":  "달력, 일정표",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439935,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_7",
+        "english":  "lunch",
+        "korean":  "점심, 점심식사",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439936,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_8",
+        "english":  "notebook",
+        "korean":  "공책, 연습장",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439937,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_9",
+        "english":  "melon",
+        "korean":  "멜론, 참외",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439938,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_10",
+        "english":  "bedroom",
+        "korean":  "침실, 방",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439939,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_11",
+        "english":  "inside",
+        "korean":  "안에, 안쪽",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439940,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_12",
+        "english":  "stuck",
+        "korean":  "갇힌, 꼼짝 못하는",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439941,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_13",
+        "english":  "secret",
+        "korean":  "비밀, 비밀의",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439942,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_14",
+        "english":  "asleep",
+        "korean":  "잠든, 자고 있는",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439943,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_15",
+        "english":  "climb",
+        "korean":  "오르다, 기어오르다",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439944,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_16",
+        "english":  "wall",
+        "korean":  "벽, 담장",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439945,
+        "nextReviewDate":  1794460659805
+    },
+    {
+        "id":  "v_u_17",
+        "english":  "tree",
+        "korean":  "나무, 큰 나무",
+        "wrongCount":  0,
+        "consecutiveCorrect":  0,
+        "isMastered":  false,
+        "dateAdded":  1794292439946,
+        "nextReviewDate":  1794460659805
+    }
+];
 
     const SAMPLE_VOCABULARY = [
       { id: "v1", english: "dinosaur", korean: "공룡, 거대한 동물", wrongCount: 0, consecutiveCorrect: 0, isMastered: false, nextReviewDate: Date.now() + ONE_DAY },

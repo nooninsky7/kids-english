@@ -1418,8 +1418,11 @@
         <div id="syncTabContent_qr" style="display: none; text-align: center;">
           <div style="background: white; border: 2px solid #E2E8F0; border-radius: 16px; padding: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 12px;">
             <img id="tabletQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://nooninsky7.github.io/kids-english/" alt="스마트 동기화 QR코드" width="220" height="220" style="display: block; margin: 0 auto; border-radius: 8px;">
-            <div id="syncQrTooLargeWarning" style="display: none; color: #DC2626; font-size: 0.85rem; padding: 20px;">
-              ⚠️ 데이터 양이 많아 QR 코드 대신 [📋 코드 복사/복원] 탭을 이용해 주세요.
+            <div id="syncQrTooLargeWarning" style="display: none; color: #DC2626; font-size: 0.85rem; padding: 16px; text-align: center;">
+              ⚠️ 데이터 양이 많아 QR 대신 코드로 안전하게 전송합니다.<br>
+              <button class="btn" style="margin-top: 10px; background: #4F46E5; color: white; font-weight: 800; font-size: 0.82rem; padding: 7px 14px; border-radius: 8px;" onclick="switchSyncModalTab('code')">
+                📋 [코드 복사/복원] 탭으로 바로가기
+              </button>
             </div>
           </div>
           <div style="background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 12px; padding: 10px 14px; text-align: left; font-size: 0.82rem; color: #334155; line-height: 1.5; margin-bottom: 12px;">
@@ -7596,14 +7599,13 @@
         };
       }
 
-      // Compact version for QR code
-      const compactVoca = voca.map(w => ({
-        i: w.id,
-        e: w.english,
-        k: w.korean,
-        w: w.wrongCount || 0,
-        m: w.isMastered ? 1 : 0
-      }));
+      // Compact version for QR code (ultra compact array: [english, korean, wrongCount, isMastered])
+      const compactVoca = voca.map(w => [
+        (w.english || '').trim().toLowerCase(),
+        (w.korean || '').trim(),
+        w.wrongCount || 0,
+        w.isMastered ? 1 : 0
+      ]);
 
       const defaultPatIds = new Set(initialPatterns.map(x => x.id));
       const customPats = patterns.filter(x => !defaultPatIds.has(x.id) || (x.completed && x.completed > 0)).map(p => ({
@@ -7645,6 +7647,18 @@
       const incomingVoca = payload.voca || payload.v;
       if (Array.isArray(incomingVoca)) {
         vocaList = incomingVoca.map(w => {
+          if (Array.isArray(w)) {
+            return {
+              id: Date.now() + Math.random(),
+              english: String(w[0] || '').trim().toLowerCase(),
+              korean: String(w[1] || '').trim(),
+              wrongCount: Number(w[2]) || 0,
+              consecutiveCorrect: 0,
+              isMastered: !!w[3],
+              dateAdded: new Date().toISOString(),
+              nextReviewDate: new Date().toISOString()
+            };
+          }
           if (w.e !== undefined) {
             return {
               id: w.i || (Date.now() + Math.random()),
@@ -7826,7 +7840,7 @@
 
         const qrImg = document.getElementById('tabletQrCodeImg');
         const qrWarning = document.getElementById('syncQrTooLargeWarning');
-        if (syncUrl.length < 2400 && qrImg) {
+        if (syncUrl.length < 2800 && qrImg) {
           qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(syncUrl)}`;
           qrImg.style.display = 'block';
           if (qrWarning) qrWarning.style.display = 'none';

@@ -1416,8 +1416,8 @@
 
         <!-- TAB 1: 📸 카메라 QR 스캔 -->
         <div id="syncTabContent_qr" style="display: none; text-align: center;">
-          <div style="background: white; border: 2px solid #E2E8F0; border-radius: 16px; padding: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 12px;">
-            <img id="tabletQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://nooninsky7.github.io/kids-english/" alt="스마트 동기화 QR코드" width="220" height="220" style="display: block; margin: 0 auto; border-radius: 8px;">
+          <div style="background: white; border: 2.5px solid #6366F1; border-radius: 18px; padding: 14px; display: inline-block; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15); margin-bottom: 12px;">
+            <img id="tabletQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=L&data=https://nooninsky7.github.io/kids-english/" alt="스마트 동기화 QR코드" width="280" height="280" style="display: block; margin: 0 auto; border-radius: 8px;">
             <div id="syncQrTooLargeWarning" style="display: none; color: #DC2626; font-size: 0.85rem; padding: 16px; text-align: center;">
               ⚠️ 데이터 양이 많아 QR 대신 코드로 안전하게 전송합니다.<br>
               <button class="btn" style="margin-top: 10px; background: #4F46E5; color: white; font-weight: 800; font-size: 0.82rem; padding: 7px 14px; border-radius: 8px;" onclick="switchSyncModalTab('code')">
@@ -1425,6 +1425,13 @@
               </button>
             </div>
           </div>
+
+          <div style="background: #FEF3C7; border: 1.5px solid #FCD34D; border-radius: 12px; padding: 10px 14px; text-align: left; font-size: 0.8rem; color: #92400E; line-height: 1.5; margin-bottom: 12px;">
+            <strong style="color: #B45309;">📷 카메라로 QR이 바로 안 읽힐 때 꿀팁:</strong><br>
+            1. 모니터에 너무 바짝 대지 마시고 <strong>25~30cm 정도 살짝 거리를 두고</strong> 태블릿 화면 속 QR 코드를 손가락으로 툭 터치해 초점을 맞춥니다.<br>
+            2. 기본 카메라가 반응이 없을 때는 태블릿의 <strong>[구글 렌즈(카메라 모양 검색)]</strong> 또는 <strong>[네이버 스마트렌즈]</strong>로 비추시면 즉시 0.1초 만에 인식됩니다!
+          </div>
+
           <div style="background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 12px; padding: 10px 14px; text-align: left; font-size: 0.82rem; color: #334155; line-height: 1.5; margin-bottom: 12px;">
             <strong style="color: #4F46E5;">💡 태블릿으로 1초 만에 전송하는 법:</strong><br>
             1. 아이 태블릿의 <strong>기본 카메라</strong> 앱을 켭니다.<br>
@@ -7841,7 +7848,7 @@
         const qrImg = document.getElementById('tabletQrCodeImg');
         const qrWarning = document.getElementById('syncQrTooLargeWarning');
         if (syncUrl.length < 2800 && qrImg) {
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(syncUrl)}`;
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&ecc=L&margin=1&data=${encodeURIComponent(syncUrl)}`;
           qrImg.style.display = 'block';
           if (qrWarning) qrWarning.style.display = 'none';
         } else {

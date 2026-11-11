@@ -1109,7 +1109,12 @@
       <div class="nav-bar">
         <div class="nav-title"><span>🧩 문장퍼즐</span></div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-          <button class="nav-btn" onclick="openGrammarListModal()" style="font-weight: 800; background: #FEF3C7; border-color: #FCD34D; color: #92400E;">📋 문장 목록 & 선택 풀기 (<span id="grammarCompletedCountBadge">0/7 세트</span>)</button>
+          <select class="sort-select" id="mainGrammarSortSelect" onchange="changeGrammarSort(this.value)" style="padding: 6px 12px; font-weight: 700; border-radius: 10px; border: 1.5px solid var(--border); background: white; font-size: 0.82rem; cursor: pointer;">
+            <option value="recent" selected>📅 날짜순 (최신순)</option>
+            <option value="wrong_desc">❌ 오답순 (도전 필요순)</option>
+            <option value="achievement_desc">🏆 달성순 (완료 많은순)</option>
+          </select>
+          <button class="nav-btn" onclick="openGrammarListModal()" style="font-weight: 800; background: #FEF3C7; border-color: #FCD34D; color: #92400E;">📋 문장 목록 & 선택 풀기 (<span id="grammarCompletedCountBadge">0/11 세트</span>)</button>
           <button class="nav-btn" onclick="openCurrentGrammarEditModal()" style="font-weight: 700; background: white; border: 1.5px solid var(--border);" title="현재 풀고 있는 문장 수정">✏️ 현재 문장 수정</button>
           <button class="nav-btn primary" onclick="openAddGrammarModal()">+ 문장 등록</button>
         </div>
@@ -1174,7 +1179,12 @@
     <div id="patternSection" style="display: none; flex-direction: column; flex: 1; overflow: hidden;">
       <div class="nav-bar">
         <div class="nav-title"><span>🗣️ 하루 5문장 회화패턴</span></div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <select class="sort-select" id="patternSortSelect" onchange="changePatternSort(this.value)" style="padding: 6px 12px; font-weight: 700; border-radius: 10px; border: 1.5px solid var(--border); background: white; font-size: 0.82rem; cursor: pointer;">
+            <option value="recent" selected>📅 날짜순 (최신순)</option>
+            <option value="wrong_desc">❌ 오답순 (연습 필요순)</option>
+            <option value="achievement_desc">🏆 달성순 (완료 많은순)</option>
+          </select>
           <button class="nav-btn" onclick="openCurrentPatternEditModal()" style="font-weight: 700; background: white; border: 1.5px solid var(--border);" title="현재 패턴/5문장 수정">✏️ 문장 관리</button>
           <button class="nav-btn primary" onclick="openAddPatternModal()">+ 새 패턴/문장 등록</button>
           <span id="currentPatternBadge" style="font-weight: 800; color: var(--primary);">I want ~</span>
@@ -1271,8 +1281,9 @@
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
           <select class="sort-select" id="vocaSortSelect" onchange="changeVocaSort(this.value)">
-            <option value="wrong_desc">🔥 틀린 횟수 많은 순</option>
-            <option value="recent">✨ 최신 등록 순</option>
+            <option value="recent" selected>📅 날짜순 (최신순)</option>
+            <option value="wrong_desc">❌ 오답순 (틀린 횟수순)</option>
+            <option value="achievement_desc">🏆 달성순 (마스터/성공순)</option>
             <option value="alpha_asc">🔤 알파벳 (A-Z) 순</option>
           </select>
           <button class="btn btn-primary" id="quizSelectedBtn" style="padding: 6px 14px; font-size: 0.85rem; flex: none;" onclick="startVocaQuizWithSelected()">
@@ -1809,11 +1820,18 @@
           </div>
         </div>
 
-        <!-- 내부 필터 탭 -->
-        <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-shrink: 0;">
-          <button class="grammar-filter-chip active" id="glist_filter_ALL" onclick="renderGrammarListModal('ALL')">전체 (<span id="glistCountAll">7</span>)</button>
-          <button class="grammar-filter-chip" id="glist_filter_INCOMPLETE" onclick="renderGrammarListModal('INCOMPLETE')">도전 중 ⏳ (<span id="glistCountIncomplete">7</span>)</button>
-          <button class="grammar-filter-chip" id="glist_filter_COMPLETED" onclick="renderGrammarListModal('COMPLETED')">완성 완료 ✅ (<span id="glistCountCompleted">0</span>)</button>
+        <!-- 내부 필터 탭 & 정렬 드롭다운 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 8px; flex-shrink: 0; flex-wrap: wrap;">
+          <div style="display: flex; gap: 6px;">
+            <button class="grammar-filter-chip active" id="glist_filter_ALL" onclick="renderGrammarListModal('ALL')">전체 (<span id="glistCountAll">11</span>)</button>
+            <button class="grammar-filter-chip" id="glist_filter_INCOMPLETE" onclick="renderGrammarListModal('INCOMPLETE')">도전 중 ⏳ (<span id="glistCountIncomplete">11</span>)</button>
+            <button class="grammar-filter-chip" id="glist_filter_COMPLETED" onclick="renderGrammarListModal('COMPLETED')">완성 완료 ✅ (<span id="glistCountCompleted">0</span>)</button>
+          </div>
+          <select class="sort-select" id="modalGrammarSortSelect" onchange="changeGrammarSort(this.value)" style="padding: 5px 10px; font-weight: 700; border-radius: 8px; border: 1.5px solid var(--border); background: white; font-size: 0.8rem; cursor: pointer;">
+            <option value="recent" selected>📅 날짜순 (최신순)</option>
+            <option value="wrong_desc">❌ 오답순 (도전 필요순)</option>
+            <option value="achievement_desc">🏆 달성순 (완료 많은순)</option>
+          </select>
         </div>
 
         <!-- 체크박스 조작 및 선택 풀기 바 -->
@@ -4015,11 +4033,11 @@
                 }
               });
             });
-            // 기본/맞춤 문장 세트 누락 방지 (기존 목록에 없는 defaultGrammarSets 자동 병합)
+            // 기본/맞춤 문장 세트 누락 방지 (기존 목록에 없는 defaultGrammarSets 자동 병합 - 최신 등록 우선)
             let hasGrammarMerged = false;
             defaultGrammarSets.forEach(dg => {
               if (!list.some(s => s.id === dg.id || (s.title && dg.title && s.title.trim().toLowerCase() === dg.title.trim().toLowerCase()))) {
-                list.push(JSON.parse(JSON.stringify(dg)));
+                list.unshift(JSON.parse(JSON.stringify(dg)));
                 hasGrammarMerged = true;
               }
             });
@@ -4040,26 +4058,86 @@
       if (typeof scheduleCloudPush === 'function') scheduleCloudPush();
     }
 
+    // 공통 날짜/타임스탬프 추출 헬퍼 (새로 등록된 항목 최신순 정렬용)
+    function getItemTimestamp(item) {
+      if (!item) return 0;
+      if (item.dateAdded) {
+        const t = Number(item.dateAdded);
+        if (!isNaN(t) && t > 0) return t;
+        const parsed = Date.parse(item.dateAdded);
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+      }
+      if (item.id) {
+        const m = String(item.id).match(/(\d{10,13})/);
+        if (m) return Number(m[1]);
+      }
+      return 0;
+    }
+
+    // 문장퍼즐 정렬 상태 (기본값: 날짜순 - 최신 등록 문장이 맨 위)
+    let currentGrammarSort = "recent";
+
+    function changeGrammarSort(val) {
+      currentGrammarSort = val;
+      const el1 = document.getElementById('mainGrammarSortSelect');
+      const el2 = document.getElementById('modalGrammarSortSelect');
+      if (el1 && el1.value !== val) el1.value = val;
+      if (el2 && el2.value !== val) el2.value = val;
+      renderGrammarListModal(currentGrammarListFilter);
+      const activeSets = getActiveGrammarSets();
+      if (activeSets.length > 0 && !activeSets.some(s => s.id === currentGrammarSetId)) {
+        currentGrammarSetId = activeSets[0].id;
+        currentGrammarSubIdx = 0;
+      }
+      loadTabletGrammarQuestion();
+    }
+
+    function sortGrammarItems(items) {
+      const list = [...items];
+      if (currentGrammarSort === "recent" || currentGrammarSort === "date_desc") {
+        return list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+      }
+      if (currentGrammarSort === "wrong_desc") {
+        return list.sort((a, b) => {
+          const aDone = (a.completed && a.completed > 0) || (a.solvedSub && a.solvedSub[0] && a.solvedSub[1]);
+          const bDone = (b.completed && b.completed > 0) || (b.solvedSub && b.solvedSub[0] && b.solvedSub[1]);
+          if (aDone !== bDone) return aDone ? 1 : -1;
+          return ((a.completed || 0) - (b.completed || 0)) || (getItemTimestamp(b) - getItemTimestamp(a));
+        });
+      }
+      if (currentGrammarSort === "achievement_desc") {
+        return list.sort((a, b) => {
+          const aDone = (a.completed && a.completed > 0) || (a.solvedSub && a.solvedSub[0] && a.solvedSub[1]);
+          const bDone = (b.completed && b.completed > 0) || (b.solvedSub && b.solvedSub[0] && b.solvedSub[1]);
+          if (aDone !== bDone) return aDone ? -1 : 1;
+          return ((b.completed || 0) - (a.completed || 0)) || (getItemTimestamp(b) - getItemTimestamp(a));
+        });
+      }
+      return list;
+    }
+
     let grammarSets = getStoredGrammarSets();
     let selectedGrammarSetIds = grammarSets.map(s => s.id);
-    let currentGrammarSetId = grammarSets[0] ? grammarSets[0].id : "gset_1";
+    let currentGrammarSortInitialSets = sortGrammarItems(grammarSets);
+    let currentGrammarSetId = currentGrammarSortInitialSets[0] ? currentGrammarSortInitialSets[0].id : (grammarSets[0] ? grammarSets[0].id : "gset_1");
     let currentGrammarSubIdx = 0; // 0: 기본 문장, 1: 응용 문장
     let currentGrammarFilter = 'ALL';
     let placedBlocks = {};
     let selectedGrammarBlock = null;
 
     function getActiveGrammarSets() {
-      if (currentGrammarFilter === 'ALL') return grammarSets;
-      return grammarSets.filter(s => s.form === currentGrammarFilter);
+      let sets = currentGrammarFilter === 'ALL' ? [...grammarSets] : grammarSets.filter(s => s.form === currentGrammarFilter);
+      return sortGrammarItems(sets);
     }
 
     function getCurrentGrammarSet() {
-      let set = grammarSets.find(s => s.id === currentGrammarSetId);
+      const activeSets = getActiveGrammarSets();
+      let set = activeSets.find(s => s.id === currentGrammarSetId);
       if (!set) {
         if (selectedGrammarSetIds && selectedGrammarSetIds.length > 0) {
-          set = grammarSets.find(s => s.id === selectedGrammarSetIds[0]);
+          set = activeSets.find(s => selectedGrammarSetIds.includes(s.id));
         }
-        if (!set) set = grammarSets[0];
+        if (!set) set = activeSets[0] || grammarSets[0];
         if (set) currentGrammarSetId = set.id;
       }
       return set;
@@ -4952,6 +5030,7 @@
       } else if (filterType === 'COMPLETED') {
         items = items.filter(s => (s.completed && s.completed > 0) || (s.solvedSub && s.solvedSub[0] && s.solvedSub[1]));
       }
+      items = sortGrammarItems(items);
 
       if (items.length === 0) {
         container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px 10px; font-weight: 700;">해당하는 퍼즐 세트가 없습니다.</div>`;
@@ -5414,10 +5493,16 @@
         korean: koVal,
         completed: 0,
         solvedSub: [false, false],
+        dateAdded: Date.now(),
         questions: [newG, similarG]
       };
 
       grammarSets.unshift(newSet);
+      currentGrammarSort = "recent";
+      const selG1 = document.getElementById('mainGrammarSortSelect');
+      const selG2 = document.getElementById('modalGrammarSortSelect');
+      if (selG1) selG1.value = "recent";
+      if (selG2) selG2.value = "recent";
       saveGrammarSetsToStorage();
       updateGrammarAchievementUI();
       closeAddGrammarModal();
@@ -5683,7 +5768,7 @@
           let hasPatMerged = false;
           initialPatterns.forEach(ip => {
             if (!list.some(p => p.id === ip.id || (p.title && ip.title && p.title.trim().toLowerCase() === ip.title.trim().toLowerCase()))) {
-              list.push(JSON.parse(JSON.stringify(ip)));
+              list.unshift(JSON.parse(JSON.stringify(ip)));
               hasPatMerged = true;
             }
           });
@@ -5702,12 +5787,44 @@
       if (typeof scheduleCloudPush === 'function') scheduleCloudPush();
     }
 
+    // 회화패턴 정렬 상태 (기본값: 날짜순 - 최신 등록 패턴이 맨 위)
+    let currentPatternSort = "recent";
+
+    function changePatternSort(val) {
+      currentPatternSort = val;
+      const el = document.getElementById('patternSortSelect');
+      if (el && el.value !== val) el.value = val;
+      renderTabletPatterns();
+      const sorted = getSortedPatternsList();
+      if (sorted.length > 0 && !sorted.some(p => p.id === currentPatternId)) {
+        currentPatternId = sorted[0].id;
+        patternIdx = 0;
+      }
+      loadPatternQuestionTablet();
+    }
+
+    function getSortedPatternsList() {
+      let list = [...patternsList];
+      if (currentPatternSort === "recent" || currentPatternSort === "date_desc") {
+        return list.sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+      }
+      if (currentPatternSort === "wrong_desc") {
+        return list.sort((a, b) => ((a.completed || 0) - (b.completed || 0)) || (getItemTimestamp(b) - getItemTimestamp(a)));
+      }
+      if (currentPatternSort === "achievement_desc") {
+        return list.sort((a, b) => ((b.completed || 0) - (a.completed || 0)) || (getItemTimestamp(b) - getItemTimestamp(a)));
+      }
+      return list;
+    }
+
     let patternsList = getStoredPatterns();
-    let currentPatternId = patternsList[0] ? patternsList[0].id : "want";
+    let initialSortedPatterns = getSortedPatternsList();
+    let currentPatternId = initialSortedPatterns[0] ? initialSortedPatterns[0].id : (patternsList[0] ? patternsList[0].id : "want");
     let patternIdx = 0;
 
     function getCurrentPattern() {
-      return patternsList.find(p => p.id === currentPatternId) || patternsList[0] || initialPatterns[0];
+      const sorted = getSortedPatternsList();
+      return sorted.find(p => p.id === currentPatternId) || sorted[0] || initialPatterns[0];
     }
 
     function getCurrentPatternQuestion() {
@@ -5735,7 +5852,8 @@
       col.innerHTML = "";
       const hPat = document.getElementById('headerPatternCountBadge');
       if (hPat) hPat.textContent = patternsList.length;
-      patternsList.forEach(p => {
+      const displayPatterns = getSortedPatternsList();
+      displayPatterns.forEach(p => {
         const item = document.createElement('div');
         const isActive = p.id === currentPatternId;
         item.style.cssText = `background:white; border:1.5px solid var(--border); border-radius:14px; padding:12px 14px; cursor:pointer; transition:all 0.15s;`;
@@ -6719,10 +6837,15 @@
         title: pTitle,
         desc: pDesc,
         completed: 0,
+        dateAdded: Date.now(),
         questions: sentences
       };
 
       patternsList.unshift(newPat);
+      currentPatternId = newPat.id;
+      currentPatternSort = "recent";
+      const selP = document.getElementById('patternSortSelect');
+      if (selP) selP.value = "recent";
       savePatternsToStorage();
 
       // [회화패턴 ➔ 문장퍼즐 자동 연동]
@@ -7081,11 +7204,11 @@
           list = JSON.parse(JSON.stringify(defaultVocabulary));
           try { localStorage.setItem("kids_voca_list", JSON.stringify(list)); } catch(e){}
         } else {
-          // 등록된 기본 단어 누락 방지 (기존 목록에 없으면 자동 추가)
+          // 등록된 기본 단어 누락 방지 (기존 목록에 없으면 최상단에 자동 추가)
           let hasMerged = false;
           defaultVocabulary.forEach(dv => {
             if (!list.some(w => w.english && w.english.trim().toLowerCase() === dv.english.toLowerCase())) {
-              list.push(JSON.parse(JSON.stringify(dv)));
+              list.unshift(JSON.parse(JSON.stringify(dv)));
               hasMerged = true;
             }
           });
@@ -7126,7 +7249,7 @@
     }
     let vocaList = getStoredVocaList();
     let currentVocaSubTab = "learning";
-    let currentVocaSort = "wrong_desc";
+    let currentVocaSort = "recent"; // 기본값: 날짜순 (최신 등록 단어가 맨 위)
     let selectedWordIds = new Set();
 
     function getSmartReviewWords() {
@@ -7145,14 +7268,31 @@
       renderVocaList();
     }
 
-    function changeVocaSort(val) { currentVocaSort = val; renderVocaList(); }
+    function changeVocaSort(val) {
+      currentVocaSort = val;
+      const el = document.getElementById('vocaSortSelect');
+      if (el && el.value !== val) el.value = val;
+      renderVocaList();
+    }
     function toggleWordSelection(id) { if (selectedWordIds.has(id)) selectedWordIds.delete(id); else selectedWordIds.add(id); renderVocaList(); }
 
     function getDisplayedVocaList() {
       let list = vocaList.filter(item => currentVocaSubTab === 'mastered' ? item.isMastered : !item.isMastered);
-      if (currentVocaSort === "wrong_desc") return list.sort((a, b) => (b.wrongCount || 0) - (a.wrongCount || 0));
-      if (currentVocaSort === "recent") return list.reverse();
-      if (currentVocaSort === "alpha_asc") return list.sort((a, b) => a.english.localeCompare(b.english));
+      if (currentVocaSort === "recent" || currentVocaSort === "date_desc") {
+        return [...list].sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
+      }
+      if (currentVocaSort === "wrong_desc") {
+        return [...list].sort((a, b) => ((b.wrongCount || 0) - (a.wrongCount || 0)) || (getItemTimestamp(b) - getItemTimestamp(a)));
+      }
+      if (currentVocaSort === "achievement_desc") {
+        return [...list].sort((a, b) => {
+          if (a.isMastered !== b.isMastered) return a.isMastered ? -1 : 1;
+          return ((b.consecutiveCorrect || 0) - (a.consecutiveCorrect || 0)) || (getItemTimestamp(b) - getItemTimestamp(a));
+        });
+      }
+      if (currentVocaSort === "alpha_asc") {
+        return [...list].sort((a, b) => (a.english || '').localeCompare(b.english || ''));
+      }
       return list;
     }
 
@@ -7910,8 +8050,12 @@
         wrongCount: 0,
         consecutiveCorrect: 0,
         isMastered: false,
+        dateAdded: Date.now(),
         nextReviewDate: Date.now() + ONE_DAY
       });
+      currentVocaSort = "recent";
+      const selV = document.getElementById('vocaSortSelect');
+      if (selV) selV.value = "recent";
       saveVocaListToStorage();
       renderVocaList();
       closeAddVocaModal();

@@ -1036,30 +1036,14 @@
         ✨ 오늘의 1권 마스터
       </button>
 
-      <!-- [보완 2] 출석 스트릭 뱃지 -->
-      <div class="streak-badge" onclick="openStreakCalendarModal()" title="연속 공부 기록 보기">
-        <span>🔥</span>
-        <span id="streakCountText">0일 연속</span>
-      </div>
-
       <!-- [보완 1] 사운드 토글 -->
       <button class="sound-toggle-btn" id="soundToggleBtn" onclick="toggleSoundFx()" title="효과음 켜기/끄기">
         🔊
       </button>
 
-      <!-- 데이터 초기화 퀵 버튼 -->
-      <button class="nav-btn" style="flex: none; font-size: 0.8rem; font-weight: 700; padding: 6px 10px; background: #F8FAFC; border: 1.5px solid #CBD5E1; color: #64748B;" onclick="resetAllAppDataForFreshStart()" title="단어와 문장 기록을 처음 상태로 깨끗하게 초기화">
-        ↺ 초기화
-      </button>
-
       <!-- 기기 데이터 백업 & 동기화 퀵 버튼 -->
       <button class="nav-btn" style="flex: none; font-size: 0.85rem; font-weight: 800; padding: 7px 12px; background: linear-gradient(135deg, #4F46E5, #6366F1); color: white; border: none; border-radius: 10px; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);" onclick="openTabletConnectModal()" title="태블릿/PC 간 데이터 동기화 및 백업">
         📲 기기 데이터 백업/동기화
-      </button>
-
-      <!-- 최신 버전 강제 새로고침 버튼 (태블릿 캐시 즉시 비우기) -->
-      <button onclick="forceLatestVersionReload()" style="flex: none; background: #FEF3C7; color: #92400E; border: 1.5px solid #FCD34D; font-weight: 800; font-size: 0.78rem; padding: 6px 11px; border-radius: 9999px; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="태블릿에 최신 수정 내용 즉시 반영하기">
-        🔄 최신 반영
       </button>
 
       <!-- 태블릿 풀스크린 토글 버튼 (브라우저 주소창/툴바 숨기기) -->
@@ -1371,6 +1355,13 @@
               📂 파일 선택하여 복원하기
             </button>
           </div>
+        </div>
+
+        <!-- 고급 관리: 데이터 전체 초기화 (아이들의 실수 방지를 위해 모달 내부로 안전 격리) -->
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #CBD5E1; text-align: center;">
+          <button type="button" class="btn" style="font-size: 0.76rem; color: #94A3B8; background: transparent; border: none; text-decoration: underline; cursor: pointer;" onclick="resetAllAppDataForFreshStart()">
+            ⚠️ 단어 및 문장 전체 초기화 (처음 상태로 리셋)
+          </button>
         </div>
 
       </div>
@@ -7436,7 +7427,8 @@
 
     initTabletGrammar();
     renderVocaList();
-    document.getElementById('streakCountText').textContent = `${getStoredStreak()}일 연속`;
+    const streakCountEl = document.getElementById('streakCountText');
+    if (streakCountEl) streakCountEl.textContent = `${getStoredStreak()}일 연속`;
 
     // 태블릿 URL 파라미터(?sync=...) 자동 감지 및 1초 복원 실행
     checkAutoSyncFromUrl();

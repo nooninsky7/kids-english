@@ -8671,6 +8671,12 @@
             alert("🎉 [PC ➔ 태블릿 데이터 전송 완료!]\n\nPC에서 등록하셨던 모든 단어와 문장, 학습 기록이 태블릿에 안전하게 복원되었습니다!\n즐겁게 학습을 시작해보세요. 😊");
           }, 350);
         }
+
+        // 3. ?v= 캐시 갱신 파라미터 자동 정리 (주소창을 항상 깔끔한 기본 주소로 유지)
+        if (urlParams.has('v')) {
+          const cleanUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
       } catch(e) {
         console.error("Auto sync from URL failed:", e);
       }

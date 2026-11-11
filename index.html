@@ -48,21 +48,26 @@
       background-color: var(--bg);
       color: var(--text-main);
       min-height: 100vh;
+      min-height: 100dvh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 14px;
+      justify-content: flex-start;
+      padding: 6px 8px;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
       overflow-x: hidden;
+      overflow-y: auto;
     }
 
-    /* 태블릿 가로 와이드 컨테이너 */
+    /* 태블릿 가로 와이드 컨테이너 (브라우저 상단/하단 툴바에 맞춰 자연스럽게 100% 안착) */
     .app-container {
       width: 100%;
       max-width: 1060px;
-      min-height: 640px;
-      height: 92vh;
-      max-height: 790px;
+      height: 100%;
+      max-height: calc(100dvh - 12px);
+      min-height: 0;
       background: var(--card-bg);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
@@ -414,13 +419,14 @@
 
     /* ================= 3. 문장퍼즐 탭 ================= */
     .tablet-grammar-container {
-      padding: 18px 24px;
+      padding: 12px 18px;
       display: flex;
       flex-direction: column;
       flex: 1;
       justify-content: space-between;
       overflow-y: auto;
-      gap: 14px;
+      -webkit-overflow-scrolling: touch;
+      gap: 10px;
     }
 
     @keyframes pulseReadyBtn {
@@ -436,27 +442,27 @@
     .tablet-guide-banner {
       background: #F8FAFC;
       border: 1.5px solid var(--border);
-      border-radius: 18px;
-      padding: 14px 22px;
+      border-radius: 16px;
+      padding: 10px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .guide-prompt-ko { font-size: 1.55rem; font-weight: 800; color: var(--text-main); }
+    .guide-prompt-ko { font-size: 1.35rem; font-weight: 800; color: var(--text-main); }
     .guide-step-tag { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
 
     .tablet-blocks-pool {
       background: #F8FAFC;
       border: 2px dashed #CBD5E1;
-      border-radius: 20px;
-      padding: 18px 16px;
-      min-height: 84px;
+      border-radius: 16px;
+      padding: 10px 14px;
+      min-height: 64px;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       touch-action: none;
     }
 
@@ -464,15 +470,15 @@
       background: white;
       border: 2.5px solid var(--primary);
       color: var(--primary);
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       font-weight: 800;
-      padding: 12px 22px;
-      border-radius: 16px;
+      padding: 9px 18px;
+      border-radius: 14px;
       cursor: grab;
       touch-action: none;
       user-select: none;
       -webkit-user-drag: element;
-      box-shadow: 0 6px 14px rgba(59, 130, 246, 0.18);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.16);
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -496,12 +502,12 @@
     }
 
     .tablet-baskets-row {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; width: 100%;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; width: 100%;
     }
 
     .tablet-basket-card {
-      background: white; border: 2.5px dashed var(--border); border-radius: 20px; padding: 18px 14px;
-      min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center;
+      background: white; border: 2.5px dashed var(--border); border-radius: 16px; padding: 12px 10px;
+      min-height: 125px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center;
       transition: all 0.2s ease; cursor: pointer;
     }
     .tablet-basket-card.drag-over { transform: scale(1.04); border-style: solid; }
@@ -521,17 +527,17 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      gap: 5px;
+      gap: 4px;
     }
     .basket-role-tag {
-      font-size: 1.65rem;
+      font-size: 1.45rem;
       font-weight: 900;
       letter-spacing: -0.5px;
       line-height: 1.2;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       text-align: center;
     }
     .tag-subject { color: #1D4ED8; }
@@ -539,21 +545,47 @@
     .tag-object { color: #B45309; }
     .tag-adverb { color: #7E22CE; }
     .basket-role-desc {
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       color: #64748B;
       font-weight: 600;
       text-align: center;
     }
 
     .basket-drop-slot {
-      width: 100%; min-height: 54px; border-radius: 14px; border: 2px dashed #CBD5E1; display: flex;
-      align-items: center; justify-content: center; font-size: 0.95rem; color: #94A3B8; font-weight: 700; padding: 6px; margin-top: 8px;
+      width: 100%; min-height: 48px; border-radius: 12px; border: 2px dashed #CBD5E1; display: flex;
+      align-items: center; justify-content: center; font-size: 0.95rem; color: #94A3B8; font-weight: 700; padding: 5px; margin-top: 6px;
     }
     .basket-drop-slot.filled {
-      border-style: solid; border-color: #10B981; background: #ECFDF5; color: #065F46; font-size: 1.25rem; font-weight: 900;
+      border-style: solid; border-color: #10B981; background: #ECFDF5; color: #065F46; font-size: 1.2rem; font-weight: 900;
     }
 
-    .grammar-feedback-msg { font-size: 1.1rem; font-weight: 800; text-align: center; min-height: 28px; }
+    .grammar-feedback-msg { font-size: 1.05rem; font-weight: 800; text-align: center; min-height: 24px; }
+    .grammar-action-bar { padding-bottom: 6px; }
+
+    /* 태블릿 브라우저 상/하단 툴바 높이 대응 미디어 쿼리 */
+    @media (max-height: 760px) {
+      body { padding: 3px 4px; }
+      .app-tabs-header { padding: 4px 8px; gap: 4px; }
+      .app-tab-btn { padding: 7px 10px; font-size: 0.9rem; }
+      .nav-bar { padding: 6px 12px; min-height: 46px; }
+      .grammar-filter-bar { padding: 4px 8px; gap: 4px; }
+      .grammar-filter-chip { padding: 4px 8px; font-size: 0.78rem; }
+      .tablet-grammar-container { padding: 8px 12px; gap: 6px; }
+      .tablet-guide-banner { padding: 7px 12px; border-radius: 12px; }
+      .guide-prompt-ko { font-size: 1.15rem; }
+      .tablet-blocks-pool { padding: 7px 10px; min-height: 52px; gap: 8px; border-radius: 12px; }
+      .tablet-word-block { font-size: 1.1rem; padding: 6px 14px; border-radius: 10px; }
+      .tablet-baskets-row { gap: 8px; }
+      .tablet-basket-card { min-height: 110px; padding: 8px 6px; border-radius: 12px; }
+      .basket-role-tag { font-size: 1.2rem; }
+      .basket-role-desc { font-size: 0.76rem; }
+      .basket-drop-slot { min-height: 42px; font-size: 1.05rem; }
+      .grammar-feedback-msg { font-size: 0.92rem; min-height: 20px; }
+      .grammar-action-bar { margin-top: 4px; margin-bottom: 2px; padding-bottom: 2px; }
+      .grammar-action-bar .btn { padding: 9px 18px !important; font-size: 0.9rem !important; }
+      .pattern-quiz-col { padding: 12px 16px; }
+      .pattern-list-col { width: 280px; padding: 10px; gap: 6px; }
+    }
 
     /* 문장 구조(형식) 자동 배지 & 퀵 필터 칩 */
     .grammar-form-badge {
@@ -1027,6 +1059,11 @@
       <!-- 최신 버전 강제 새로고침 버튼 (태블릿 캐시 즉시 비우기) -->
       <button onclick="forceLatestVersionReload()" style="flex: none; background: #FEF3C7; color: #92400E; border: 1.5px solid #FCD34D; font-weight: 800; font-size: 0.78rem; padding: 6px 11px; border-radius: 9999px; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="태블릿에 최신 수정 내용 즉시 반영하기">
         🔄 최신 반영
+      </button>
+
+      <!-- 태블릿 풀스크린 토글 버튼 (브라우저 주소창/툴바 숨기기) -->
+      <button id="fullscreenToggleBtn" onclick="toggleAppFullscreen()" style="flex: none; background: #EEF2FF; color: #4338CA; border: 1.5px solid #C7D2FE; font-weight: 800; font-size: 0.78rem; padding: 6px 11px; border-radius: 9999px; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="태블릿 브라우저 툴바를 숨기고 전체 화면으로 보기">
+        ⛶ 전체화면
       </button>
     </div>
 
@@ -7280,6 +7317,49 @@
       url.searchParams.set('v', ts);
       window.location.href = url.toString();
     }
+
+    function toggleAppFullscreen() {
+      const doc = document;
+      const docEl = doc.documentElement;
+      const isFullscreen = doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement;
+
+      if (!isFullscreen) {
+        if (docEl.requestFullscreen) {
+          docEl.requestFullscreen().catch(e => console.log(e));
+        } else if (docEl.webkitRequestFullscreen) {
+          docEl.webkitRequestFullscreen();
+        } else if (docEl.mozRequestFullScreen) {
+          docEl.mozRequestFullScreen();
+        } else if (docEl.msRequestFullscreen) {
+          docEl.msRequestFullscreen();
+        }
+      } else {
+        if (doc.exitFullscreen) {
+          doc.exitFullscreen().catch(e => console.log(e));
+        } else if (doc.webkitExitFullscreen) {
+          doc.webkitExitFullscreen();
+        } else if (doc.mozCancelFullScreen) {
+          doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+          doc.msExitFullscreen();
+        }
+      }
+    }
+
+    function updateFullscreenBtnText() {
+      const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+      const btn = document.getElementById('fullscreenToggleBtn');
+      if (btn) {
+        btn.innerHTML = isFullscreen ? '⛶ 축소' : '⛶ 전체화면';
+        btn.style.background = isFullscreen ? '#FEE2E2' : '#EEF2FF';
+        btn.style.color = isFullscreen ? '#B91C1C' : '#4338CA';
+        btn.style.borderColor = isFullscreen ? '#FCA5A5' : '#C7D2FE';
+      }
+    }
+    document.addEventListener('fullscreenchange', updateFullscreenBtnText);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenBtnText);
+    document.addEventListener('mozfullscreenchange', updateFullscreenBtnText);
+    document.addEventListener('MSFullscreenChange', updateFullscreenBtnText);
 
     // =========================================================================
     // [실제 학습 시작을 위한 테스트 데이터 완전 리셋]

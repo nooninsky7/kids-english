@@ -91,80 +91,110 @@
       display: flex;
       background: #E2E8F0;
       padding: 8px 14px;
-      gap: 8px;
-      border-bottom: 1.5px solid var(--border);
+      gap: 10px;
+      border-bottom: 2px solid #CBD5E1;
       align-items: center;
     }
 
+    /* 핵심 3대 학습 탭 (또렷한 가장자리 음영과 입체감) */
     .app-tab-btn {
       flex: 1;
-      padding: 11px 14px;
-      border-radius: 14px;
-      border: none;
-      background: rgba(255, 255, 255, 0.6);
-      font-size: 1rem;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 2px solid #CBD5E1;
+      background: #FFFFFF;
+      font-size: 1.02rem;
       font-weight: 800;
-      color: var(--text-muted);
+      color: #334155;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
       white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .app-tab-btn:hover {
+      border-color: #94A3B8;
+      color: #0F172A;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
     }
 
     .app-tab-btn.active {
-      background: white;
+      background: #FFFFFF;
       color: var(--primary);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 2.5px solid var(--primary);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.18), inset 0 -3px 0 var(--primary);
+      font-weight: 900;
+      transform: translateY(-1px);
     }
 
-    /* 출석 스트릭 뱃지 (보완 2) */
-    .streak-badge {
-      display: flex;
+    /* 상단 유틸리티/보조 버튼 공통 (강조색을 뺀 차분하고 깔끔한 스타일) */
+    .header-util-btn {
+      flex: none;
+      background: #F8FAFC;
+      color: #475569;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 10px;
+      padding: 7px 11px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
       gap: 5px;
-      font-size: 0.88rem;
-      font-weight: 800;
-      color: #EA580C;
-      background: #FFEDD5;
-      padding: 7px 12px;
-      border-radius: 12px;
-      border: 1px solid #FED7AA;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: transform 0.15s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: all 0.15s ease;
     }
-    .streak-badge:hover { transform: scale(1.04); }
+    .header-util-btn:hover {
+      background: #F1F5F9;
+      border-color: #94A3B8;
+      color: #0F172A;
+    }
 
-    /* 효과음 사운드 토글 버튼 (보완 1) */
+    /* 효과음 사운드 토글 버튼 */
     .sound-toggle-btn {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 7px 10px;
-      font-size: 1rem;
+      background: #F8FAFC;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 0.95rem;
       cursor: pointer;
-      color: var(--text-muted);
+      color: #475569;
       flex-shrink: 0;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: all 0.15s ease;
+    }
+    .sound-toggle-btn:hover {
+      background: #F1F5F9;
+      border-color: #94A3B8;
+      color: #0F172A;
     }
 
-    /* 원스톱 코스 뱃지 버튼 (보완 3) */
+    /* 원스톱 코스 버튼 (강조색 뺀 차분한 보조 버튼) */
     .onestop-course-btn {
-      background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 8px 14px;
-      font-size: 0.86rem;
-      font-weight: 800;
+      background: #F8FAFC;
+      color: #475569;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 10px;
+      padding: 7px 11px;
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 5px;
       flex-shrink: 0;
-      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: all 0.15s ease;
+    }
+    .onestop-course-btn:hover {
+      background: #F1F5F9;
+      border-color: #94A3B8;
+      color: #0F172A;
     }
 
     /* 뷰 화면 공통 */
@@ -565,8 +595,10 @@
     /* 태블릿 브라우저 상/하단 툴바 높이 대응 미디어 쿼리 */
     @media (max-height: 760px) {
       body { padding: 3px 4px; }
-      .app-tabs-header { padding: 4px 8px; gap: 4px; }
-      .app-tab-btn { padding: 7px 10px; font-size: 0.9rem; }
+      .app-tabs-header { padding: 5px 8px; gap: 6px; }
+      .app-tab-btn { padding: 7px 11px; font-size: 0.92rem; border-radius: 10px; }
+      .onestop-course-btn, .header-util-btn { padding: 6px 9px; font-size: 0.78rem; border-radius: 8px; }
+      .sound-toggle-btn { padding: 5px 8px; font-size: 0.88rem; border-radius: 8px; }
       .nav-bar { padding: 6px 12px; min-height: 46px; }
       .grammar-filter-bar { padding: 4px 8px; gap: 4px; }
       .grammar-filter-chip { padding: 4px 8px; font-size: 0.78rem; }
@@ -1041,13 +1073,13 @@
         🔊
       </button>
 
-      <!-- 기기 데이터 백업 & 동기화 퀵 버튼 -->
-      <button class="nav-btn" style="flex: none; font-size: 0.85rem; font-weight: 800; padding: 7px 12px; background: linear-gradient(135deg, #4F46E5, #6366F1); color: white; border: none; border-radius: 10px; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);" onclick="openTabletConnectModal()" title="태블릿/PC 간 데이터 동기화 및 백업">
-        📲 기기 데이터 백업/동기화
+      <!-- 기기 데이터 백업 & 동기화 퀵 버튼 (강조색 뺀 차분한 보조 버튼) -->
+      <button class="header-util-btn" onclick="openTabletConnectModal()" title="태블릿/PC 간 데이터 동기화 및 백업">
+        📲 백업/동기화
       </button>
 
       <!-- 태블릿 풀스크린 토글 버튼 (브라우저 주소창/툴바 숨기기) -->
-      <button id="fullscreenToggleBtn" onclick="toggleAppFullscreen()" style="flex: none; background: #EEF2FF; color: #4338CA; border: 1.5px solid #C7D2FE; font-weight: 800; font-size: 0.78rem; padding: 6px 11px; border-radius: 9999px; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="태블릿 브라우저 툴바를 숨기고 전체 화면으로 보기">
+      <button id="fullscreenToggleBtn" class="header-util-btn" onclick="toggleAppFullscreen()" title="태블릿 브라우저 툴바를 숨기고 전체 화면으로 보기">
         ⛶ 전체화면
       </button>
     </div>

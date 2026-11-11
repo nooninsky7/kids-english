@@ -455,45 +455,45 @@
     .tablet-blocks-pool {
       background: #F8FAFC;
       border: 2px dashed #CBD5E1;
-      border-radius: 16px;
-      padding: 10px 14px;
-      min-height: 64px;
+      border-radius: 18px;
+      padding: 14px 18px;
+      min-height: 82px;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
       touch-action: none;
     }
 
     .tablet-word-block {
       background: white;
-      border: 2.5px solid var(--primary);
+      border: 3px solid var(--primary);
       color: var(--primary);
-      font-size: 1.25rem;
-      font-weight: 800;
-      padding: 9px 18px;
-      border-radius: 14px;
+      font-size: 1.55rem;
+      font-weight: 900;
+      padding: 14px 26px;
+      border-radius: 16px;
       cursor: grab;
       touch-action: none;
       user-select: none;
       -webkit-user-drag: element;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.16);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
       display: inline-flex;
       align-items: center;
       gap: 8px;
       transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
     }
     .tablet-word-block:active, .tablet-word-block.dragging {
-      cursor: grabbing; transform: scale(1.08); box-shadow: 0 12px 24px rgba(59, 130, 246, 0.3); z-index: 1000;
-      opacity: 0.85;
+      cursor: grabbing; transform: scale(1.1); box-shadow: 0 14px 28px rgba(59, 130, 246, 0.35); z-index: 1000;
+      opacity: 0.9;
     }
     .tablet-word-block.selected-block {
-      outline: 3.5px solid var(--primary);
+      outline: 4px solid var(--primary);
       border-color: #1D4ED8;
       background: #EFF6FF;
-      transform: translateY(-4px) scale(1.05);
-      box-shadow: 0 10px 22px rgba(59, 130, 246, 0.35);
+      transform: translateY(-4px) scale(1.08);
+      box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
     }
 
     .touch-drag-ghost {
@@ -502,12 +502,12 @@
     }
 
     .tablet-baskets-row {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; width: 100%;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; width: 100%;
     }
 
     .tablet-basket-card {
-      background: white; border: 2.5px dashed var(--border); border-radius: 16px; padding: 12px 10px;
-      min-height: 125px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center;
+      background: white; border: 2.5px dashed var(--border); border-radius: 18px; padding: 14px 12px;
+      min-height: 145px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center;
       transition: all 0.2s ease; cursor: pointer;
     }
     .tablet-basket-card.drag-over { transform: scale(1.04); border-style: solid; }
@@ -552,11 +552,11 @@
     }
 
     .basket-drop-slot {
-      width: 100%; min-height: 48px; border-radius: 12px; border: 2px dashed #CBD5E1; display: flex;
-      align-items: center; justify-content: center; font-size: 0.95rem; color: #94A3B8; font-weight: 700; padding: 5px; margin-top: 6px;
+      width: 100%; min-height: 56px; border-radius: 14px; border: 2px dashed #CBD5E1; display: flex;
+      align-items: center; justify-content: center; font-size: 1.05rem; color: #94A3B8; font-weight: 700; padding: 6px; margin-top: 6px;
     }
     .basket-drop-slot.filled {
-      border-style: solid; border-color: #10B981; background: #ECFDF5; color: #065F46; font-size: 1.2rem; font-weight: 900;
+      border-style: solid; border-color: #10B981; background: #ECFDF5; color: #065F46; font-size: 1.45rem; font-weight: 900; padding: 8px 12px;
     }
 
     .grammar-feedback-msg { font-size: 1.05rem; font-weight: 800; text-align: center; min-height: 24px; }
@@ -572,14 +572,15 @@
       .grammar-filter-chip { padding: 4px 8px; font-size: 0.78rem; }
       .tablet-grammar-container { padding: 8px 12px; gap: 6px; }
       .tablet-guide-banner { padding: 7px 12px; border-radius: 12px; }
-      .guide-prompt-ko { font-size: 1.15rem; }
-      .tablet-blocks-pool { padding: 7px 10px; min-height: 52px; gap: 8px; border-radius: 12px; }
-      .tablet-word-block { font-size: 1.1rem; padding: 6px 14px; border-radius: 10px; }
-      .tablet-baskets-row { gap: 8px; }
-      .tablet-basket-card { min-height: 110px; padding: 8px 6px; border-radius: 12px; }
-      .basket-role-tag { font-size: 1.2rem; }
-      .basket-role-desc { font-size: 0.76rem; }
-      .basket-drop-slot { min-height: 42px; font-size: 1.05rem; }
+      .guide-prompt-ko { font-size: 1.25rem; }
+      .tablet-blocks-pool { padding: 12px 16px; min-height: 74px; gap: 12px; border-radius: 14px; }
+      .tablet-word-block { font-size: 1.45rem; padding: 12px 22px; border-radius: 14px; font-weight: 900; }
+      .tablet-baskets-row { gap: 10px; }
+      .tablet-basket-card { min-height: 135px; padding: 10px 8px; border-radius: 14px; }
+      .basket-role-tag { font-size: 1.3rem; }
+      .basket-role-desc { font-size: 0.82rem; }
+      .basket-drop-slot { min-height: 50px; font-size: 1.05rem; }
+      .basket-drop-slot.filled { font-size: 1.35rem; padding: 8px 12px; }
       .grammar-feedback-msg { font-size: 0.92rem; min-height: 20px; }
       .grammar-action-bar { margin-top: 4px; margin-bottom: 2px; padding-bottom: 2px; }
       .grammar-action-bar .btn { padding: 9px 18px !important; font-size: 0.9rem !important; }
@@ -1113,18 +1114,13 @@
           </div>
         </div>
 
-        <!-- 2. 단어 블록 보관소 -->
-        <div>
-          <div style="font-size: 0.86rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-align: center;">
-            👇 단어 블록을 마우스나 손가락으로 끌거나 클릭해서 알맞은 바구니에 쏙 넣어보세요!
-          </div>
-          <div class="tablet-blocks-pool" id="wordBlocksPool"></div>
-        </div>
+        <!-- 2. 단어 블록 보관소 (크고 시원한 단어 블록) -->
+        <div class="tablet-blocks-pool" id="wordBlocksPool"></div>
 
         <!-- 3. 품사 바구니 기차 (문장 구조에 맞춰 동적 렌더링) -->
         <div class="tablet-baskets-row" id="grammarBasketsArea"></div>
 
-        <div class="grammar-feedback-msg" id="grammarFeedbackBox">단어 블록을 끌거나 클릭해서 알맞은 바구니에 넣어보세요!</div>
+        <div class="grammar-feedback-msg" id="grammarFeedbackBox" style="display: none;"></div>
 
         <!-- 4. 문제 풀이 하단 액션 바 (아이 손이 바로 닿는 접근성 최적화 위치) -->
         <div class="grammar-action-bar" style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 10px; margin-bottom: 6px; flex-shrink: 0;">
@@ -3636,6 +3632,7 @@
       if (el) el.classList.add('selected-block');
       const feedback = document.getElementById('grammarFeedbackBox');
       if (feedback) {
+        feedback.style.display = "block";
         feedback.innerHTML = `선택된 단어: <strong>"${block.text}"</strong> 👉 들어갈 바구니를 클릭하거나 끌어다 놓으세요!`;
         feedback.style.color = "var(--primary)";
       }
@@ -3644,6 +3641,11 @@
     function clearSelectedBlock() {
       selectedGrammarBlock = null;
       document.querySelectorAll('.tablet-word-block').forEach(b => b.classList.remove('selected-block'));
+      const feedback = document.getElementById('grammarFeedbackBox');
+      if (feedback && feedback.innerHTML.includes("선택된 단어")) {
+        feedback.innerHTML = "";
+        feedback.style.display = "none";
+      }
     }
 
     function loadTabletGrammarQuestion() {
@@ -3683,8 +3685,8 @@
 
       const feedback = document.getElementById('grammarFeedbackBox');
       if (feedback) {
-        feedback.textContent = `단어 블록을 끌거나 클릭해서 알맞은 바구니에 넣어보세요! (${subLabel})`;
-        feedback.style.color = "var(--text-muted)";
+        feedback.textContent = "";
+        feedback.style.display = "none";
       }
 
       const nextBtn = document.getElementById('grammarNextBtn');
@@ -3834,15 +3836,21 @@
           slot.textContent = block.text;
           slot.className = "basket-drop-slot filled";
         }
-        feedback.innerHTML = `👏 정답! <strong>"${block.text}"</strong>은(는) <strong>${getRoleName(normTargetRole)}</strong> 바구니가 맞아요!`;
-        feedback.style.color = "var(--success)";
+        if (feedback) {
+          feedback.style.display = "block";
+          feedback.innerHTML = `👏 정답! <strong>"${block.text}"</strong>은(는) <strong>${getRoleName(normTargetRole)}</strong> 바구니가 맞아요!`;
+          feedback.style.color = "var(--success)";
+        }
 
         clearSelectedBlock();
         checkGrammarComplete();
       } else {
         playWrongSound();
-        feedback.innerHTML = `💡 아쉬워요! <strong>"${block.text}"</strong>은(는) <strong>${getRoleName(normTargetRole)}</strong> 자리가 아니에요. 다시 놓아보세요!`;
-        feedback.style.color = "var(--danger)";
+        if (feedback) {
+          feedback.style.display = "block";
+          feedback.innerHTML = `💡 아쉬워요! <strong>"${block.text}"</strong>은(는) <strong>${getRoleName(normTargetRole)}</strong> 자리가 아니에요. 다시 놓아보세요!`;
+          feedback.style.color = "var(--danger)";
+        }
       }
     }
 
@@ -3879,6 +3887,7 @@
           playSuccessSound();
           triggerConfetti(); // 화면 전환 없는 기분 좋은 축하 폭죽
           if (feedback) {
+            feedback.style.display = "block";
             feedback.innerHTML = `
               <div style="font-size: 1.05rem; font-weight: 800; color: #059669;">👏 <strong>1번 기본 문장 정답!</strong> 멋져요! (1/2 완료)</div>
               ${completedSentenceCardHtml}
@@ -3907,6 +3916,7 @@
           playFanfareSound();
 
           if (feedback) {
+            feedback.style.display = "block";
             feedback.innerHTML = `
               <div style="font-size: 1.1rem; font-weight: 800; color: #059669;">🎉 <strong>축하합니다! 2문제를 모두 풀어 1세트를 마스터했어요! (2/2 완료 🏆)</strong></div>
               ${completedSentenceCardHtml}

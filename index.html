@@ -1085,8 +1085,9 @@
       </button>
 
       <!-- 기기 데이터 백업 & 동기화 퀵 버튼 (강조색 뺀 차분한 보조 버튼) -->
-      <button class="header-util-btn" onclick="openTabletConnectModal()" title="태블릿/PC 간 데이터 동기화 및 백업">
-        📲 백업/동기화
+      <button class="header-util-btn" id="headerCloudSyncBtn" onclick="openTabletConnectModal()" title="태블릿/PC/핸드폰 간 실시간 자동 동기화 & 백업">
+        <span id="headerCloudIcon">📲</span> 백업/동기화
+        <span id="headerCloudSyncDot" style="display: none; width: 8px; height: 8px; border-radius: 50%; background: #10B981; margin-left: 2px;" title="실시간 클라우드 자동 동기화 연결됨"></span>
       </button>
 
       <!-- 태블릿 풀스크린 토글 버튼 (브라우저 주소창/툴바 숨기기) -->
@@ -1312,21 +1313,102 @@
           <div id="syncDataSummaryText">동기화 데이터 준비 중...</div>
         </div>
 
-        <!-- 3-탭 스위처 -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 14px; background: #F1F5F9; padding: 4px; border-radius: 10px;">
-          <button id="syncTabBtn_qr" class="btn" style="font-size: 0.82rem; font-weight: 800; padding: 8px 4px; border-radius: 8px; background: white; color: #4F46E5; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" onclick="switchSyncModalTab('qr')">
-            📸 1초 QR 스캔
+        <!-- 4-탭 스위처 -->
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr; gap: 5px; margin-bottom: 14px; background: #F1F5F9; padding: 4px; border-radius: 10px;">
+          <button id="syncTabBtn_cloud" class="btn" style="font-size: 0.8rem; font-weight: 800; padding: 8px 4px; border-radius: 8px; background: white; color: #4F46E5; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" onclick="switchSyncModalTab('cloud')">
+            ☁️ 실시간 클라우드
           </button>
-          <button id="syncTabBtn_code" class="btn" style="font-size: 0.82rem; font-weight: 700; padding: 8px 4px; border-radius: 8px; background: transparent; color: #64748B;" onclick="switchSyncModalTab('code')">
-            📋 코드 복사/복원
+          <button id="syncTabBtn_qr" class="btn" style="font-size: 0.8rem; font-weight: 700; padding: 8px 4px; border-radius: 8px; background: transparent; color: #64748B;" onclick="switchSyncModalTab('qr')">
+            📸 1초 QR
           </button>
-          <button id="syncTabBtn_file" class="btn" style="font-size: 0.82rem; font-weight: 700; padding: 8px 4px; border-radius: 8px; background: transparent; color: #64748B;" onclick="switchSyncModalTab('file')">
+          <button id="syncTabBtn_code" class="btn" style="font-size: 0.8rem; font-weight: 700; padding: 8px 4px; border-radius: 8px; background: transparent; color: #64748B;" onclick="switchSyncModalTab('code')">
+            📋 텍스트 복사
+          </button>
+          <button id="syncTabBtn_file" class="btn" style="font-size: 0.8rem; font-weight: 700; padding: 8px 4px; border-radius: 8px; background: transparent; color: #64748B;" onclick="switchSyncModalTab('file')">
             💾 백업 파일
           </button>
         </div>
 
+        <!-- TAB 0: ☁️ 실시간 클라우드 자동 동기화 (나만의 비밀 키) -->
+        <div id="syncTabContent_cloud" style="display: block;">
+          <div style="background: linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%); border: 2px solid #C7D2FE; border-radius: 16px; padding: 16px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div style="font-size: 0.98rem; font-weight: 800; color: #312E81; display: flex; align-items: center; gap: 6px;">
+                <span>☁️</span> 기기간 실시간 자동 동기화
+              </div>
+              <span id="cloudSyncStatusBadge" style="font-size: 0.76rem; font-weight: 800; padding: 4px 10px; border-radius: 9999px; background: #E2E8F0; color: #475569;">
+                미연결
+              </span>
+            </div>
+            <p style="font-size: 0.82rem; color: #4338CA; line-height: 1.5; margin-bottom: 12px;">
+              핸드폰과 태블릿에 <strong>동일한 비밀 동기화 키</strong>를 등록해두면, 단어를 추가하거나 퍼즐을 풀 때마다 <strong>양쪽 기기가 백그라운드에서 자동으로 실시간 일치</strong>됩니다! (파일 전송 불필요 ✨)
+            </p>
+
+            <!-- 미연결 상태일 때 -->
+            <div id="cloudSyncUnconnectedArea" style="display: block;">
+              <button class="btn" onclick="syncCreateCloudKey()" style="width: 100%; padding: 11px; background: #4F46E5; color: white; font-weight: 800; font-size: 0.88rem; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);">
+                🔑 새 비밀 동기화 키 발급받기 (첫 기기)
+              </button>
+
+              <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0;">
+                <div style="height: 1px; background: #C7D2FE; flex: 1;"></div>
+                <span style="font-size: 0.76rem; font-weight: 700; color: #6366F1;">또는 다른 기기에 연결</span>
+                <div style="height: 1px; background: #C7D2FE; flex: 1;"></div>
+              </div>
+
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="inputCloudSyncKey" placeholder="기존에 발급받은 비밀 키 입력..." style="flex: 1; padding: 9px 12px; font-size: 0.82rem; font-family: monospace; border: 1.5px solid #CBD5E1; border-radius: 10px;">
+                <button class="btn" onclick="syncConnectCloudKeyFromInput()" style="flex: none; padding: 9px 16px; background: #1E293B; color: white; font-weight: 800; font-size: 0.82rem; border-radius: 10px;">
+                  🔗 연결하기
+                </button>
+              </div>
+            </div>
+
+            <!-- 연결됨 상태일 때 -->
+            <div id="cloudSyncConnectedArea" style="display: none;">
+              <div style="background: white; border: 1.5px solid #E0E7FF; border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 0.78rem; font-weight: 700; color: #64748B;">나만의 비밀 동기화 키:</span>
+                  <button class="small-btn" onclick="copyCloudSyncKey()" style="font-size: 0.75rem; padding: 3px 8px; background: #EEF2FF; color: #4F46E5; border-color: #C7D2FE; font-weight: 700;">
+                    📋 키 복사
+                  </button>
+                </div>
+                <div id="displayCloudSyncKey" style="font-family: monospace; font-size: 0.85rem; font-weight: 800; color: #1E293B; word-break: break-all; background: #F8FAFC; padding: 6px 10px; border-radius: 8px;">
+                  -
+                </div>
+                <div style="font-size: 0.75rem; color: #64748B; margin-top: 6px;">
+                  마지막 자동 동기화: <strong id="cloudSyncLastTimeText" style="color: #059669;">방금 전</strong>
+                </div>
+              </div>
+
+              <!-- 태블릿 빠른 연결 QR 코드 -->
+              <div style="background: white; border: 1.5px solid #E0E7FF; border-radius: 12px; padding: 12px; text-align: center; margin-bottom: 12px;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #4338CA; margin-bottom: 6px;">
+                  📱 태블릿 카메라로 QR을 비추면 키 입력 없이 즉시 연결됩니다:
+                </div>
+                <img id="cloudSyncQrImg" src="" alt="클라우드 키 연결 QR" width="150" height="150" style="display: block; margin: 0 auto; border-radius: 8px; border: 1px solid #E2E8F0;">
+              </div>
+
+              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <button class="btn" onclick="syncPushToCloud(false)" style="flex: 1; padding: 9px; font-size: 0.82rem; font-weight: 700; background: #4F46E5; color: white; border-radius: 10px;">
+                  ☁️ 지금 클라우드로 올리기
+                </button>
+                <button class="btn" onclick="syncPullFromCloud(false)" style="flex: 1; padding: 9px; font-size: 0.82rem; font-weight: 700; background: #059669; color: white; border-radius: 10px;">
+                  📥 지금 클라우드에서 받기
+                </button>
+              </div>
+
+              <div style="text-align: right; margin-top: 4px;">
+                <button type="button" onclick="disconnectCloudSync()" style="font-size: 0.75rem; color: #94A3B8; background: none; border: none; text-decoration: underline; cursor: pointer;">
+                  동기화 연결 해제
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- TAB 1: 📸 카메라 QR 스캔 -->
-        <div id="syncTabContent_qr" style="display: block; text-align: center;">
+        <div id="syncTabContent_qr" style="display: none; text-align: center;">
           <div style="background: white; border: 2px solid #E2E8F0; border-radius: 16px; padding: 12px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 12px;">
             <img id="tabletQrCodeImg" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://nooninsky7.github.io/kids-english/" alt="스마트 동기화 QR코드" width="220" height="220" style="display: block; margin: 0 auto; border-radius: 8px;">
             <div id="syncQrTooLargeWarning" style="display: none; color: #DC2626; font-size: 0.85rem; padding: 20px;">
@@ -3489,6 +3571,7 @@
       try {
         localStorage.setItem("kids_grammar_sets_v2", JSON.stringify(grammarSets));
       } catch(e) {}
+      if (typeof scheduleCloudPush === 'function') scheduleCloudPush();
     }
 
     let grammarSets = getStoredGrammarSets();
@@ -4963,6 +5046,7 @@
       try {
         localStorage.setItem("kids_patterns_list", JSON.stringify(patternsList));
       } catch(e) {}
+      if (typeof scheduleCloudPush === 'function') scheduleCloudPush();
     }
 
     let patternsList = getStoredPatterns();
@@ -6153,6 +6237,7 @@
       try {
         localStorage.setItem("kids_voca_list", JSON.stringify(vocaList));
       } catch(e) {}
+      if (typeof scheduleCloudPush === 'function') scheduleCloudPush();
     }
     let vocaList = getStoredVocaList();
     let currentVocaSubTab = "learning";
@@ -7071,8 +7156,376 @@
       }).join(''));
     }
 
+    // ====================================================================
+    // ☁️ 기기간 실시간 자동 클라우드 동기화 (Cloud Sync - 비밀 동기화 키)
+    // ====================================================================
+    const CLOUD_SYNC_KEY_STORAGE = 'kids_english_cloud_sync_key';
+    const CLOUD_SYNC_LAST_TIME_STORAGE = 'kids_english_cloud_sync_last_time';
+    const CLOUD_SYNC_API_BASE = 'https://api.restful-api.dev/objects';
+    let isCloudSyncInProgress = false;
+    let cloudPushDebounceTimer = null;
+
+    function getCloudSyncKey() {
+      return (localStorage.getItem(CLOUD_SYNC_KEY_STORAGE) || '').trim();
+    }
+
+    function setCloudSyncKey(key) {
+      if (key) {
+        localStorage.setItem(CLOUD_SYNC_KEY_STORAGE, key.trim());
+      } else {
+        localStorage.removeItem(CLOUD_SYNC_KEY_STORAGE);
+      }
+      updateCloudSyncUI();
+    }
+
+    function getCloudSyncLastTime() {
+      return localStorage.getItem(CLOUD_SYNC_LAST_TIME_STORAGE) || '';
+    }
+
+    function setCloudSyncLastTime() {
+      const now = new Date();
+      const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+      localStorage.setItem(CLOUD_SYNC_LAST_TIME_STORAGE, timeStr);
+      return timeStr;
+    }
+
+    function updateCloudSyncUI() {
+      const key = getCloudSyncKey();
+      const statusBadge = document.getElementById('cloudSyncStatusBadge');
+      const unconnSec = document.getElementById('cloudSyncUnconnectedArea');
+      const connSec = document.getElementById('cloudSyncConnectedArea');
+      const displayKey = document.getElementById('displayCloudSyncKey');
+      const lastTimeText = document.getElementById('cloudSyncLastTimeText');
+      const headerDot = document.getElementById('headerCloudSyncDot');
+      const headerIcon = document.getElementById('headerCloudIcon');
+      const qrImg = document.getElementById('cloudSyncQrImg');
+
+      if (key) {
+        if (statusBadge) {
+          statusBadge.style.background = '#ECFDF5';
+          statusBadge.style.color = '#059669';
+          statusBadge.innerHTML = '🟢 실시간 연결됨';
+        }
+        if (unconnSec) unconnSec.style.display = 'none';
+        if (connSec) connSec.style.display = 'block';
+        if (displayKey) displayKey.textContent = key;
+        if (lastTimeText) lastTimeText.textContent = getCloudSyncLastTime() || '방금 전';
+        if (headerDot) headerDot.style.display = 'inline-block';
+        if (headerIcon) headerIcon.textContent = '☁️';
+        if (qrImg) {
+          const syncUrl = `https://nooninsky7.github.io/kids-english/?syncKey=${encodeURIComponent(key)}`;
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(syncUrl)}`;
+        }
+      } else {
+        if (statusBadge) {
+          statusBadge.style.background = '#E2E8F0';
+          statusBadge.style.color = '#475569';
+          statusBadge.textContent = '미연결';
+        }
+        if (unconnSec) unconnSec.style.display = 'block';
+        if (connSec) connSec.style.display = 'none';
+        if (headerDot) headerDot.style.display = 'none';
+        if (headerIcon) headerIcon.textContent = '📲';
+      }
+    }
+
+    async function syncCreateCloudKey() {
+      try {
+        isCloudSyncInProgress = true;
+        const payload = {
+          name: 'kids_english_sync',
+          data: getAppExportPayload(false)
+        };
+
+        const res = await fetch(CLOUD_SYNC_API_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(`서버 응답 오류 (${res.status})`);
+        const result = await res.json();
+        const newKey = result.id;
+        if (!newKey) throw new Error('동기화 키 생성에 실패했습니다.');
+
+        setCloudSyncKey(newKey);
+        setCloudSyncLastTime();
+        updateCloudSyncUI();
+        playSuccessSound();
+        alert(`🎉 나만의 비밀 동기화 키가 발급되었습니다!\n\n비밀 키: ${newKey}\n\n👉 다른 태블릿이나 핸드폰의 [📲 백업/동기화] 창에서 위 키를 입력(또는 QR 스캔)하시면 두 기기가 자동으로 실시간 동기화됩니다.`);
+      } catch (err) {
+        console.error('syncCreateCloudKey error:', err);
+        alert('동기화 키 발급 중 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.\n' + err.message);
+      } finally {
+        isCloudSyncInProgress = false;
+      }
+    }
+
+    async function syncConnectCloudKey(keyToConnect) {
+      const trimmed = (keyToConnect || '').trim();
+      if (!trimmed) {
+        alert('비밀 동기화 키를 입력해 주세요.');
+        return;
+      }
+
+      try {
+        isCloudSyncInProgress = true;
+        const res = await fetch(`${CLOUD_SYNC_API_BASE}/${encodeURIComponent(trimmed)}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            alert('입력하신 키를 클라우드에서 찾을 수 없습니다. 키를 다시 한번 확인해 주세요.');
+            return;
+          }
+          throw new Error(`서버 응답 오류 (${res.status})`);
+        }
+
+        const result = await res.json();
+        if (!result || !result.data) {
+          alert('동기화 슬롯 데이터를 읽을 수 없습니다.');
+          return;
+        }
+
+        setCloudSyncKey(trimmed);
+
+        // 클라우드 데이터와 로컬 데이터 상호 병합
+        smartMergeCloudPayload(result.data);
+
+        // 로컬에만 있던 데이터도 클라우드로 올려 양방향 완전 일치
+        await syncPushToCloud(true);
+
+        setCloudSyncLastTime();
+        updateCloudSyncUI();
+        playSuccessSound();
+        alert('🎉 기기 연결 완료!\n\n이제 단어를 추가하거나 퀴즈를 풀면 모든 기기에서 실시간으로 자동 일치됩니다. 파일 전송이 더 이상 필요 없습니다! 😊');
+      } catch (err) {
+        console.error('syncConnectCloudKey error:', err);
+        alert('동기화 연결 중 오류가 발생했습니다.\n' + err.message);
+      } finally {
+        isCloudSyncInProgress = false;
+      }
+    }
+
+    function syncConnectCloudKeyFromInput() {
+      const inp = document.getElementById('inputCloudSyncKey');
+      if (inp) syncConnectCloudKey(inp.value);
+    }
+
+    function copyCloudSyncKey() {
+      const key = getCloudSyncKey();
+      if (!key) return;
+      navigator.clipboard.writeText(key).then(() => {
+        alert('📋 비밀 동기화 키가 클립보드에 복사되었습니다!\n다른 기기(핸드폰/태블릿)에 붙여넣기 하세요.');
+      }).catch(() => {
+        prompt('아래 비밀 키를 복사하세요:', key);
+      });
+    }
+
+    async function syncPushToCloud(silent = false) {
+      const key = getCloudSyncKey();
+      if (!key || isCloudSyncInProgress) return;
+
+      try {
+        isCloudSyncInProgress = true;
+        const payload = {
+          name: 'kids_english_sync',
+          data: getAppExportPayload(false)
+        };
+
+        const res = await fetch(`${CLOUD_SYNC_API_BASE}/${encodeURIComponent(key)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(`서버 응답 오류 (${res.status})`);
+
+        setCloudSyncLastTime();
+        updateCloudSyncUI();
+
+        if (!silent) {
+          playSuccessSound();
+          alert('☁️ 현재 기기의 최신 데이터가 클라우드로 안전하게 업로드되었습니다!');
+        }
+      } catch (err) {
+        console.error('syncPushToCloud error:', err);
+        if (!silent) {
+          alert('클라우드 업로드 실패: 인터넷 연결을 확인해 주세요.\n' + err.message);
+        }
+      } finally {
+        isCloudSyncInProgress = false;
+      }
+    }
+
+    async function syncPullFromCloud(silent = true) {
+      const key = getCloudSyncKey();
+      if (!key || isCloudSyncInProgress) return;
+
+      try {
+        isCloudSyncInProgress = true;
+        const res = await fetch(`${CLOUD_SYNC_API_BASE}/${encodeURIComponent(key)}`);
+        if (!res.ok) {
+          if (res.status === 404) return;
+          throw new Error(`서버 응답 오류 (${res.status})`);
+        }
+
+        const result = await res.json();
+        if (!result || !result.data) return;
+
+        smartMergeCloudPayload(result.data);
+        setCloudSyncLastTime();
+        updateCloudSyncUI();
+
+        if (!silent) {
+          playSuccessSound();
+          alert('☁️ 클라우드로부터 최신 데이터를 성공적으로 내려받았습니다!');
+        }
+      } catch (err) {
+        console.error('syncPullFromCloud error:', err);
+        if (!silent) {
+          alert('클라우드 동기화 실패: 인터넷 연결을 확인해 주세요.\n' + err.message);
+        }
+      } finally {
+        isCloudSyncInProgress = false;
+      }
+    }
+
+    function scheduleCloudPush() {
+      if (!getCloudSyncKey()) return;
+      if (cloudPushDebounceTimer) clearTimeout(cloudPushDebounceTimer);
+      cloudPushDebounceTimer = setTimeout(() => {
+        syncPushToCloud(true);
+      }, 1500);
+    }
+
+    function disconnectCloudSync() {
+      if (!confirm('동기화 연결을 해제하시겠습니까?\n\n(※ 해제해도 기기에 저장된 단어와 문장은 안전하게 유지됩니다)')) return;
+      setCloudSyncKey('');
+      localStorage.removeItem(CLOUD_SYNC_LAST_TIME_STORAGE);
+      updateCloudSyncUI();
+      alert('동기화 연결이 해제되었습니다.');
+    }
+
+    function smartMergeCloudPayload(remoteData) {
+      if (!remoteData || typeof remoteData !== 'object') return false;
+      let hasChanges = false;
+
+      // 1. Voca list merge
+      const remoteVoca = remoteData.voca || remoteData.v;
+      if (Array.isArray(remoteVoca) && remoteVoca.length > 0) {
+        const localMap = new Map();
+        vocaList.forEach(w => {
+          const key = (w.english || '').trim().toLowerCase();
+          if (key) localMap.set(key, w);
+        });
+
+        remoteVoca.forEach(rw => {
+          const key = (rw.english || '').trim().toLowerCase();
+          if (!key) return;
+
+          if (localMap.has(key)) {
+            const local = localMap.get(key);
+            if (rw.isMastered && !local.isMastered) { local.isMastered = true; hasChanges = true; }
+            if ((rw.consecutiveCorrect || 0) > (local.consecutiveCorrect || 0)) {
+              local.consecutiveCorrect = rw.consecutiveCorrect;
+              hasChanges = true;
+            }
+            if ((rw.wrongCount || 0) > (local.wrongCount || 0)) {
+              local.wrongCount = rw.wrongCount;
+              hasChanges = true;
+            }
+          } else {
+            vocaList.push(JSON.parse(JSON.stringify(rw)));
+            localMap.set(key, rw);
+            hasChanges = true;
+          }
+        });
+
+        if (hasChanges) {
+          saveVocaListToStorage();
+          renderVocaList();
+        }
+      }
+
+      // 2. Patterns list merge
+      const remotePatterns = remoteData.patterns || remoteData.p;
+      if (Array.isArray(remotePatterns) && remotePatterns.length > 0) {
+        let patChanged = false;
+        const localPatMap = new Map(patternsList.map(p => [p.id, p]));
+
+        remotePatterns.forEach(rp => {
+          if (localPatMap.has(rp.id)) {
+            const lp = localPatMap.get(rp.id);
+            if ((rp.completed || 0) > (lp.completed || 0)) {
+              lp.completed = rp.completed;
+              patChanged = true;
+            }
+          } else {
+            patternsList.push(JSON.parse(JSON.stringify(rp)));
+            localPatMap.set(rp.id, rp);
+            patChanged = true;
+          }
+        });
+
+        if (patChanged) {
+          savePatternsToStorage();
+          if (typeof renderTabletPatterns === 'function') renderTabletPatterns();
+          hasChanges = true;
+        }
+      }
+
+      // 3. Grammar sets merge
+      const remoteGrammar = remoteData.grammar || remoteData.g;
+      if (Array.isArray(remoteGrammar) && remoteGrammar.length > 0) {
+        let gramChanged = false;
+        const localGramMap = new Map(grammarSets.map(g => [g.id, g]));
+
+        remoteGrammar.forEach(rg => {
+          if (localGramMap.has(rg.id)) {
+            const lg = localGramMap.get(rg.id);
+            if (rg.completed && (!lg.completed || rg.completed > lg.completed)) {
+              lg.completed = rg.completed;
+              lg.isCompleted = true;
+              gramChanged = true;
+            }
+            if (Array.isArray(rg.solvedSub)) {
+              if (!Array.isArray(lg.solvedSub)) lg.solvedSub = [false, false];
+              if (rg.solvedSub[0] && !lg.solvedSub[0]) { lg.solvedSub[0] = true; gramChanged = true; }
+              if (rg.solvedSub[1] && !lg.solvedSub[1]) { lg.solvedSub[1] = true; gramChanged = true; }
+            }
+          } else {
+            grammarSets.push(JSON.parse(JSON.stringify(rg)));
+            localGramMap.set(rg.id, rg);
+            gramChanged = true;
+          }
+        });
+
+        if (gramChanged) {
+          selectedGrammarSetIds = grammarSets.map(s => s.id);
+          saveGrammarSetsToStorage();
+          renderGrammarSetsList();
+          initTabletGrammar();
+          updateGrammarAchievementUI();
+          hasChanges = true;
+        }
+      }
+
+      // 4. Streak merge
+      const remoteStreak = Number(remoteData.streak !== undefined ? remoteData.streak : remoteData.s) || 0;
+      const localStreak = getStoredStreak();
+      if (remoteStreak > localStreak) {
+        try {
+          localStorage.setItem("english_streak_days", remoteStreak.toString());
+          const streakEl = document.getElementById('streakCountText');
+          if (streakEl) streakEl.textContent = `${remoteStreak}일 연속`;
+          hasChanges = true;
+        } catch(e){}
+      }
+
+      return hasChanges;
+    }
+
     function switchSyncModalTab(tabId) {
-      ['qr', 'code', 'file'].forEach(t => {
+      ['cloud', 'qr', 'code', 'file'].forEach(t => {
         const btn = document.getElementById('syncTabBtn_' + t);
         const content = document.getElementById('syncTabContent_' + t);
         if (t === tabId) {
@@ -7230,6 +7683,17 @@
     function checkAutoSyncFromUrl() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
+
+        // 1. 실시간 클라우드 동기화 키 자동 연결 (?syncKey=...)
+        const cloudKeyParam = urlParams.get('syncKey');
+        if (cloudKeyParam) {
+          syncConnectCloudKey(cloudKeyParam);
+          const cleanUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, document.title, cleanUrl);
+          return;
+        }
+
+        // 2. 기존 정적 동기화 백업 복원 (?sync=...)
         const syncParam = urlParams.get('sync');
         if (syncParam) {
           const decodedJson = base64ToUtf8(syncParam);
@@ -7257,7 +7721,8 @@
       const modal = document.getElementById('tabletConnectModal');
       if (!modal) return;
       modal.style.display = 'flex';
-      switchSyncModalTab('qr');
+      switchSyncModalTab('cloud');
+      updateCloudSyncUI();
 
       try {
         const compactPayload = getAppExportPayload(true);
@@ -7489,8 +7954,27 @@
     const streakCountEl = document.getElementById('streakCountText');
     if (streakCountEl) streakCountEl.textContent = `${getStoredStreak()}일 연속`;
 
-    // 태블릿 URL 파라미터(?sync=...) 자동 감지 및 1초 복원 실행
+    // 태블릿 URL 파라미터(?sync=..., ?syncKey=...) 자동 감지 및 1초 복원 실행
     checkAutoSyncFromUrl();
+
+    // 클라우드 실시간 동기화 UI 초기화 및 자동 동기화 시도
+    updateCloudSyncUI();
+    if (getCloudSyncKey()) {
+      syncPullFromCloud(true);
+    }
+
+    // 화면 복귀 및 포커스 시 클라우드 최신 데이터 자동 가져오기
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && getCloudSyncKey()) {
+        syncPullFromCloud(true);
+      }
+    });
+    window.addEventListener('focus', () => {
+      if (getCloudSyncKey()) syncPullFromCloud(true);
+    });
+    window.addEventListener('pageshow', () => {
+      if (getCloudSyncKey()) syncPullFromCloud(true);
+    });
 
     // 바탕 클릭 시 문장 퍼즐 선택 해제
     document.addEventListener('click', (e) => {

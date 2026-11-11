@@ -1065,13 +1065,18 @@
     <!-- ================= 상단 대분류 3개 탭 & 기능 버튼들 ================= -->
     <div class="app-tabs-header">
       <button class="app-tab-btn" id="tabPatternHeader" onclick="switchAppTab('pattern')">
-        🗣️ 회화패턴
+        🗣️ 회화패턴 <span id="headerPatternCountBadge" style="font-size:0.75rem; background:rgba(0,0,0,0.08); padding:2px 6px; border-radius:10px; margin-left:2px;">7</span>
       </button>
       <button class="app-tab-btn" id="tabVocaHeader" onclick="switchAppTab('voca')">
-        📖 스마트단어장
+        📖 스마트단어장 <span id="headerVocaCountBadge" style="font-size:0.75rem; background:rgba(0,0,0,0.08); padding:2px 6px; border-radius:10px; margin-left:2px;">26</span>
       </button>
       <button class="app-tab-btn active" id="tabGrammarHeader" onclick="switchAppTab('grammar')">
-        🧩 문장퍼즐
+        🧩 문장퍼즐 <span id="headerGrammarCountBadge" style="font-size:0.75rem; background:rgba(0,0,0,0.08); padding:2px 6px; border-radius:10px; margin-left:2px;">11</span>
+      </button>
+
+      <!-- 원터치 최신 버전 새로고침 버튼 (캐시 완전 무시하고 최신 데이터 로드) -->
+      <button class="header-util-btn" onclick="forceLatestVersionReload()" title="캐시를 비우고 최신 데이터로 새로고침합니다" style="color: #4F46E5; font-weight: 800; background: #EEF2FF; border-color: #C7D2FE;">
+        🔄 최신 동기화
       </button>
 
       <!-- [보완 3] 원스톱 팩 추천 코스 버튼 -->
@@ -4851,6 +4856,8 @@
 
       const badge = document.getElementById('grammarCompletedCountBadge');
       if (badge) badge.textContent = `${completedCount}/${total} 세트`;
+      const hGrammar = document.getElementById('headerGrammarCountBadge');
+      if (hGrammar) hGrammar.textContent = total;
 
       const summary = document.getElementById('grammarListProgressSummary');
       if (summary) summary.textContent = `🏆 ${completedCount} / ${total} 세트 완성 (${pct}%)`;
@@ -5726,6 +5733,8 @@
       const col = document.getElementById('patternsGridTablet');
       if (!col) return;
       col.innerHTML = "";
+      const hPat = document.getElementById('headerPatternCountBadge');
+      if (hPat) hPat.textContent = patternsList.length;
       patternsList.forEach(p => {
         const item = document.createElement('div');
         const isActive = p.id === currentPatternId;
@@ -7170,6 +7179,8 @@
       const masteredCount = vocaList.filter(w => w.isMastered).length;
       document.getElementById('learningCountBadge').textContent = learningCount;
       document.getElementById('masteredCountBadge').textContent = masteredCount;
+      const hVoca = document.getElementById('headerVocaCountBadge');
+      if (hVoca) hVoca.textContent = vocaList.length;
 
       const reviewWords = getSmartReviewWords();
       document.getElementById('smartReviewCountBadge').textContent = `${reviewWords.length}개`;
